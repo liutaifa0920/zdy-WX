@@ -27,7 +27,8 @@ module.exports = {
   // 可以通过在 devServer 设置让浏览器 overlay 同时显示警告和错误
   // lint检测会在开发模式生产模式都执行，下面配置是只在开发模式执行检测，关闭lint检测设置为false即可
   // 详细请看：https://cli.vuejs.org/zh/config/#lintonsave
-  lintOnSave: process.env.NODE_ENV !== "production",
+  // lintOnSave: process.env.NODE_ENV !== "production",
+  lintOnSave: false,
 
   // 是否使用包含运行时编译器的 Vue 构建版本，会让你包额外增加 10kb 左，默认false
   // 下面配置带有运行时运行时编译器版本，个人认为10kb可以忽略负载
@@ -106,7 +107,7 @@ module.exports = {
           // px转rem
           autoprefixer(),
           pxtorem({
-            rootValue: 37.5,
+            rootValue: 16,
             propList: ["*"]
           })
         ]
