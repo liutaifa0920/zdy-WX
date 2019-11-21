@@ -1,0 +1,33 @@
+{
+	"folders": [
+		{
+			"name": "kkb-study",
+			"path": "remote/kkb-study"
+		},
+		{
+			"name": "web-knowledge",
+			"path": "remote/web-knowledge"
+		},
+		{
+			"name": "envir.datascreen.vue",
+			"path": "work/remote/envir.datascreen.vue"
+		},
+		{
+			"name": "live-video-vue",
+			"path": "work/local/live-video-vue"
+		},
+		{
+			"name": "envir.admin.vue",
+			"path": "work/remote/envir.admin.vue"
+		},
+		{
+			"name": "vue-element-admin",
+			"path": "work/local/vue-element-admin"
+		},
+		{
+			"name": "vue-base",
+			"path": "work/local/vue-base"
+		}
+	],
+	"settings": {}
+}
