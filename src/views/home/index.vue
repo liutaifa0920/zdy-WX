@@ -1,12 +1,10 @@
 <template>
   <div class="home">
     <!-- ---------------------- -->
-    <!-- 模板组件 不可使用 开发删除即可 -->
-    <!-- <init-template></init-template> -->
 
     <!-- Title -->
     <div class="homeTop">
-      <ul class="homeTopList">
+      <ul class="homeTopList" v-show="!topToParentClassFlag">
         <li
           :class="'homeTopListItem' + (homeTopListName == i ?' homeTopListItemAction' : '')"
           v-for="(item, i) in 8"
@@ -17,13 +15,24 @@
           <span></span>
         </li>
       </ul>
+      <img
+        v-show="topToParentClassFlag"
+        class="homeTopToParLog"
+        src="../../assets/imgs/parentClassLog_w.png"
+        alt="家长课堂"
+      />
     </div>
+
+    <!-- TopBlock -->
+    <div style="height: 5rem"></div>
 
     <!-- Function -->
     <div class="homeFunction">
       <van-grid :border="false" :column-num="3">
         <van-grid-item v-for="(item, i) in homeFunctionList" :key="i">
-          <img class="homeFunctionImg" :src="item.url" :alt="item.name" />
+          <div class="homeFunctionImg">
+            <img :src="item.url" :alt="item.name" />
+          </div>
           <p class="homeFunctionTit">{{item.name}}</p>
         </van-grid-item>
       </van-grid>
@@ -74,21 +83,31 @@
         <img src="../../assets/imgs/parentClassLog.png" alt="家长课堂" />
         <van-icon class="homeParentClassTitDrop" color="#999999" size="24px" name="ellipsis" />
       </div>
-      <div>
-        <ul>
-          <li v-for="(item, i) in parentClassInfo" :key="i">
-            <div>
-              <p></p>
-              <div>
-                <span></span>
-                <div></div>
+      <div class="homeParentClassCon">
+        <ul class="homeParentClassConList">
+          <li class="homeParentClassConItem" v-for="(item, i) in parentClassInfo" :key="i">
+            <div class="homeParentClassConItemLeft">
+              <p>{{item.content.length > 27 ? (item.content.substr(0,27) + '...') : item.content}}</p>
+              <div class="homeParentClassConItemLeftBot">
+                <span>{{item.school}}</span>
+                <div class="homeParentClassConItemLeftBotRight">
+                  <img src="../../assets/imgs/parentClassConFire.png" alt="图片加载失败" />
+                  <span>{{item.num}}</span>
+                </div>
               </div>
             </div>
-            <img src="" alt="">
+            <img
+              class="homeParentClassConItemRight"
+              src="http://img1.imgtn.bdimg.com/it/u=1366904711,2699461808&fm=26&gp=0.jpg"
+              alt
+            />
           </li>
         </ul>
       </div>
     </div>
+
+    <!-- BottomBlock -->
+    <div style="height: 5rem;background-color: white;"></div>
 
     <!-- ---------------------- -->
   </div>
@@ -107,65 +126,111 @@ export default {
         },
         {
           name: "作业",
-          url: require("../../assets/imgs/home_class.png")
+          url: require("../../assets/imgs/home_work.png")
         },
         {
           name: "学堂报告",
-          url: require("../../assets/imgs/home_class.png")
+          url: require("../../assets/imgs/home_report.png")
         }
       ],
       enterSchoolTime: "-- : --",
       leaveSchoolTime: "-- : --",
       enterSchoolDate: "2019-11-22",
       leaveSchoolDate: "2019-11-22",
-      parentClassInfo:[
+      parentClassInfo: [
         {
-          content: '【荐读】期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！',
-          school: '知点云校园 ',
+          content:
+            "期中考试后这位班主任家长会上家长会上家长会上的发言无数父母和孩子！",
+          school: "知点云校园 ",
           num: 15,
-          url: require('../../assets/imgs/home_class.png')
+          url: require("../../assets/imgs/homeTab2_h.png")
         },
         {
-          content: '【荐读】期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！',
-          school: '知点云校园 ',
+          content: "这位班主任家长会上的发言，点醒无数父母和孩子！",
+          school: "知点云校园 ",
           num: 15,
-          url: require('../../assets/imgs/home_class.png')
+          url: require("../../assets/imgs/homeTab2_h.png")
         },
         {
-          content: '【荐读】期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！',
-          school: '知点云校园 ',
+          content:
+            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
+          school: "知点云校园 ",
           num: 15,
-          url: require('../../assets/imgs/home_class.png')
+          url: require("../../assets/imgs/homeTab2_h.png")
         },
         {
-          content: '【荐读】期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！',
-          school: '知点云校园 ',
+          content:
+            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
+          school: "知点云校园 ",
           num: 15,
-          url: require('../../assets/imgs/home_class.png')
+          url: require("../../assets/imgs/homeTab2_h.png")
         },
         {
-          content: '【荐读】期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！',
-          school: '知点云校园 ',
+          content:
+            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
+          school: "知点云校园 ",
           num: 15,
-          url: require('../../assets/imgs/home_class.png')
+          url: require("../../assets/imgs/homeTab2_h.png")
         },
         {
-          content: '【荐读】期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！',
-          school: '知点云校园 ',
+          content:
+            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
+          school: "知点云校园 ",
           num: 15,
-          url: require('../../assets/imgs/home_class.png')
+          url: require("../../assets/imgs/homeTab2_h.png")
+        },
+        {
+          content:
+            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
+          school: "知点云校园 ",
+          num: 15,
+          url: require("../../assets/imgs/homeTab2_h.png")
+        },
+        {
+          content:
+            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
+          school: "知点云校园 ",
+          num: 15,
+          url: require("../../assets/imgs/homeTab2_h.png")
+        },
+        {
+          content:
+            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
+          school: "知点云校园 ",
+          num: 15,
+          url: require("../../assets/imgs/homeTab2_h.png")
+        },
+        {
+          content:
+            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
+          school: "知点云校园 ",
+          num: 15,
+          url: require("../../assets/imgs/homeTab2_h.png")
         }
-      ]
+      ],
+      topToParentClassFlag: false
     };
-  },
-  components: {
-    // initTemplate: () => import("@/components/init.vue")
   },
   methods: {
     homeTopListClick(i) {
       this.homeTopListName = i;
       console.log(this.homeTopListName);
+    },
+    homeRootScroll(e) {
+      let topToPar = window.scrollY;
+      // console.log(topToPar);
+      if (topToPar > 330) {
+        this.topToParentClassFlag = true;
+      } else {
+        this.topToParentClassFlag = false;
+      }
     }
+  },
+  mounted() {
+    window.addEventListener("scroll", this.homeRootScroll);
+  },
+  destroyed() {
+    window.removeEventListener("scroll", this.homeRootScroll);
   }
 };
 </script>
@@ -177,12 +242,25 @@ p {
 .home {
   background-color: #fafafa;
   color: #313131;
+  position: relative;
+  width: 100vw;
 }
 .homeTop {
   position: relative;
   background-color: #38b48b;
-  height: 12.4vh;
+  height: 5rem;
+  width: 100vw;
   padding: 0 0.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+.homeTopToParLog {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  width: 4rem;
 }
 .homeTopList {
   position: absolute;
@@ -228,15 +306,21 @@ p {
 
 /* Function */
 .homeFunction {
-  height: 24vh;
+  height: 9.5rem;
   background-color: white;
   padding: 0.5rem;
   box-sizing: border-box;
   box-shadow: 0 0 4px rgb(238, 238, 238) !important;
-  z-index: 5000;
+  z-index: 500;
 }
 .homeFunctionImg {
-  width: 2.5rem;
+  width: 2.6rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+}
+.homeFunctionImg img {
+  width: 100%;
 }
 .homeFunctionTit {
   padding: 0;
@@ -262,7 +346,7 @@ p {
   top: -3rem;
   border-radius: 0.5rem;
   background-color: white;
-  box-shadow: 0 0 5px rgb(240, 240, 240) !important;
+  box-shadow: 0 0 5px rgb(224, 224, 224) !important;
   z-index: 500;
 }
 .homeAttendanceBoxTop {
@@ -293,17 +377,16 @@ p {
   font-size: 0.6rem;
 }
 .homeAttendanceBoxBotItemBtn {
-  background-color: #38B48B;
+  background-color: #38b48b;
   color: white;
-  padding: .2rem .6rem;
+  padding: 0.2rem 0.6rem;
   font-size: 1rem;
   border-radius: 3rem;
-
 }
 
 /* Tip */
 .homeTip {
-  /* height: 4rem; */
+  height: 4rem;
   width: 100vw;
   padding: 1rem;
   box-sizing: border-box;
@@ -311,7 +394,7 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: .8rem !important;
+  margin-bottom: 0.8rem !important;
 }
 .homeTipLeft {
   display: flex;
@@ -345,24 +428,67 @@ p {
 }
 
 /* ParentClass */
-.homeParentClass{
+.homeParentClass {
   background-color: white;
 }
-.homeParentClassTit{
+.homeParentClassTit {
   width: 100%;
   height: 3rem;
-  padding: 0 .3rem;
+  padding: 0 0.3rem;
   box-sizing: border-box;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.homeParentClassTit > img{
+.homeParentClassTit > img {
   width: 4rem;
-  padding-left: .5rem;
-  border-left: .2rem solid #fcd81e;
+  padding-left: 0.5rem;
+  border-left: 0.2rem solid #fcd81e;
 }
-.homeParentClassTitDrop{
-  margin-right: .5rem;
+.homeParentClassTitDrop {
+  margin-right: 0.5rem;
+}
+.homeParentClassCon {
+  width: 100vw;
+}
+.homeParentClassConList {
+  width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+.homeParentClassConList li:last-child{
+  margin-bottom: 0 !important;
+}
+.homeParentClassConList p {
+  text-align: left !important;
+}
+.homeParentClassConItem {
+  width: 100%;
+  height: 4.3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+.homeParentClassConItemLeft {
+  width: 71%;
+  height: 4.3rem;
+}
+.homeParentClassConItemLeft > p {
+  font-size: 0.9rem;
+}
+.homeParentClassConItemLeftBot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  font-size: 0.7rem;
+  color: #999999;
+}
+.homeParentClassConItemLeftBotRight img {
+  width: 0.8rem;
+  margin-right: 0.2rem;
+}
+.homeParentClassConItemRight {
+  width: 26%;
+  height: 4.3rem;
 }
 </style>

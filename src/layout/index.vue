@@ -1,14 +1,10 @@
 <template>
   <div class="defaut-layout">
     <router-view />
-    <van-tabbar v-model="tabHighLight" @change="tabChange">
+    <van-tabbar v-model="tabHighLight" active-color="#38B48B" @change="tabChange">
       <van-tabbar-item v-for="(item, i) in tabIconList" :key="i">
         <span>{{ item.name }}</span>
-        <img
-          slot="icon"
-          slot-scope="props"
-          :src="props.active ? item.active : item.inactive"
-        />
+        <img slot="icon" slot-scope="props" :src="props.active ? item.active : item.inactive" />
       </van-tabbar-item>
     </van-tabbar>
   </div>
@@ -24,23 +20,23 @@ export default {
       tabIconList: [
         {
           name: "首页",
-          active: "https://img.yzcdn.cn/vant/user-active.png",
-          inactive: "https://img.yzcdn.cn/vant/user-inactive.png"
+          active: require("../assets/imgs/homeTab1_h.png"),
+          inactive: require("../assets/imgs/homeTab1.png")
         },
         {
           name: "消息",
-          active: "https://img.yzcdn.cn/vant/user-active.png",
-          inactive: "https://img.yzcdn.cn/vant/user-inactive.png"
+          active: require("../assets/imgs/homeTab2_h.png"),
+          inactive: require("../assets/imgs/homeTab2.png")
         },
         {
           name: "通讯录",
-          active: "https://img.yzcdn.cn/vant/user-active.png",
-          inactive: "https://img.yzcdn.cn/vant/user-inactive.png"
+          active: require("../assets/imgs/homeTab3_h.png"),
+          inactive: require("../assets/imgs/homeTab3.png")
         },
         {
           name: "我的",
-          active: "https://img.yzcdn.cn/vant/user-active.png",
-          inactive: "https://img.yzcdn.cn/vant/user-inactive.png"
+          active: require("../assets/imgs/homeTab4_h.png"),
+          inactive: require("../assets/imgs/homeTab4.png")
         }
       ]
     };
