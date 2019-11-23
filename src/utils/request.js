@@ -1,6 +1,7 @@
 // axios请求封装
-
 import axios from "axios";
+import qs from 'qs'
+import { signFun } from './sign'
 
 // 新建axios实例
 const service = axios.create({
@@ -13,6 +14,13 @@ service.interceptors.request.use(
   config => {
     // 请求前处理
     // ...
+    
+    let data = qs.parse(config.data)
+    console.log(data);
+    let strData = signFun(data,'60487FE91A0577ED60C4DC56A9EF3DB5')
+    config.data = qs.stringify({
+        data:strData
+    })
 
     return config;
   },

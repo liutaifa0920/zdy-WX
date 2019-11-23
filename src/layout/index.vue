@@ -20,26 +20,26 @@ export default {
       tabIconList: [
         {
           name: "首页",
-          active: require("../assets/imgs/homeTab1_h.png"),
-          inactive: require("../assets/imgs/homeTab1.png"),
+          active: require("../assets/imgs/layout/homeTab1_h.png"),
+          inactive: require("../assets/imgs/layout/homeTab1.png"),
           linkTo: '/layout/home'
         },
         {
           name: "消息",
-          active: require("../assets/imgs/homeTab2_h.png"),
-          inactive: require("../assets/imgs/homeTab2.png"),
+          active: require("../assets/imgs/layout/homeTab2_h.png"),
+          inactive: require("../assets/imgs/layout/homeTab2.png"),
           linkTo: '/layout/home'
         },
         {
           name: "通讯录",
-          active: require("../assets/imgs/homeTab3_h.png"),
-          inactive: require("../assets/imgs/homeTab3.png"),
+          active: require("../assets/imgs/layout/homeTab3_h.png"),
+          inactive: require("../assets/imgs/layout/homeTab3.png"),
           linkTo: '/layout/home'
         },
         {
           name: "我的",
-          active: require("../assets/imgs/homeTab4_h.png"),
-          inactive: require("../assets/imgs/homeTab4.png"),
+          active: require("../assets/imgs/layout/homeTab4_h.png"),
+          inactive: require("../assets/imgs/layout/homeTab4.png"),
           linkTo: '/layout/user'
         }
       ]

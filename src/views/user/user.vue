@@ -1,6 +1,7 @@
 <template>
-    <div>
-        我的
+    <div class="user">
+        <div></div>
+        
     </div>
 </template>
 <script>

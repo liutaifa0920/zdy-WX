@@ -12,3 +12,13 @@ export function test(data) {
     data
   });
 }
+
+
+// homeShowStudent
+export function homeShowStudent(data) {
+  return request({
+    url: "/parent/ucenter/showStudent",
+    method: "post",
+    data
+  });
+}

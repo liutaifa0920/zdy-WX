@@ -19,7 +19,7 @@
       <img
         v-show="topToParentClassFlag"
         class="homeTopToParLog"
-        src="../../assets/imgs/parentClassLog_w.png"
+        src="../../assets/imgs/home/parentClassLog_w.png"
         alt="家长课堂"
       />
     </div>
@@ -71,7 +71,7 @@
     </div>
 
     <!-- Tip -->
-    <div class="homeTip">
+    <div class="homeTip" @click="homeTipClick">
       <div class="homeTipLeft">
         <div class="homeTipLeftTit">
           <p>班级</p>
@@ -85,7 +85,7 @@
     <!-- parentClass -->
     <div class="homeParentClass">
       <div class="homeParentClassTit">
-        <img src="../../assets/imgs/parentClassLog.png" alt="家长课堂" />
+        <img src="../../assets/imgs/home/parentClassLog.png" alt="家长课堂" />
         <van-icon class="homeParentClassTitDrop" color="#999999" size="24px" name="ellipsis" />
       </div>
       <div class="homeParentClassCon">
@@ -96,7 +96,7 @@
               <div class="homeParentClassConItemLeftBot">
                 <span>{{item.school}}</span>
                 <div class="homeParentClassConItemLeftBotRight">
-                  <img src="../../assets/imgs/parentClassConFire.png" alt="图片加载失败" />
+                  <img src="../../assets/imgs/home/parentClassConFire.png" alt="图片加载失败" />
                   <span>{{item.num}}</span>
                 </div>
               </div>
@@ -119,6 +119,7 @@
 </template>
 
 <script>
+import { homeShowStudent } from "@/api/api";
 export default {
   name: "home",
   data() {
@@ -138,19 +139,19 @@ export default {
       homeFunctionList: [
         {
           name: "课堂报告",
-          imgUrl: require("../../assets/imgs/home_class.png"),
+          imgUrl: require("../../assets/imgs/home/home_class.png"),
           linkToUrl:
             "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/classroomreport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
         },
         {
           name: "作业",
-          imgUrl: require("../../assets/imgs/home_work.png"),
+          imgUrl: require("../../assets/imgs/home/home_work.png"),
           linkToUrl:
             "http://wechat.test.sdxxtop.com/parent/task/index.html#/?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
         },
         {
           name: "学情报告",
-          imgUrl: require("../../assets/imgs/home_report.png"),
+          imgUrl: require("../../assets/imgs/home/home_report.png"),
           linkToUrl:
             "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
         }
@@ -165,75 +166,87 @@ export default {
             "期中考试后这位班主任家长会上家长会上家长会上的发言无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         },
         {
           content: "这位班主任家长会上的发言，点醒无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         },
         {
           content:
             "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         },
         {
           content:
             "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         },
         {
           content:
             "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         },
         {
           content:
             "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         },
         {
           content:
             "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         },
         {
           content:
             "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         },
         {
           content:
             "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         },
         {
           content:
             "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
           school: "知点云校园 ",
           num: 15,
-          url: require("../../assets/imgs/homeTab2_h.png")
+          url: ''
         }
       ],
       topToParentClassFlag: false
     };
   },
   methods: {
+    // 首页数据信息
+    queryHomeInfo(){
+      let data = {
+        ui: '30001137',
+        si: '20000000',
+        v: '100000'
+      }
+      homeShowStudent(data)
+      .then(res => {
+        console.log(res);
+      })
+    },
     homeTopListClick(i, name) {
       this.homeTopListIndex = i;
       this.homeTopListName = name;
@@ -259,11 +272,16 @@ export default {
     },
     leaveSchoolBtn() {
       console.log("离校");
+    },
+    // 班级通知按钮
+    homeTipClick() {
+      console.log("班级通知");
     }
   },
   mounted() {
     window.addEventListener("scroll", this.homeRootScroll);
     this.homeTopListName = this.homeTopList[0];
+    this.queryHomeInfo();
   },
   destroyed() {
     window.removeEventListener("scroll", this.homeRootScroll);
