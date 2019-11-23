@@ -4,16 +4,17 @@
 
     <!-- Title -->
     <div class="homeTop">
+      <div class="homeTopListItemAction" v-show="!topToParentClassFlag">
+        {{homeTopListName}}
+        <span></span>
+      </div>
       <ul class="homeTopList" v-show="!topToParentClassFlag">
         <li
-          :class="'homeTopListItem' + (homeTopListName == i ?' homeTopListItemAction' : '')"
-          v-for="(item, i) in 8"
+          class="homeTopListItem"
+          v-for="(item, i) in homeTopList"
           :key="i"
-          @click="homeTopListClick(i)"
-        >
-          张小萌
-          <span></span>
-        </li>
+          @click="homeTopListClick(i, item)"
+        >{{item}}</li>
       </ul>
       <img
         v-show="topToParentClassFlag"
@@ -26,12 +27,16 @@
     <!-- TopBlock -->
     <div style="height: 5rem"></div>
 
-    <!-- Function -->
+    <!-- Unit -->
     <div class="homeFunction">
       <van-grid :border="false" :column-num="3">
-        <van-grid-item v-for="(item, i) in homeFunctionList" :key="i">
+        <van-grid-item
+          v-for="(item, i) in homeFunctionList"
+          :key="i"
+          @click="unitLinkTo(item.linkToUrl)"
+        >
           <div class="homeFunctionImg">
-            <img :src="item.url" :alt="item.name" />
+            <img :src="item.imgUrl" :alt="item.name" />
           </div>
           <p class="homeFunctionTit">{{item.name}}</p>
         </van-grid-item>
@@ -51,7 +56,7 @@
               <p>{{enterSchoolTime}}</p>
               <p>{{enterSchoolDate}}</p>
             </div>
-            <div class="homeAttendanceBoxBotItemBtn">进校</div>
+            <div class="homeAttendanceBoxBotItemBtn" @click="enterSchoolBtn">进校</div>
           </div>
           <div class="block"></div>
           <div class="homeAttendanceBoxBotItem">
@@ -59,7 +64,7 @@
               <p>{{leaveSchoolTime}}</p>
               <p>{{leaveSchoolDate}}</p>
             </div>
-            <div class="homeAttendanceBoxBotItemBtn">离校</div>
+            <div class="homeAttendanceBoxBotItemBtn" @click="leaveSchoolBtn">离校</div>
           </div>
         </div>
       </div>
@@ -118,19 +123,36 @@ export default {
   name: "home",
   data() {
     return {
-      homeTopListName: 0,
+      homeTopListIndex: 0,
+      homeTopListName: "",
+      homeTopList: [
+        "张小萌",
+        "张小草",
+        "张小明",
+        "张小日",
+        "张小月",
+        "张大日",
+        "张大月",
+        "张大萌"
+      ],
       homeFunctionList: [
         {
           name: "课堂报告",
-          url: require("../../assets/imgs/home_class.png")
+          imgUrl: require("../../assets/imgs/home_class.png"),
+          linkToUrl:
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/classroomreport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
         },
         {
           name: "作业",
-          url: require("../../assets/imgs/home_work.png")
+          imgUrl: require("../../assets/imgs/home_work.png"),
+          linkToUrl:
+            "http://wechat.test.sdxxtop.com/parent/task/index.html#/?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
         },
         {
-          name: "学堂报告",
-          url: require("../../assets/imgs/home_report.png")
+          name: "学情报告",
+          imgUrl: require("../../assets/imgs/home_report.png"),
+          linkToUrl:
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
         }
       ],
       enterSchoolTime: "-- : --",
@@ -212,9 +234,10 @@ export default {
     };
   },
   methods: {
-    homeTopListClick(i) {
-      this.homeTopListName = i;
-      console.log(this.homeTopListName);
+    homeTopListClick(i, name) {
+      this.homeTopListIndex = i;
+      this.homeTopListName = name;
+      console.log(this.homeTopListIndex);
     },
     homeRootScroll(e) {
       let topToPar = window.scrollY;
@@ -224,10 +247,23 @@ export default {
       } else {
         this.topToParentClassFlag = false;
       }
+    },
+    //
+    unitLinkTo(n) {
+      console.log(n);
+      window.location.href = n;
+    },
+    // 进校 离校按钮
+    enterSchoolBtn() {
+      console.log("进校");
+    },
+    leaveSchoolBtn() {
+      console.log("离校");
     }
   },
   mounted() {
     window.addEventListener("scroll", this.homeRootScroll);
+    this.homeTopListName = this.homeTopList[0];
   },
   destroyed() {
     window.removeEventListener("scroll", this.homeRootScroll);
@@ -262,16 +298,17 @@ p {
   bottom: 1rem;
   width: 4rem;
 }
+
 .homeTopList {
   position: absolute;
-  left: 0;
+  right: 1.5rem;
   bottom: -0.1rem;
   display: flex;
   color: white;
-  width: 100vw;
+  width: calc(70vw - 0.5rem);
   height: 3.32rem;
   overflow-y: scroll;
-  padding: 0 0.5rem;
+  /* padding: 0 0.5rem; */
   box-sizing: border-box;
 }
 .homeTopListItem {
@@ -284,18 +321,23 @@ p {
   /* transition: 1s; */
 }
 .homeTopListItemAction {
-  height: 2.8rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: calc(30vw - 0.5rem);
+  height: 4rem;
+  color: white;
+  text-align: left;
   font-size: 1.8rem;
-  line-height: 2.8rem;
+  line-height: 4rem;
   padding: 0 0.5rem;
   white-space: nowrap;
-  position: relative;
   box-sizing: border-box;
   /* transition: 1s; */
 }
 .homeTopListItemAction > span {
   position: absolute;
-  bottom: -0.525rem;
+  bottom: -0.15rem;
   left: 0.5rem;
   display: block;
   background-color: #fcd81e;
@@ -370,6 +412,9 @@ p {
   justify-content: space-between;
   align-items: center;
 }
+.homeAttendanceBoxBotItemTime {
+  white-space: nowrap;
+}
 .homeAttendanceBoxBotItemTime p:nth-child(1) {
   font-size: 1.6rem;
 }
@@ -379,6 +424,7 @@ p {
 .homeAttendanceBoxBotItemBtn {
   background-color: #38b48b;
   color: white;
+  white-space: nowrap;
   padding: 0.2rem 0.6rem;
   font-size: 1rem;
   border-radius: 3rem;
@@ -425,6 +471,7 @@ p {
 .homeTipRight {
   color: #999999;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 /* ParentClass */
@@ -456,7 +503,7 @@ p {
   padding: 0 1rem;
   box-sizing: border-box;
 }
-.homeParentClassConList li:last-child{
+.homeParentClassConList li:last-child {
   margin-bottom: 0 !important;
 }
 .homeParentClassConList p {

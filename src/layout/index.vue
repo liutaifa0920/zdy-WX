@@ -2,7 +2,7 @@
   <div class="defaut-layout">
     <router-view />
     <van-tabbar v-model="tabHighLight" active-color="#38B48B" @change="tabChange">
-      <van-tabbar-item v-for="(item, i) in tabIconList" :key="i">
+      <van-tabbar-item v-for="(item, i) in tabIconList" :key="i" :to="item.linkTo">
         <span>{{ item.name }}</span>
         <img slot="icon" slot-scope="props" :src="props.active ? item.active : item.inactive" />
       </van-tabbar-item>
@@ -21,22 +21,26 @@ export default {
         {
           name: "首页",
           active: require("../assets/imgs/homeTab1_h.png"),
-          inactive: require("../assets/imgs/homeTab1.png")
+          inactive: require("../assets/imgs/homeTab1.png"),
+          linkTo: '/layout/home'
         },
         {
           name: "消息",
           active: require("../assets/imgs/homeTab2_h.png"),
-          inactive: require("../assets/imgs/homeTab2.png")
+          inactive: require("../assets/imgs/homeTab2.png"),
+          linkTo: '/layout/home'
         },
         {
           name: "通讯录",
           active: require("../assets/imgs/homeTab3_h.png"),
-          inactive: require("../assets/imgs/homeTab3.png")
+          inactive: require("../assets/imgs/homeTab3.png"),
+          linkTo: '/layout/home'
         },
         {
           name: "我的",
           active: require("../assets/imgs/homeTab4_h.png"),
-          inactive: require("../assets/imgs/homeTab4.png")
+          inactive: require("../assets/imgs/homeTab4.png"),
+          linkTo: '/layout/user'
         }
       ]
     };
