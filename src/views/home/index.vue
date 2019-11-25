@@ -58,7 +58,7 @@
             </div>
             <div class="homeAttendanceBoxBotItemBtn" @click="enterSchoolBtn">进校</div>
           </div>
-          <div class="block"></div>
+          <div class="blockLine"></div>
           <div class="homeAttendanceBoxBotItem">
             <div class="homeAttendanceBoxBotItemTime">
               <p>{{leaveSchoolTime}}</p>
@@ -238,13 +238,13 @@ export default {
     // 首页数据信息
     queryHomeInfo(){
       let data = {
-        ui: '30001137',
-        si: '20000000',
-        v: '100000'
+        ui: '30001120',
+        si: '20004910',
+        v: '10108'
       }
       homeShowStudent(data)
       .then(res => {
-        console.log(res);
+        console.log(res.data.article);
       })
     },
     homeTopListClick(i, name) {
@@ -423,6 +423,11 @@ p {
   height: 2.4rem;
   display: flex;
   justify-content: space-between;
+}
+.blockLine{
+  width: 1px;
+  height: 2.65rem;
+  background-color: #E0E0E0;
 }
 .homeAttendanceBoxBotItem {
   width: 43%;

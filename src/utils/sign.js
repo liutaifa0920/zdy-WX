@@ -21,7 +21,9 @@ let Base64 = require("js-base64").Base64;
  * @return {string} 	返回加密字符串发送后端
  */
 export function signFun(obj, appkey) {
-  Object.assign(obj, { ts: new Date().getTime() });
+  console.log(obj);
+  let ts = Math.ceil(new Date().getTime() / 1000);
+  Object.assign(obj, { ts });
   let newkey = Object.keys(obj).sort();
   let newObj = {};
   for (let i = 0; i < newkey.length; i++) {

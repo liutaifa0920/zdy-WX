@@ -17,7 +17,7 @@ export function test(data) {
 // homeShowStudent
 export function homeShowStudent(data) {
   return request({
-    url: "/parent/ucenter/showStudent",
+    url: "/parent/student/parentClass",
     method: "post",
     data
   });
