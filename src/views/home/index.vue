@@ -5,7 +5,7 @@
     <!-- Title -->
     <div class="homeTop">
       <div class="homeTopListItemAction" v-show="!topToParentClassFlag">
-        {{homeTopListName}}
+        <p>{{homeTopListName}}</p>
         <span></span>
       </div>
       <ul class="homeTopList" v-show="!topToParentClassFlag">
@@ -14,7 +14,7 @@
           v-for="(item, i) in homeTopList"
           :key="i"
           @click="homeTopListClick(i, item)"
-        >{{item}}</li>
+        >{{item.name}}</li>
       </ul>
       <img
         v-show="topToParentClassFlag"
@@ -71,15 +71,15 @@
     </div>
 
     <!-- Tip -->
-    <div class="homeTip" @click="homeTipClick">
+    <div class="homeTip" @click="homeTipClick" v-show="classNoticeInfoNum != 0">
       <div class="homeTipLeft">
         <div class="homeTipLeftTit">
           <p>班级</p>
           <p>通知</p>
         </div>
-        <p class="homeTipLeftCon">· 您有1条未读的班级通知消息</p>
+        <p class="homeTipLeftCon">· 您有{{classNoticeInfoNum}}条未读的班级通知消息</p>
       </div>
-      <p class="homeTipRight">1个小时前 ></p>
+      <p class="homeTipRight">{{classNoticeInfoTime}} ></p>
     </div>
 
     <!-- parentClass -->
@@ -89,53 +89,76 @@
         <van-icon class="homeParentClassTitDrop" color="#999999" size="24px" name="ellipsis" />
       </div>
       <div class="homeParentClassCon">
-        <ul class="homeParentClassConList">
-          <li class="homeParentClassConItem" v-for="(item, i) in parentClassInfo" :key="i">
+        <!-- <ul class="homeParentClassConList">
+          <li
+            class="homeParentClassConItem"
+            v-for="(item, i) in parentClassInfo"
+            :key="i"
+            @click="homeBottomListClick(item.redirect_url)"
+          >
             <div class="homeParentClassConItemLeft">
-              <p>{{item.content.length > 27 ? (item.content.substr(0,27) + '...') : item.content}}</p>
+              <p>{{ item.title }}</p>
               <div class="homeParentClassConItemLeftBot">
-                <span>{{item.school}}</span>
+                <span>{{item.source}}</span>
                 <div class="homeParentClassConItemLeftBotRight">
                   <img src="../../assets/imgs/home/parentClassConFire.png" alt="图片加载失败" />
-                  <span>{{item.num}}</span>
+                  <span>{{item.count_num}}</span>
                 </div>
               </div>
             </div>
-            <img
-              class="homeParentClassConItemRight"
-              src="http://img1.imgtn.bdimg.com/it/u=1366904711,2699461808&fm=26&gp=0.jpg"
-              alt
-            />
+            <img class="homeParentClassConItemRight" :src="item.img" />
           </li>
-        </ul>
+        </ul>-->
+
+        <van-list
+          class="homeParentClassConList"
+          v-model="bottomLoading"
+          :finished="bottomFinished"
+          finished-text="我可是有底线的呦"
+          @load="bottomOnLoad"
+        >
+          <van-cell
+            v-for="(item, i) in parentClassInfo"
+            :key="i"
+            @click="homeBottomListClick(item.redirect_url)"
+          >
+            <template slot="title" class="homeParentClassConItem">
+              <div class="homeParentClassConItemLeft">
+                <p>{{ item.title }}</p>
+                <div class="homeParentClassConItemLeftBot">
+                  <span>{{item.source}}</span>
+                  <div class="homeParentClassConItemLeftBotRight">
+                    <img src="../../assets/imgs/home/parentClassConFire.png" alt="图片加载失败" />
+                    <span>{{item.count_num}}</span>
+                  </div>
+                </div>
+              </div>
+              <img class="homeParentClassConItemRight" :src="item.img" />
+            </template>
+          </van-cell>
+        </van-list>
       </div>
     </div>
 
     <!-- BottomBlock -->
-    <div style="height: 5rem;background-color: white;"></div>
+    <div style="height: 3rem;background-color: white;"></div>
 
     <!-- ---------------------- -->
   </div>
 </template>
 
 <script>
-import { homeShowStudent } from "@/api/api";
+import { homeParentClass, homeNewindex, homeShowStudent } from "@/api/api";
+import { unBase64 } from "@/utils/unBase64.js";
 export default {
   name: "home",
   data() {
     return {
+      params: null,
       homeTopListIndex: 0,
       homeTopListName: "",
-      homeTopList: [
-        "张小萌",
-        "张小草",
-        "张小明",
-        "张小日",
-        "张小月",
-        "张大日",
-        "张大月",
-        "张大萌"
-      ],
+      homeTopList: [],
+      homeTopListShow: [],
       homeFunctionList: [
         {
           name: "课堂报告",
@@ -160,110 +183,127 @@ export default {
       leaveSchoolTime: "-- : --",
       enterSchoolDate: "2019-11-22",
       leaveSchoolDate: "2019-11-22",
-      parentClassInfo: [
-        {
-          content:
-            "期中考试后这位班主任家长会上家长会上家长会上的发言无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        },
-        {
-          content: "这位班主任家长会上的发言，点醒无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        },
-        {
-          content:
-            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        },
-        {
-          content:
-            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        },
-        {
-          content:
-            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        },
-        {
-          content:
-            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        },
-        {
-          content:
-            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        },
-        {
-          content:
-            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        },
-        {
-          content:
-            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        },
-        {
-          content:
-            "[荐读] 期中考试后，这位班主任家长会上的发言，点醒无数父母和孩子！",
-          school: "知点云校园 ",
-          num: 15,
-          url: ''
-        }
-      ],
-      topToParentClassFlag: false
+      classNoticeInfoNum: "",
+      classNoticeInfoTime: "",
+      parentClassInfo: [],
+      topToParentClassFlag: false,
+      loadMoreList: [],
+      bottomLoading: false,
+      bottomFinished: false,
+      bottomLoadMorePg: 0
     };
   },
+  mounted() {
+    window.addEventListener("scroll", this.homeRootScroll);
+    this.signAttendanceFilter();
+    this.queryParams();
+    this.queryHomeInfo();
+    this.queryShowStudent();
+  },
+  destroyed() {
+    window.removeEventListener("scroll", this.homeRootScroll);
+  },
   methods: {
-    // 首页数据信息
-    queryHomeInfo(){
-      let data = {
-        ui: '30001120',
-        si: '20004910',
-        v: '10108'
+    // 处理接收参数
+    queryParams() {
+      this.params = window.location.href.split("?")[1];
+      if (this.params != undefined) {
+        this.params = this.params.replace("#/", "").split("=")[1];
+        this.params = JSON.parse(unBase64(decodeURIComponent(this.params)));
+        console.log(this.params);
+        localStorage.setItem("ui", this.params.userId);
+        localStorage.setItem("si", this.params.studentId);
+        localStorage.setItem("v", "10108");
       }
-      homeShowStudent(data)
-      .then(res => {
-        console.log(res.data.article);
-      })
     },
-    homeTopListClick(i, name) {
+    // 首页数据信息
+    queryHomeInfo() {
+      let data = {
+        ui: localStorage.getItem("ui"),
+        si: localStorage.getItem("si"),
+        v: localStorage.getItem("v")
+      };
+      homeNewindex(data).then(res => {
+        console.log(res.data);
+        this.classNoticeInfoNum = res.data.notice.notice_num;
+        this.classNoticeInfoTime = this.noticeTimeFilter(
+          res.data.notice.date_time
+        );
+        this.parentClassInfo = res.data.article;
+        this.bottomLoadMorePg = this.parentClassInfo.length;
+        localStorage.setItem("parentName", res.data.parent_name);
+      });
+    },
+    // 首页顶部学生
+    queryShowStudent() {
+      let data = {
+        ui: localStorage.getItem("ui"),
+        si: localStorage.getItem("si"),
+        v: localStorage.getItem("v")
+      };
+      homeShowStudent(data).then(res => {
+        // console.log(res.data.student);
+        this.homeTopList = res.data.student;
+        if (localStorage.getItem("studentInfo")) {
+          this.homeTopListName = JSON.parse(localStorage.getItem("studentInfo")).name
+        } else {
+          this.setTopListAction();
+        }
+      });
+    },
+    // 设置顶部选中
+    setTopListAction() {
+      this.homeTopListName = this.homeTopList[0].name;
+      localStorage.setItem("studentInfo", JSON.stringify(this.homeTopList[0]));
+    },
+    // 首页家长课堂
+    queryParentClass() {
+      let data = {
+        ui: localStorage.getItem("ui"),
+        si: localStorage.getItem("si"),
+        pg: this.bottomLoadMorePg,
+        v: localStorage.getItem("v")
+      };
+      homeParentClass(data).then(res => {
+        // console.log(res.data.article);
+        this.loadMoreList = res.data.article;
+        this.parentClassInfo = this.parentClassInfo.concat(this.loadMoreList);
+        this.bottomLoadMorePg = this.parentClassInfo.length;
+        // 加载状态结束
+        this.bottomLoading = false;
+        // 数据全部加载完成
+        if (this.parentClassInfo.length >= 40) {
+          this.bottomFinished = true;
+        }
+      });
+    },
+    // title点击
+    homeTopListClick(i, item) {
+      console.log(item);
       this.homeTopListIndex = i;
-      this.homeTopListName = name;
-      console.log(this.homeTopListIndex);
+      this.homeTopListName = item.name;
+      localStorage.setItem("si", item.student_id);
+      localStorage.setItem("studentInfo", JSON.stringify(item));
+      this.queryHomeInfo();
     },
+    // 出勤时间日期处理
+    signAttendanceFilter() {
+      let y = new Date().getFullYear();
+      let m = new Date().getMonth() + 1;
+      let d = new Date().getDate();
+      this.enterSchoolDate = this.leaveSchoolDate = y + "-" + m + "-" + d;
+    },
+    // 滚动控制title
     homeRootScroll(e) {
       let topToPar = window.scrollY;
-      // console.log(topToPar);
       if (topToPar > 330) {
         this.topToParentClassFlag = true;
       } else {
         this.topToParentClassFlag = false;
       }
     },
-    //
+    // 中间功能跳转
     unitLinkTo(n) {
-      console.log(n);
       window.location.href = n;
     },
     // 进校 离校按钮
@@ -276,15 +316,49 @@ export default {
     // 班级通知按钮
     homeTipClick() {
       console.log("班级通知");
+    },
+    // 通知时间描述
+    noticeTimeFilter(time) {
+      let curTime = new Date();
+      let postTime = new Date(time);
+      let timeDiff = curTime.getTime() - postTime.getTime();
+
+      let min = 60 * 1000;
+      let hour = min * 60;
+      let day = hour * 24;
+      let week = day * 7;
+
+      let exceedWeek = Math.floor(timeDiff / week);
+      let exceedDay = Math.floor(timeDiff / day);
+      let exceedHour = Math.floor(timeDiff / hour);
+      let exceedMin = Math.floor(timeDiff / min);
+
+      if (exceedWeek > 0) {
+        return exceedWeek + "周前";
+      } else {
+        if (exceedDay < 7 && exceedDay > 0) {
+          return exceedDay + "天前";
+        } else {
+          if (exceedHour < 24 && exceedHour > 0) {
+            return exceedHour + "小时前";
+          } else {
+            return exceedMin + "分钟前";
+          }
+        }
+      }
+    },
+    // 家长课堂点击
+    homeBottomListClick(u) {
+      window.location.href = u;
+    },
+    // 下拉加载更多
+    bottomOnLoad() {
+      if (this.bottomLoading == true) {
+        setTimeout(() => {
+          this.queryParentClass();
+        }, 1500);
+      }
     }
-  },
-  mounted() {
-    window.addEventListener("scroll", this.homeRootScroll);
-    this.homeTopListName = this.homeTopList[0];
-    this.queryHomeInfo();
-  },
-  destroyed() {
-    window.removeEventListener("scroll", this.homeRootScroll);
   }
 };
 </script>
@@ -299,6 +373,20 @@ p {
   position: relative;
   width: 100vw;
 }
+.van-cell {
+  padding: 0.3rem 0 !important;
+}
+.van-cell__title {
+  display: flex;
+  justify-content: space-between;
+}
+.van-cell::after {
+  display: none !important;
+}
+.van-cell:last-child {
+  padding: 0.3rem 0 !important;
+}
+/* top */
 .homeTop {
   position: relative;
   background-color: #38b48b;
@@ -353,6 +441,12 @@ p {
   box-sizing: border-box;
   /* transition: 1s; */
 }
+.homeTopListItemAction > p {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .homeTopListItemAction > span {
   position: absolute;
   bottom: -0.15rem;
@@ -361,7 +455,7 @@ p {
   background-color: #fcd81e;
   width: 2.4rem;
   height: 0.25rem;
-  z-index: 500;
+  z-index: 5000;
 }
 
 /* Function */
@@ -424,10 +518,10 @@ p {
   display: flex;
   justify-content: space-between;
 }
-.blockLine{
+.blockLine {
   width: 1px;
   height: 2.65rem;
-  background-color: #E0E0E0;
+  background-color: #e0e0e0;
 }
 .homeAttendanceBoxBotItem {
   width: 43%;
@@ -526,9 +620,6 @@ p {
   padding: 0 1rem;
   box-sizing: border-box;
 }
-.homeParentClassConList li:last-child {
-  margin-bottom: 0 !important;
-}
 .homeParentClassConList p {
   text-align: left !important;
 }
@@ -542,11 +633,16 @@ p {
 .homeParentClassConItemLeft {
   width: 71%;
   height: 4.3rem;
+  position: relative;
 }
 .homeParentClassConItemLeft > p {
   font-size: 0.9rem;
 }
 .homeParentClassConItemLeftBot {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   margin-top: 1rem;

@@ -15,9 +15,25 @@ export function test(data) {
 
 
 // homeShowStudent
-export function homeShowStudent(data) {
+export function homeParentClass(data) {
   return request({
     url: "/parent/student/parentClass",
+    method: "post",
+    data
+  });
+}
+
+export function homeNewindex(data) {
+  return request({
+    url: "/parent/student/newindex",
+    method: "post",
+    data
+  });
+}
+
+export function homeShowStudent(data) {
+  return request({
+    url: "/parent/ucenter/showStudent",
     method: "post",
     data
   });

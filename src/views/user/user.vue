@@ -4,16 +4,16 @@
     <div class="userTop">
       <div class="userTopUser">
         <img src="http://img1.imgtn.bdimg.com/it/u=1366904711,2699461808&fm=26&gp=0.jpg" alt="头像" />
-        <p>张小白家长 (张灵)</p>
+        <p>{{studentInfo.name}}家长 {{parentName == "" ? "" : (`(${parentName})`)}}</p>
       </div>
       <div class="userTopSchCla">
         <div class="userTopSchClaItem">
           <img src="../../assets/imgs/user/my_school_2.png" alt />
-          <p>中心校</p>
+          <p>{{studentInfo.part_name}}</p>
         </div>
         <div class="userTopSchClaItem">
           <img src="../../assets/imgs/user/my_class_2.png" alt />
-          <p>一年级1081班</p>
+          <p>{{studentInfo.grade_name + studentInfo.class_name}}</p>
         </div>
       </div>
       <div class="userTopUnit">
@@ -32,7 +32,12 @@
 
     <!-- bottom -->
     <div class="userBottom">
-      <div class="userBottomItem" v-for="(item, i) in bottomList" :key="i" @click="bottomListClick(i)">
+      <div
+        class="userBottomItem"
+        v-for="(item, i) in bottomList"
+        :key="i"
+        @click="bottomListClick(i)"
+      >
         <img :src="item.imgUrl" :alt="item.name" />
         <p class="custom-title">{{item.name}}</p>
       </div>
@@ -55,36 +60,38 @@
 export default {
   data() {
     return {
+      studentInfo: null,
+      parentName: "",
       userUnitList: [
         {
           name: "健康数据",
           imgUrl: require("../../assets/imgs/user/jiankangshuju.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/classroomreport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/healthData/index?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lNME5CTUVZNVJqZ3dPVVl4UlRoRlEwSTVNalZDUWpneU9VUTRRalk1TjBRaUxDSjBjeUk2TVRVM05EYzBPRGM1TVN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
         },
         {
           name: "课程表",
           imgUrl: require("../../assets/imgs/user/kechengbiao.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/task/index.html#/?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.sdxxtop.com/parent/student/class_card/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiM0NBMEY5RjgwOUYxRThFQ0I5MjVCQjgyOUQ4QjY5N0QiLCJ0cyI6MTU3NDc0ODc5MSwidWkiOjMwMDAxMTM3fQ=="
         },
         {
           name: "请假",
           imgUrl: require("../../assets/imgs/user/qingjia.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.sdxxtop.com/parent/student/leave_list/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiM0NBMEY5RjgwOUYxRThFQ0I5MjVCQjgyOUQ4QjY5N0QiLCJ0cyI6MTU3NDc0ODc5MSwidWkiOjMwMDAxMTM3fQ=="
         },
         {
           name: "拜访",
           imgUrl: require("../../assets/imgs/user/baifang.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.sdxxtop.com/parent/student/visit_list/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiM0NBMEY5RjgwOUYxRThFQ0I5MjVCQjgyOUQ4QjY5N0QiLCJ0cyI6MTU3NDc0ODc5MSwidWkiOjMwMDAxMTM3fQ=="
         },
         {
           name: "联系孩子",
           imgUrl: require("../../assets/imgs/user/lianxihaizi.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/talkChild?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lNME5CTUVZNVJqZ3dPVVl4UlRoRlEwSTVNalZDUWpneU9VUTRRalk1TjBRaUxDSjBjeUk2TVRVM05EYzBPRGM1TVN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
         },
         {
           name: "心理测评",
@@ -96,29 +103,48 @@ export default {
       bottomList: [
         {
           name: "添加学生 / 绑定人脸",
-          imgUrl: require("../../assets/imgs/user/addStudent.png")
+          imgUrl: require("../../assets/imgs/user/addStudent.png"),
+          linkToUrl:
+            "http://wechat.sdxxtop.com/parent/ucenter/students/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiNzBCOTlCRTc4MDJBRTRCMkZGNEI2MzVGMDA1NDlFMUIiLCJ0cyI6MTU3NDc0OTAzOSwidWkiOjMwMDAxMTM3fQ=="
         },
         {
           name: "密码账号管理",
-          imgUrl: require("../../assets/imgs/user/userAdmin.png")
+          imgUrl: require("../../assets/imgs/user/userAdmin.png"),
+          linkToUrl:
+            "http://wechat.sdxxtop.com/parent/ucenter/password/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiNzBCOTlCRTc4MDJBRTRCMkZGNEI2MzVGMDA1NDlFMUIiLCJ0cyI6MTU3NDc0OTAzOSwidWkiOjMwMDAxMTM3fQ==/mobile/18501584920"
         },
         {
           name: "困难申请",
-          imgUrl: require("../../assets/imgs/user/hard.png")
+          imgUrl: require("../../assets/imgs/user/hard.png"),
+          linkToUrl:
+            "http://wechat.sdxxtop.com/parent/ucenter/students/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiNzBCOTlCRTc4MDJBRTRCMkZGNEI2MzVGMDA1NDlFMUIiLCJ0cyI6MTU3NDc0OTAzOSwidWkiOjMwMDAxMTM3fQ=="
         }
       ]
     };
   },
-  methods:{
-    topListClick(i){
-      console.log(this.userUnitList[i].name);
+  created() {
+    this.queryStudentInfo();
+  },
+  methods: {
+    // 获取当前学生信息
+    queryStudentInfo() {
+      this.studentInfo = JSON.parse(localStorage.getItem("studentInfo"));
+      this.parentName = localStorage.getItem("parentName");
+      console.log(this.studentInfo);
     },
-    bottomListClick(i){
+    topListClick(i) {
+      console.log(this.userUnitList[i].name);
+      window.location.href = this.userUnitList[i].linkToUrl;
+    },
+    bottomListClick(i) {
       // console.log(i);
-      if(i == 3){
-        console.log("设置")
+      if (i == 3) {
+        console.log("设置");
+        window.location.href =
+          "http://wechat.sdxxtop.com/parent/ucenter/set/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiNzBCOTlCRTc4MDJBRTRCMkZGNEI2MzVGMDA1NDlFMUIiLCJ0cyI6MTU3NDc0OTAzOSwidWkiOjMwMDAxMTM3fQ==";
       } else {
         console.log(this.bottomList[i].name);
+        window.location.href = this.bottomList[i].linkToUrl;
       }
     }
   }
@@ -132,7 +158,7 @@ p {
 .user {
   background-color: #fafafa;
 }
-.van-grid-item{
+.van-grid-item {
   box-sizing: border-box;
   flex-basis: 24.8% !important;
 }
@@ -204,7 +230,7 @@ p {
 .userTopUnitImg > img {
   width: 1.4rem;
 }
-.userTopUnitTit{
+.userTopUnitTit {
   white-space: nowrap;
 }
 
@@ -244,14 +270,14 @@ p {
 }
 
 /* setting */
-.userBottomSetting{
+.userBottomSetting {
   width: 100%;
   position: relative;
   background-color: white;
 }
 
 /* bottomBlock */
-.bottomBlock{
+.bottomBlock {
   height: 4rem;
   width: 100%;
   background-color: transparent;
