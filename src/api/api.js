@@ -38,3 +38,11 @@ export function homeShowStudent(data) {
     data
   });
 }
+
+export function homeModify(data) {
+  return request({
+    url: "/parent/student/modify",
+    method: "post",
+    data
+  });
+}

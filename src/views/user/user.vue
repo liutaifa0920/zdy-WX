@@ -3,7 +3,7 @@
   <div class="user">
     <div class="userTop">
       <div class="userTopUser">
-        <img src="http://img1.imgtn.bdimg.com/it/u=1366904711,2699461808&fm=26&gp=0.jpg" alt="头像" />
+        <img :src="studentInfo.img" alt="头像" />
         <p>{{studentInfo.name}}家长 {{parentName == "" ? "" : (`(${parentName})`)}}</p>
       </div>
       <div class="userTopSchCla">
@@ -67,37 +67,37 @@ export default {
           name: "健康数据",
           imgUrl: require("../../assets/imgs/user/jiankangshuju.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/healthData/index?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lNME5CTUVZNVJqZ3dPVVl4UlRoRlEwSTVNalZDUWpneU9VUTRRalk1TjBRaUxDSjBjeUk2TVRVM05EYzBPRGM1TVN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/healthData/index?para=" + sessionStorage.getItem("urlParamStr")
         },
         {
           name: "课程表",
           imgUrl: require("../../assets/imgs/user/kechengbiao.png"),
           linkToUrl:
-            "http://wechat.sdxxtop.com/parent/student/class_card/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiM0NBMEY5RjgwOUYxRThFQ0I5MjVCQjgyOUQ4QjY5N0QiLCJ0cyI6MTU3NDc0ODc5MSwidWkiOjMwMDAxMTM3fQ=="
+            "http://wechat.sdxxtop.com/parent/student/class_card/data/" + sessionStorage.getItem("urlParamStr")
         },
         {
           name: "请假",
           imgUrl: require("../../assets/imgs/user/qingjia.png"),
           linkToUrl:
-            "http://wechat.sdxxtop.com/parent/student/leave_list/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiM0NBMEY5RjgwOUYxRThFQ0I5MjVCQjgyOUQ4QjY5N0QiLCJ0cyI6MTU3NDc0ODc5MSwidWkiOjMwMDAxMTM3fQ=="
+            "http://wechat.sdxxtop.com/parent/student/leave_list/data/" + sessionStorage.getItem("urlParamStr")
         },
         {
           name: "拜访",
           imgUrl: require("../../assets/imgs/user/baifang.png"),
           linkToUrl:
-            "http://wechat.sdxxtop.com/parent/student/visit_list/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiM0NBMEY5RjgwOUYxRThFQ0I5MjVCQjgyOUQ4QjY5N0QiLCJ0cyI6MTU3NDc0ODc5MSwidWkiOjMwMDAxMTM3fQ=="
+            "http://wechat.sdxxtop.com/parent/student/visit_list/data/" + sessionStorage.getItem("urlParamStr")
         },
         {
           name: "联系孩子",
           imgUrl: require("../../assets/imgs/user/lianxihaizi.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/talkChild?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lNME5CTUVZNVJqZ3dPVVl4UlRoRlEwSTVNalZDUWpneU9VUTRRalk1TjBRaUxDSjBjeUk2TVRVM05EYzBPRGM1TVN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/talkChild?para=" + sessionStorage.getItem("urlParamStr")
         },
         {
           name: "心理测评",
           imgUrl: require("../../assets/imgs/user/xinliceping.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=" + sessionStorage.getItem("urlParamStr")
         }
       ],
       bottomList: [
@@ -105,19 +105,19 @@ export default {
           name: "添加学生 / 绑定人脸",
           imgUrl: require("../../assets/imgs/user/addStudent.png"),
           linkToUrl:
-            "http://wechat.sdxxtop.com/parent/ucenter/students/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiNzBCOTlCRTc4MDJBRTRCMkZGNEI2MzVGMDA1NDlFMUIiLCJ0cyI6MTU3NDc0OTAzOSwidWkiOjMwMDAxMTM3fQ=="
+            "http://wechat.sdxxtop.com/parent/ucenter/students/data/" + sessionStorage.getItem("urlParamStr")
         },
         {
           name: "密码账号管理",
           imgUrl: require("../../assets/imgs/user/userAdmin.png"),
           linkToUrl:
-            "http://wechat.sdxxtop.com/parent/ucenter/password/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiNzBCOTlCRTc4MDJBRTRCMkZGNEI2MzVGMDA1NDlFMUIiLCJ0cyI6MTU3NDc0OTAzOSwidWkiOjMwMDAxMTM3fQ==/mobile/18501584920"
+            "http://wechat.sdxxtop.com/parent/ucenter/password/data/" + sessionStorage.getItem("urlParamStr")+"/mobile/18501584920"
         },
         {
           name: "困难申请",
           imgUrl: require("../../assets/imgs/user/hard.png"),
           linkToUrl:
-            "http://wechat.sdxxtop.com/parent/ucenter/students/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiNzBCOTlCRTc4MDJBRTRCMkZGNEI2MzVGMDA1NDlFMUIiLCJ0cyI6MTU3NDc0OTAzOSwidWkiOjMwMDAxMTM3fQ=="
+            "http://wechat.sdxxtop.com/parent/ucenter/students/data/" + sessionStorage.getItem("urlParamStr")
         }
       ]
     };
@@ -128,8 +128,8 @@ export default {
   methods: {
     // 获取当前学生信息
     queryStudentInfo() {
-      this.studentInfo = JSON.parse(localStorage.getItem("studentInfo"));
-      this.parentName = localStorage.getItem("parentName");
+      this.studentInfo = JSON.parse(sessionStorage.getItem("studentInfo"));
+      this.parentName = sessionStorage.getItem("parentName");
       console.log(this.studentInfo);
     },
     topListClick(i) {
@@ -141,7 +141,7 @@ export default {
       if (i == 3) {
         console.log("设置");
         window.location.href =
-          "http://wechat.sdxxtop.com/parent/ucenter/set/data/eyJjaSI6MTAwMDE1Mywic2kiOiIyMDAwMDAwMCIsInNuIjoiNzBCOTlCRTc4MDJBRTRCMkZGNEI2MzVGMDA1NDlFMUIiLCJ0cyI6MTU3NDc0OTAzOSwidWkiOjMwMDAxMTM3fQ==";
+          "http://wechat.sdxxtop.com/parent/ucenter/set/data/" + sessionStorage.getItem("urlParamStr");
       } else {
         console.log(this.bottomList[i].name);
         window.location.href = this.bottomList[i].linkToUrl;

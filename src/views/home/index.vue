@@ -25,7 +25,7 @@
     </div>
 
     <!-- TopBlock -->
-    <div style="height: 5rem"></div>
+    <div style="height: 4rem"></div>
 
     <!-- Unit -->
     <div class="homeFunction">
@@ -48,23 +48,36 @@
       <div class="homeAttendanceBox">
         <div class="homeAttendanceBoxTop">
           <p>今日出勤</p>
-          <van-icon color="#999999" size="24px" name="ellipsis" />
+          <van-icon color="#999999" size="24px" name="ellipsis" @click="attendanceMoreClick" />
         </div>
         <div class="homeAttendanceBoxBot">
           <div class="homeAttendanceBoxBotItem">
             <div class="homeAttendanceBoxBotItemTime">
-              <p>{{enterSchoolTime}}</p>
+              <p>{{enterSchoolTime == "" ? "-- : --" : enterSchoolTime}}</p>
               <p>{{enterSchoolDate}}</p>
             </div>
-            <div class="homeAttendanceBoxBotItemBtn" @click="enterSchoolBtn">进校</div>
+            <div
+              class="homeAttendanceBoxBotItemBtn"
+              style="color:white;background-color:#E0E0E0;"
+              @click="enterSchoolBtn"
+            >进校</div>
           </div>
           <div class="blockLine"></div>
           <div class="homeAttendanceBoxBotItem">
             <div class="homeAttendanceBoxBotItemTime">
-              <p>{{leaveSchoolTime}}</p>
+              <p>{{leaveSchoolTime == "" ? "-- : --" : leaveSchoolTime.split(" ")[1].substr(0, 5)}}</p>
               <p>{{leaveSchoolDate}}</p>
             </div>
-            <div class="homeAttendanceBoxBotItemBtn" @click="leaveSchoolBtn">离校</div>
+            <div
+              v-show="isLeave == 1"
+              class="homeAttendanceBoxBotItemBtn"
+              @click="leaveSchoolBtn"
+            >离校</div>
+            <div
+              v-show="isLeave == 2"
+              class="homeAttendanceBoxBotItemBtn"
+              style="color:white;background-color:#E0E0E0;"
+            >离校</div>
           </div>
         </div>
       </div>
@@ -148,8 +161,17 @@
 </template>
 
 <script>
-import { homeParentClass, homeNewindex, homeShowStudent } from "@/api/api";
+import {
+  homeParentClass,
+  homeNewindex,
+  homeShowStudent,
+  homeModify
+} from "@/api/api";
+import { Dialog } from "vant";
+import { base64 } from "@/utils/base64.js";
 import { unBase64 } from "@/utils/unBase64.js";
+import { signFun } from "@/utils/sign.js";
+
 export default {
   name: "home",
   data() {
@@ -164,25 +186,29 @@ export default {
           name: "课堂报告",
           imgUrl: require("../../assets/imgs/home/home_class.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/classroomreport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/classroomreport?para=" +
+            sessionStorage.getItem("urlParamStr")
         },
         {
           name: "作业",
           imgUrl: require("../../assets/imgs/home/home_work.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/task/index.html#/?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.test.sdxxtop.com/parent/task/index.html#/?para=" +
+            sessionStorage.getItem("urlParamStr")
         },
         {
           name: "学情报告",
           imgUrl: require("../../assets/imgs/home/home_report.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=eyJzdHVkZW50SWQiOiIyMDAwMDAwMCIsImNvbXBhbnlJZCI6IjEwMDAxNTMiLCJ1c2VySWQiOiIzMDAwMTEzNyIsImRhdGEiOiJleUpqYVNJNk1UQXdNREUxTXl3aWMya2lPaUl5TURBd01EQXdNQ0lzSW5OdUlqb2lOalUxTmpoQk9UaEdSRFExUlRoRU1rRXdNVEZGTnpKQ01qbEJPVGc1T0RVaUxDSjBjeUk2TVRVM05EUTNOREF3TlN3aWRXa2lPak13TURBeE1UTTNmUT09Iiwic3R1ZGVudE5hbWUiOiJoZWxsbyJ9"
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=" +
+            sessionStorage.getItem("urlParamStr")
         }
       ],
       enterSchoolTime: "-- : --",
       leaveSchoolTime: "-- : --",
       enterSchoolDate: "2019-11-22",
       leaveSchoolDate: "2019-11-22",
+      isLeave: 1,
       classNoticeInfoNum: "",
       classNoticeInfoTime: "",
       parentClassInfo: [],
@@ -211,80 +237,130 @@ export default {
         this.params = this.params.replace("#/", "").split("=")[1];
         this.params = JSON.parse(unBase64(decodeURIComponent(this.params)));
         console.log(this.params);
-        localStorage.setItem("ui", this.params.userId);
-        localStorage.setItem("si", this.params.studentId);
-        localStorage.setItem("v", "10108");
+        sessionStorage.setItem("ci", this.params.ci);
+        sessionStorage.setItem("ui", this.params.ui);
+        sessionStorage.setItem("si", this.params.si);
+        sessionStorage.setItem("v", "10108");
+      } else {
+        // console.log(JSON.parse(sessionStorage.getItem("studentInfo")));
+        sessionStorage.setItem(
+          "si",
+          JSON.parse(sessionStorage.getItem("studentInfo")).student_id
+        );
       }
     },
     // 首页数据信息
     queryHomeInfo() {
       let data = {
-        ui: localStorage.getItem("ui"),
-        si: localStorage.getItem("si"),
-        v: localStorage.getItem("v")
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
+        v: sessionStorage.getItem("v")
       };
       homeNewindex(data).then(res => {
-        console.log(res.data);
-        this.classNoticeInfoNum = res.data.notice.notice_num;
-        this.classNoticeInfoTime = this.noticeTimeFilter(
-          res.data.notice.date_time
-        );
-        this.parentClassInfo = res.data.article;
-        this.bottomLoadMorePg = this.parentClassInfo.length;
-        localStorage.setItem("parentName", res.data.parent_name);
+        // console.log(res);
+        if (res.code == 200) {
+          this.classNoticeInfoNum = res.data.notice.notice_num;
+          this.classNoticeInfoTime = this.noticeTimeFilter(
+            res.data.notice.date_time
+          );
+          this.parentClassInfo = res.data.article;
+          this.bottomLoadMorePg = this.parentClassInfo.length;
+          sessionStorage.setItem("parentName", res.data.parent_name);
+
+          this.enterSchoolTime = res.data.sign[0].sign_arrive;
+          this.leaveSchoolTime = res.data.sign[0].sign_leave;
+          this.isLeave = res.data.sign[0].is_leave;
+        }
       });
     },
     // 首页顶部学生
     queryShowStudent() {
+      // console.log(sessionStorage.getItem("si"));
       let data = {
-        ui: localStorage.getItem("ui"),
-        si: localStorage.getItem("si"),
-        v: localStorage.getItem("v")
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
+        v: sessionStorage.getItem("v")
       };
       homeShowStudent(data).then(res => {
-        // console.log(res.data.student);
-        this.homeTopList = res.data.student;
-        if (localStorage.getItem("studentInfo")) {
-          this.homeTopListName = JSON.parse(localStorage.getItem("studentInfo")).name
-        } else {
-          this.setTopListAction();
+        // console.log(res);
+        if (res.code == 200) {
+          this.homeTopList = res.data.student;
+          if (sessionStorage.getItem("studentInfo")) {
+            this.homeTopListName = JSON.parse(
+              sessionStorage.getItem("studentInfo")
+            ).name;
+            console.log(this.homeTopListName);
+            this.setParams();
+          } else {
+            this.setTopListAction();
+          }
         }
       });
     },
     // 设置顶部选中
     setTopListAction() {
       this.homeTopListName = this.homeTopList[0].name;
-      localStorage.setItem("studentInfo", JSON.stringify(this.homeTopList[0]));
+      sessionStorage.setItem(
+        "studentInfo",
+        JSON.stringify(this.homeTopList[0])
+      );
+      this.setParams();
+    },
+    // 拼接跳转页面路径参数
+    setParams() {
+      console.log(sessionStorage.getItem("si"));
+      let tempDataObj = {
+        ci: sessionStorage.getItem("ci"),
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si")
+      };
+      let tempDataObjSN = signFun(
+        tempDataObj,
+        "9E1613256C1F4815219A633762B53704"
+      );
+      let tempObj = {
+        companyId: sessionStorage.getItem("ci"),
+        userId: sessionStorage.getItem("ui"),
+        studentId: sessionStorage.getItem("si"),
+        data: tempDataObjSN,
+        studentName: this.homeTopListName
+      };
+      tempObj = base64(JSON.stringify(tempObj));
+      sessionStorage.setItem("urlParamStr", tempObj);
+      console.log(sessionStorage.getItem("urlParamStr"));
     },
     // 首页家长课堂
     queryParentClass() {
       let data = {
-        ui: localStorage.getItem("ui"),
-        si: localStorage.getItem("si"),
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
         pg: this.bottomLoadMorePg,
-        v: localStorage.getItem("v")
+        v: sessionStorage.getItem("v")
       };
       homeParentClass(data).then(res => {
-        // console.log(res.data.article);
-        this.loadMoreList = res.data.article;
-        this.parentClassInfo = this.parentClassInfo.concat(this.loadMoreList);
-        this.bottomLoadMorePg = this.parentClassInfo.length;
-        // 加载状态结束
-        this.bottomLoading = false;
-        // 数据全部加载完成
-        if (this.parentClassInfo.length >= 40) {
-          this.bottomFinished = true;
+        // console.log(res);
+        if (res.code == 200) {
+          this.loadMoreList = res.data.article;
+          this.parentClassInfo = this.parentClassInfo.concat(this.loadMoreList);
+          this.bottomLoadMorePg = this.parentClassInfo.length;
+          // 加载状态结束
+          this.bottomLoading = false;
+          // 数据全部加载完成
+          if (this.parentClassInfo.length >= 40) {
+            this.bottomFinished = true;
+          }
         }
       });
     },
     // title点击
     homeTopListClick(i, item) {
-      console.log(item);
+      console.log(item.student_id);
       this.homeTopListIndex = i;
       this.homeTopListName = item.name;
-      localStorage.setItem("si", item.student_id);
-      localStorage.setItem("studentInfo", JSON.stringify(item));
+      sessionStorage.setItem("si", item.student_id);
+      sessionStorage.setItem("studentInfo", JSON.stringify(item));
       this.queryHomeInfo();
+      this.setParams();
     },
     // 出勤时间日期处理
     signAttendanceFilter() {
@@ -306,12 +382,46 @@ export default {
     unitLinkTo(n) {
       window.location.href = n;
     },
+    // 今日出勤详情点击
+    attendanceMoreClick() {
+      window.location.href =
+        "http://wechat.test.sdxxtop.com/parent/student/attend/data/" +
+        sessionStorage.getItem("urlParamStr");
+    },
     // 进校 离校按钮
     enterSchoolBtn() {
-      console.log("进校");
+      // console.log("进校");
     },
     leaveSchoolBtn() {
-      console.log("离校");
+      // console.log("离校");
+      this.setLeaveSchool();
+    },
+    // 确认离校弹框
+    setLeaveSchool() {
+      Dialog.confirm({
+        title: "确认离校",
+        message: "确定接到了您的孩子, 并且离校?"
+      })
+        .then(() => {
+          this.confirmLeave();
+        })
+        .catch(() => {
+          // on cancel
+        });
+    },
+    // 确认离校请求
+    confirmLeave() {
+      // console.log(sessionStorage.getItem("si"));
+      let data = {
+        si: sessionStorage.getItem("si"),
+        st: this.enterSchoolDate,
+        v: sessionStorage.getItem("v")
+      };
+      homeModify(data).then(res => {
+        if (res.code == 200) {
+          this.queryHomeInfo();
+        }
+      });
     },
     // 班级通知按钮
     homeTipClick() {
@@ -390,7 +500,7 @@ p {
 .homeTop {
   position: relative;
   background-color: #38b48b;
-  height: 5rem;
+  height: 4rem;
   width: 100vw;
   padding: 0 0.5rem;
   position: fixed;

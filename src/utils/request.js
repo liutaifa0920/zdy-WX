@@ -2,6 +2,7 @@
 import axios from "axios";
 import qs from "qs";
 import { signFun } from "./sign";
+import { Notify } from "vant";
 
 // 新建axios实例
 const service = axios.create({
@@ -45,8 +46,8 @@ service.interceptors.response.use(
 
     // 如果自定义状态码不是200则返回错误
     if (res.code !== 200) {
-      console.log(res.message || "error");
-
+      console.log(res.msg || "error");
+      Notify({ type: "danger", message: res.msg });
       // 可自定义配置特殊的请求状态 如：令牌过期等特殊的状态码处理
       // ...
 
