@@ -1,12 +1,16 @@
 // home状态对象
 const state = {
-  test: "a test"
+  test: "a test",
+  urlParamStr: ""
 };
 
 // 修改
 const mutations = {
   SET_TEST: (state, val) => {
     state.test = val;
+  },
+  SET_UrlParamStr(state, val) {
+    state.urlParamStr = val;
   }
 };
 
@@ -15,6 +19,9 @@ const actions = {
   setTest({ commit }, val) {
     commit("SET_TEST", val);
   }
+  // setUrlParamStr({ commit }, val) {
+  //   commit("SET_UrlParamStr", val);
+  // }
 };
 
 // home vuex模块导出

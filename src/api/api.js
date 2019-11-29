@@ -46,3 +46,21 @@ export function homeModify(data) {
     data
   });
 }
+
+// User
+export function userIndex(data) {
+  return request({
+    url: "/parent/ucenter/index",
+    method: "post",
+    data
+  });
+}
+
+// message
+export function msgIndex(data) {
+  return request({
+    url: "/parent/msg/index",
+    method: "post",
+    data
+  });
+}

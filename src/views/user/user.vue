@@ -3,8 +3,17 @@
   <div class="user">
     <div class="userTop">
       <div class="userTopUser">
-        <img :src="studentInfo.img" alt="头像" />
-        <p>{{studentInfo.name}}家长 {{parentName == "" ? "" : (`(${parentName})`)}}</p>
+        <img
+          v-show="studentInfo.img[0] != '#' && studentInfo.img[0] != ''"
+          :src="studentInfo.img"
+          alt="头像"
+        />
+        <div
+          :style="'background-color: ' + studentInfo.img + ';'"
+          v-show="studentInfo.img[0] == '#'"
+        >{{parentName[0]}}</div>
+
+        <p>{{studentInfo.student_name}}家长 {{parentName == "" ? "" : (`(${parentName})`)}}</p>
       </div>
       <div class="userTopSchCla">
         <div class="userTopSchClaItem">
@@ -57,94 +66,133 @@
 </template>
 
 <script>
+import { userIndex } from "@/api/api";
+import { mapState } from "vuex";
+import { unBase64 } from "@/utils/unBase64.js";
 export default {
   data() {
     return {
       studentInfo: null,
       parentName: "",
+      parentMobile: "",
       userUnitList: [
         {
           name: "健康数据",
           imgUrl: require("../../assets/imgs/user/jiankangshuju.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/healthData/index?para=" + sessionStorage.getItem("urlParamStr")
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/healthData/index?para="
         },
         {
           name: "课程表",
           imgUrl: require("../../assets/imgs/user/kechengbiao.png"),
-          linkToUrl:
-            "http://wechat.sdxxtop.com/parent/student/class_card/data/" + sessionStorage.getItem("urlParamStr")
+          linkToUrl: "http://wechat.sdxxtop.com/parent/student/class_card/data/"
         },
         {
           name: "请假",
           imgUrl: require("../../assets/imgs/user/qingjia.png"),
-          linkToUrl:
-            "http://wechat.sdxxtop.com/parent/student/leave_list/data/" + sessionStorage.getItem("urlParamStr")
+          linkToUrl: "http://wechat.sdxxtop.com/parent/student/leave_list/data/"
         },
         {
           name: "拜访",
           imgUrl: require("../../assets/imgs/user/baifang.png"),
-          linkToUrl:
-            "http://wechat.sdxxtop.com/parent/student/visit_list/data/" + sessionStorage.getItem("urlParamStr")
+          linkToUrl: "http://wechat.sdxxtop.com/parent/student/visit_list/data/"
         },
         {
           name: "联系孩子",
           imgUrl: require("../../assets/imgs/user/lianxihaizi.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/talkChild?para=" + sessionStorage.getItem("urlParamStr")
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/talkChild?para="
         },
         {
           name: "心理测评",
           imgUrl: require("../../assets/imgs/user/xinliceping.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=" + sessionStorage.getItem("urlParamStr")
+            "http://wechat.test.sdxxtop.com/parent/psychic/index.html#/evaluation_e?data="
         }
       ],
       bottomList: [
         {
           name: "添加学生 / 绑定人脸",
           imgUrl: require("../../assets/imgs/user/addStudent.png"),
-          linkToUrl:
-            "http://wechat.sdxxtop.com/parent/ucenter/students/data/" + sessionStorage.getItem("urlParamStr")
+          linkToUrl: "http://wechat.sdxxtop.com/parent/ucenter/students/data/"
         },
         {
           name: "密码账号管理",
           imgUrl: require("../../assets/imgs/user/userAdmin.png"),
-          linkToUrl:
-            "http://wechat.sdxxtop.com/parent/ucenter/password/data/" + sessionStorage.getItem("urlParamStr")+"/mobile/18501584920"
-        },
-        {
-          name: "困难申请",
-          imgUrl: require("../../assets/imgs/user/hard.png"),
-          linkToUrl:
-            "http://wechat.sdxxtop.com/parent/ucenter/students/data/" + sessionStorage.getItem("urlParamStr")
+          linkToUrl: "http://wechat.sdxxtop.com/parent/ucenter/password/data/"
         }
+        // {
+        //   name: "困难申请",
+        //   imgUrl: require("../../assets/imgs/user/hard.png"),
+        //   linkToUrl: ""
+        // }
       ]
     };
   },
   created() {
     this.queryStudentInfo();
+    this.queryStudentInfoAll();
+  },
+  computed: {
+    urlParamStr() {
+      return this.$store.state.home.urlParamStr;
+    }
   },
   methods: {
-    // 获取当前学生信息
+    // 获取本地当前学生信息
     queryStudentInfo() {
       this.studentInfo = JSON.parse(sessionStorage.getItem("studentInfo"));
       this.parentName = sessionStorage.getItem("parentName");
-      console.log(this.studentInfo);
+      console.log(this.studentInfo.student_id);
+
+      // 获取返回User页面 param
+      if (localStorage.getItem("urlParamStr")) {
+        this.$store.commit(
+          "home/SET_UrlParamStr",
+          localStorage.getItem("urlParamStr")
+        );
+      }
+    },
+    // 获取请求user学生信息
+    queryStudentInfoAll() {
+      let data = {
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
+        v: sessionStorage.getItem("v")
+      };
+      userIndex(data).then(res => {
+        console.log(res.data.userinfo);
+        this.studentInfo = res.data.userinfo;
+        this.parentName = this.studentInfo.relation;
+        this.parentMobile = this.studentInfo.mobile;
+      });
     },
     topListClick(i) {
       console.log(this.userUnitList[i].name);
-      window.location.href = this.userUnitList[i].linkToUrl;
+      if (i == 5 || i == 1 || i == 2 || i == 3) {
+        let tempData = JSON.parse(unBase64(this.urlParamStr)).data;
+        console.log(tempData);
+        window.location.href = this.userUnitList[i].linkToUrl + tempData;
+      } else {
+        window.location.href =
+          this.userUnitList[i].linkToUrl + this.urlParamStr;
+      }
     },
     bottomListClick(i) {
-      // console.log(i);
+      let tempData = JSON.parse(unBase64(this.urlParamStr)).data;
+      console.log(this.studentInfo);
       if (i == 3) {
-        console.log("设置");
         window.location.href =
-          "http://wechat.sdxxtop.com/parent/ucenter/set/data/" + sessionStorage.getItem("urlParamStr");
+          "http://wechat.sdxxtop.com/parent/ucenter/set/data/" + tempData;
+      } else if (i == 1) {
+        window.location.href =
+          "http://wechat.sdxxtop.com/parent/ucenter/password/data/" +
+          tempData +
+          "/mobile/" +
+          this.parentMobile;
       } else {
-        console.log(this.bottomList[i].name);
-        window.location.href = this.bottomList[i].linkToUrl;
+        // alert(this.bottomList[i].linkToUrl + this.urlParamStr);
+        window.location.href = this.bottomList[i].linkToUrl + tempData;
       }
     }
   }
@@ -183,6 +231,18 @@ p {
   height: 3.3rem;
   border-radius: 50%;
   display: block;
+  margin-right: 1.4rem;
+}
+.userTopUser > div {
+  width: 3.3rem;
+  height: 3.3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #38b48b;
+  color: white;
+  font-size: 1.4rem;
+  border-radius: 50%;
   margin-right: 1.4rem;
 }
 .userTopUser > p {

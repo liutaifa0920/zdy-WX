@@ -1,7 +1,7 @@
 // vant组件按需引入
 import Vue from "vue";
 
-import { Notify ,Toast, Dialog, Tabbar, TabbarItem, Grid, GridItem, Icon, Cell, CellGroup, List } from "vant";
+import { Notify, Toast, Dialog, Tabbar, TabbarItem, Grid, GridItem, Icon, Cell, CellGroup, List, NavBar  } from "vant";
 
 Vue.use(Notify)
   .use(Toast)
@@ -14,4 +14,5 @@ Vue.use(Notify)
   .use(Cell)
   .use(CellGroup)
   .use(List)
+  .use(NavBar)
   ;

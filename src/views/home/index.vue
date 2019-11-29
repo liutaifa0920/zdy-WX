@@ -12,9 +12,10 @@
         <li
           class="homeTopListItem"
           v-for="(item, i) in homeTopList"
+          :style="i == homeTopListIndex ? 'width: 1px !important;padding: 0px;' : ''"
           :key="i"
           @click="homeTopListClick(i, item)"
-        >{{item.name}}</li>
+        >{{i == homeTopListIndex ? '' : item.name}}</li>
       </ul>
       <img
         v-show="topToParentClassFlag"
@@ -99,7 +100,7 @@
     <div class="homeParentClass">
       <div class="homeParentClassTit">
         <img src="../../assets/imgs/home/parentClassLog.png" alt="家长课堂" />
-        <van-icon class="homeParentClassTitDrop" color="#999999" size="24px" name="ellipsis" />
+        <!-- <van-icon class="homeParentClassTitDrop" color="#999999" size="24px" name="ellipsis" /> -->
       </div>
       <div class="homeParentClassCon">
         <!-- <ul class="homeParentClassConList">
@@ -186,22 +187,19 @@ export default {
           name: "课堂报告",
           imgUrl: require("../../assets/imgs/home/home_class.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/classroomreport?para=" +
-            sessionStorage.getItem("urlParamStr")
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/classroomreport?para="
         },
         {
           name: "作业",
           imgUrl: require("../../assets/imgs/home/home_work.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/task/index.html#/?para=" +
-            sessionStorage.getItem("urlParamStr")
+            "http://wechat.test.sdxxtop.com/parent/task/index.html#/?para="
         },
         {
           name: "学情报告",
           imgUrl: require("../../assets/imgs/home/home_report.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para=" +
-            sessionStorage.getItem("urlParamStr")
+            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para="
         }
       ],
       enterSchoolTime: "-- : --",
@@ -228,6 +226,11 @@ export default {
   },
   destroyed() {
     window.removeEventListener("scroll", this.homeRootScroll);
+  },
+  computed: {
+    urlParamStr() {
+      return this.$store.state.home.urlParamStr;
+    }
   },
   methods: {
     // 处理接收参数
@@ -257,7 +260,7 @@ export default {
         v: sessionStorage.getItem("v")
       };
       homeNewindex(data).then(res => {
-        // console.log(res);
+        console.log(res.data);
         if (res.code == 200) {
           this.classNoticeInfoNum = res.data.notice.notice_num;
           this.classNoticeInfoTime = this.noticeTimeFilter(
@@ -282,14 +285,20 @@ export default {
         v: sessionStorage.getItem("v")
       };
       homeShowStudent(data).then(res => {
-        // console.log(res);
+        // console.log(res.data.student);
         if (res.code == 200) {
           this.homeTopList = res.data.student;
+          this.homeTopList.map((e, i) => {
+            if (e.student_id == sessionStorage.getItem("si") * 1) {
+              this.homeTopListIndex = i;
+            }
+          });
+
           if (sessionStorage.getItem("studentInfo")) {
             this.homeTopListName = JSON.parse(
               sessionStorage.getItem("studentInfo")
             ).name;
-            console.log(this.homeTopListName);
+            // console.log(this.homeTopListName);
             this.setParams();
           } else {
             this.setTopListAction();
@@ -308,7 +317,7 @@ export default {
     },
     // 拼接跳转页面路径参数
     setParams() {
-      console.log(sessionStorage.getItem("si"));
+      // console.log(sessionStorage.getItem("si"));
       let tempDataObj = {
         ci: sessionStorage.getItem("ci"),
         ui: sessionStorage.getItem("ui"),
@@ -325,9 +334,15 @@ export default {
         data: tempDataObjSN,
         studentName: this.homeTopListName
       };
-      tempObj = base64(JSON.stringify(tempObj));
-      sessionStorage.setItem("urlParamStr", tempObj);
-      console.log(sessionStorage.getItem("urlParamStr"));
+      // this.urlParamStr = base64(JSON.stringify(tempObj));
+      this.$store.commit(
+        "home/SET_UrlParamStr",
+        base64(JSON.stringify(tempObj))
+      );
+      // console.log(this.urlParamStr);
+
+      localStorage.clear();
+      localStorage.setItem("urlParamStr", this.urlParamStr);
     },
     // 首页家长课堂
     queryParentClass() {
@@ -380,13 +395,14 @@ export default {
     },
     // 中间功能跳转
     unitLinkTo(n) {
-      window.location.href = n;
+      window.location.href = n + this.urlParamStr;
     },
     // 今日出勤详情点击
     attendanceMoreClick() {
+      let tempData = JSON.parse(unBase64(this.urlParamStr)).data;
       window.location.href =
         "http://wechat.test.sdxxtop.com/parent/student/attend/data/" +
-        sessionStorage.getItem("urlParamStr");
+        tempData;
     },
     // 进校 离校按钮
     enterSchoolBtn() {

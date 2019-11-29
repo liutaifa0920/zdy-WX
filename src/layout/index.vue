@@ -28,7 +28,7 @@ export default {
           name: "消息",
           active: require("../assets/imgs/layout/homeTab2_h.png"),
           inactive: require("../assets/imgs/layout/homeTab2.png"),
-          linkTo: "/layout/home"
+          linkTo: "/layout/msg"
         },
         {
           name: "通讯录",
@@ -53,6 +53,8 @@ export default {
       let path = this.$route.path;
       if (path == "/layout/home") {
         this.tabHighLight = 0;
+      } else if (path == "/layout/msg") {
+        this.tabHighLight = 1;
       } else if (path == "/layout/user") {
         this.tabHighLight = 3;
       }
