@@ -3,18 +3,23 @@
     <van-nav-bar class="msgTopNav" title="消息" left-text right-text />
     <div class="msgTopBlock"></div>
     <ul class="msgList">
-      <li class="msgListItem" v-for="(item, i) in msgListInfo" :key="i">
+      <li
+        class="msgListItem"
+        v-for="(item, i) in msgListInfo"
+        :key="i"
+        @click="linkToItem(item.type)"
+      >
         <div class="msgListItemLeft">
+          <img v-if="item.type == 1" src="../../assets/imgs/msg/msgNotice.png" :alt="item.title" />
+          <img v-if="item.type == 2" src="../../assets/imgs/msg/msgList.png" :alt="item.title" />
           <img
-            v-if="item.type == 1"
-            src="../../assets/imgs/msg/msgClassNotice.png"
+            v-if="item.type == 3"
+            src="../../assets/imgs/msg/msgPsychology.png"
             :alt="item.title"
           />
-          <img v-if="item.type == 2" src="../../assets/imgs/msg/msgNotice.png" :alt="item.title" />
-          <img v-if="item.type == 3" src="../../assets/imgs/msg/msgList.png" :alt="item.title" />
           <img
             v-if="item.type == 4"
-            src="../../assets/imgs/msg/msgPsychology.png"
+            src="../../assets/imgs/msg/msgClassNotice.png"
             :alt="item.title"
           />
           <div class="msgListItemLeftRight">
@@ -41,6 +46,7 @@ export default {
   },
   compoted: {},
   methods: {
+    // 请求消息列表
     queryMsgListInfo() {
       let data = {
         ui: sessionStorage.getItem("ui"),
@@ -51,6 +57,16 @@ export default {
         console.log(res.data);
         if (res.code == 200) {
           this.msgListInfo = res.data;
+        }
+      });
+    },
+    // itemClick
+    linkToItem(t) {
+      console.log(t)
+      this.$router.push({
+        path: "/noticeList",
+        query: {
+          noticeType: t
         }
       });
     }
@@ -100,8 +116,7 @@ p {
   align-items: center;
 }
 .msgListItemLeft > img {
-  width: 1.8rem;
-  height: 1.5rem;
+  width: 1.5rem;
   margin: 0 1rem 0 0.5rem;
 }
 .msgListItemLeftRight {

@@ -27,11 +27,42 @@ const routes = [
         component: () => import("@/views/message/msg.vue")
       },
       {
+        path: "address",
+        name: "Address",
+        component: () => import("@/views/address/addressList.vue")
+      },
+      {
         path: "user",
         name: "User",
         component: () => import("@/views/user/user.vue")
       }
     ]
+  },
+  {
+    path: "/noticeList",
+    name: "noticeList",
+    component: () => import("@/views/message/msgOther/noticeList.vue")
+  },
+  {
+    path: "/noticeInfo",
+    name: "noticeInfo",
+    component: () => import("@/views/message/msgOther/noticeInfo.vue")
+  },
+  // noticeReadInfo
+  {
+    path: "/noticeReadInfo",
+    name: "noticeReadInfo",
+    component: () => import("@/views/message/msgOther/noticeReadInfo.vue")
+  },
+  {
+    path: "/addressInfo",
+    name: "addressInfo",
+    component: () => import("@/views/address/addressItem.vue")
+  },
+  {
+    path: "/userInfo",
+    name: "userInfo",
+    component: () => import("@/views/user/userOther/userInfo.vue")
   }
 ];
 

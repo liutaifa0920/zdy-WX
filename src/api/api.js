@@ -14,7 +14,7 @@ export function test(data) {
 }
 
 
-// homeShowStudent
+// ---------------------- Home --------------------------- //
 export function homeParentClass(data) {
   return request({
     url: "/parent/student/parentClass",
@@ -47,7 +47,7 @@ export function homeModify(data) {
   });
 }
 
-// User
+// ---------------------- User --------------------------- //
 export function userIndex(data) {
   return request({
     url: "/parent/ucenter/index",
@@ -56,10 +56,106 @@ export function userIndex(data) {
   });
 }
 
-// message
+// ---------------------- Message --------------------------- //
 export function msgIndex(data) {
   return request({
     url: "/parent/msg/index",
+    method: "post",
+    data
+  });
+}
+
+// 公告列表
+export function msgNotice(data) {
+  return request({
+    url: "/parent/msg/notice",
+    method: "post",
+    data
+  });
+}
+export function msgReadNotice(data) {
+  return request({
+    url: "/parent/msg/readNotice",
+    method: "post",
+    data
+  });
+}
+
+// 班级通知列表
+export function msgClassNotice(data) {
+  return request({
+    url: "/parent/msg/classNotice",
+    method: "post",
+    data
+  });
+}
+export function msgClassNoticeDetail(data) {
+  return request({
+    url: "/parent/msg/classNoticeDetail",
+    method: "post",
+    data
+  });
+}
+
+// 成绩列表
+export function msgScore(data) {
+  return request({
+    url: "/parent/msg/score",
+    method: "post",
+    data
+  });
+}
+export function msgReadScore(data) {
+  return request({
+    url: "/parent/msg/readScore",
+    method: "post",
+    data
+  });
+}
+
+export function msgShowPeople(data) {
+  return request({
+    url: "/parent/msg/showPeople",
+    method: "post",
+    data
+  });
+}
+
+// ---------------------- Address --------------------------- //
+export function addressIndex(data) {
+  return request({
+    url: "/parent/contact/index",
+    method: "post",
+    data
+  });
+}
+export function addressSearch(data) {
+  return request({
+    url: "/parent/contact/search",
+    method: "post",
+    data
+  });
+}
+
+// Teacher Parentinfo
+export function addressParentInfo(data) {
+  return request({
+    url: "/parent/contact/parentInfo",
+    method: "post",
+    data
+  });
+}
+export function addressTeacherInfo(data) {
+  return request({
+    url: "/parent/contact/userinfo",
+    method: "post",
+    data
+  });
+}
+// Collect
+export function addressCollect(data) {
+  return request({
+    url: "/parent/contact/collect",
     method: "post",
     data
   });

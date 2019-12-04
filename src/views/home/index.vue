@@ -100,30 +100,8 @@
     <div class="homeParentClass">
       <div class="homeParentClassTit">
         <img src="../../assets/imgs/home/parentClassLog.png" alt="家长课堂" />
-        <!-- <van-icon class="homeParentClassTitDrop" color="#999999" size="24px" name="ellipsis" /> -->
       </div>
       <div class="homeParentClassCon">
-        <!-- <ul class="homeParentClassConList">
-          <li
-            class="homeParentClassConItem"
-            v-for="(item, i) in parentClassInfo"
-            :key="i"
-            @click="homeBottomListClick(item.redirect_url)"
-          >
-            <div class="homeParentClassConItemLeft">
-              <p>{{ item.title }}</p>
-              <div class="homeParentClassConItemLeftBot">
-                <span>{{item.source}}</span>
-                <div class="homeParentClassConItemLeftBotRight">
-                  <img src="../../assets/imgs/home/parentClassConFire.png" alt="图片加载失败" />
-                  <span>{{item.count_num}}</span>
-                </div>
-              </div>
-            </div>
-            <img class="homeParentClassConItemRight" :src="item.img" />
-          </li>
-        </ul>-->
-
         <van-list
           class="homeParentClassConList"
           v-model="bottomLoading"
@@ -138,7 +116,7 @@
           >
             <template slot="title" class="homeParentClassConItem">
               <div class="homeParentClassConItemLeft">
-                <p>{{ item.title }}</p>
+                <p>{{item.title.length > 25 ? (item.title.substr(0, 25) + "...") : item.title}}</p>
                 <div class="homeParentClassConItemLeftBot">
                   <span>{{item.source}}</span>
                   <div class="homeParentClassConItemLeftBotRight">
@@ -401,8 +379,7 @@ export default {
     attendanceMoreClick() {
       let tempData = JSON.parse(unBase64(this.urlParamStr)).data;
       window.location.href =
-        "http://wechat.test.sdxxtop.com/parent/student/attend/data/" +
-        tempData;
+        "http://wechat.test.sdxxtop.com/parent/student/attend/data/" + tempData;
     },
     // 进校 离校按钮
     enterSchoolBtn() {
@@ -441,7 +418,12 @@ export default {
     },
     // 班级通知按钮
     homeTipClick() {
-      console.log("班级通知");
+      this.$router.push({
+        path: "/noticeList",
+        query: {
+          noticeType: 4
+        }
+      });
     },
     // 通知时间描述
     noticeTimeFilter(time) {
@@ -482,7 +464,7 @@ export default {
       if (this.bottomLoading == true) {
         setTimeout(() => {
           this.queryParentClass();
-        }, 1500);
+        }, 500);
       }
     }
   }

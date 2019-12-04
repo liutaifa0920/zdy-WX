@@ -2,7 +2,7 @@
   <!-- top -->
   <div class="user">
     <div class="userTop">
-      <div class="userTopUser">
+      <div class="userTopUser" @click="userInfoClick">
         <img
           v-show="studentInfo.img[0] != '#' && studentInfo.img[0] != ''"
           :src="studentInfo.img"
@@ -165,6 +165,12 @@ export default {
         this.studentInfo = res.data.userinfo;
         this.parentName = this.studentInfo.relation;
         this.parentMobile = this.studentInfo.mobile;
+      });
+    },
+    // toLinkuserSetting
+    userInfoClick() {
+      this.$router.push({
+        path: "/userInfo"
       });
     },
     topListClick(i) {

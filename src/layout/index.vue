@@ -34,7 +34,7 @@ export default {
           name: "通讯录",
           active: require("../assets/imgs/layout/homeTab3_h.png"),
           inactive: require("../assets/imgs/layout/homeTab3.png"),
-          linkTo: "/layout/home"
+          linkTo: "/layout/address"
         },
         {
           name: "我的",
@@ -55,6 +55,8 @@ export default {
         this.tabHighLight = 0;
       } else if (path == "/layout/msg") {
         this.tabHighLight = 1;
+      } else if (path == "/layout/address") {
+        this.tabHighLight = 2;
       } else if (path == "/layout/user") {
         this.tabHighLight = 3;
       }
