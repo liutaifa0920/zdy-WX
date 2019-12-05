@@ -56,6 +56,23 @@ export function userIndex(data) {
   });
 }
 
+// SettingImg
+export function userModImg(data) {
+  return request({
+    url: "/parent/ucenter/modImg",
+    method: "post",
+    data
+  });
+}
+// SettingInfo
+export function userModInfo(data) {
+  return request({
+    url: "/parent/ucenter/modInfo",
+    method: "post",
+    data
+  });
+}
+
 // ---------------------- Message --------------------------- //
 export function msgIndex(data) {
   return request({

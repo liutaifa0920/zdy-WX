@@ -157,7 +157,7 @@ export default {
     return {
       params: null,
       homeTopListIndex: 0,
-      homeTopListName: "",
+      homeTopListName: null,
       homeTopList: [],
       homeTopListShow: [],
       homeFunctionList: [
@@ -238,7 +238,7 @@ export default {
         v: sessionStorage.getItem("v")
       };
       homeNewindex(data).then(res => {
-        console.log(res.data);
+        // console.log(res.data);
         if (res.code == 200) {
           this.classNoticeInfoNum = res.data.notice.notice_num;
           this.classNoticeInfoTime = this.noticeTimeFilter(
@@ -263,11 +263,14 @@ export default {
         v: sessionStorage.getItem("v")
       };
       homeShowStudent(data).then(res => {
-        // console.log(res.data.student);
+        console.log("-----------------------------------------");
+        console.log(res.data.student);
+        console.log("-----------------------------------------");
         if (res.code == 200) {
           this.homeTopList = res.data.student;
           this.homeTopList.map((e, i) => {
             if (e.student_id == sessionStorage.getItem("si") * 1) {
+              console.log(this.homeTopListName);
               this.homeTopListIndex = i;
             }
           });
@@ -281,6 +284,8 @@ export default {
           } else {
             this.setTopListAction();
           }
+          this.homeTopListName = this.homeTopList[this.homeTopListIndex].name;
+          console.log(this.homeTopListName);
         }
       });
     },
@@ -339,7 +344,7 @@ export default {
           // 加载状态结束
           this.bottomLoading = false;
           // 数据全部加载完成
-          if (this.parentClassInfo.length >= 40) {
+          if (this.parentClassInfo.length >= 50) {
             this.bottomFinished = true;
           }
         }

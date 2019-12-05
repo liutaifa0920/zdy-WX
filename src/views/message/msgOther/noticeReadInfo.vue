@@ -18,6 +18,9 @@
             ></div>
             <p class="itemName">{{items.name == ''? '...':items.name}}</p>
           </van-grid-item>
+          <van-grid-item v-for="(items, index) in 10" :key="index + 'c'">
+            
+          </van-grid-item>
         </van-grid>
       </van-tab>
     </van-tabs>
@@ -90,6 +93,7 @@ export default {
 .readInfo .van-grid {
   height: calc(100vh - 6rem);
   overflow-y: scroll;
+  justify-content: space-around !important;
 }
 .readInfo .van-grid-item__content {
   height: 9rem !important;
@@ -105,6 +109,7 @@ export default {
   height: 3.6rem !important;
 }
 </style>
+
 <style scoped>
 p {
   margin: 0 !important;
