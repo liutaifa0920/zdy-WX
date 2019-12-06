@@ -18,9 +18,12 @@
             ></div>
             <p class="itemName">{{items.name == ''? '...':items.name}}</p>
           </van-grid-item>
-          <van-grid-item v-for="(items, index) in 10" :key="index + 'c'">
-            
-          </van-grid-item>
+          <van-grid-item
+            class="bottomItemBlock"
+            style="height: 1px;"
+            v-for="(items, index) in 10"
+            :key="index + 'c'"
+          ></van-grid-item>
         </van-grid>
       </van-tab>
     </van-tabs>
@@ -98,6 +101,10 @@ export default {
 .readInfo .van-grid-item__content {
   height: 9rem !important;
 }
+.readInfo .bottomItemBlock .van-grid-item__content {
+  height: 1px !important;
+  padding: 0 !important;
+}
 .readInfo .van-image {
   width: 3.6rem !important;
   height: 3.6rem !important;
@@ -113,6 +120,9 @@ export default {
 <style scoped>
 p {
   margin: 0 !important;
+}
+.readInfo {
+  background-color: white;
 }
 
 /* top */

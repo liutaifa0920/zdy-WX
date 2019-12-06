@@ -30,12 +30,8 @@
 
     <!-- Unit -->
     <div class="homeFunction">
-      <van-grid :border="false" :column-num="3">
-        <van-grid-item
-          v-for="(item, i) in homeFunctionList"
-          :key="i"
-          @click="unitLinkTo(item.linkToUrl)"
-        >
+      <van-grid :border="false" :column-num="homeFunctionList.length">
+        <van-grid-item v-for="(item, i) in homeFunctionList" :key="i" @click="unitLinkTo(item, i)">
           <div class="homeFunctionImg">
             <img :src="item.imgUrl" :alt="item.name" />
           </div>
@@ -178,6 +174,11 @@ export default {
           imgUrl: require("../../assets/imgs/home/home_report.png"),
           linkToUrl:
             "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para="
+        },
+        {
+          name: "习惯打卡",
+          imgUrl: require("../../assets/imgs/home/home_report.png"),
+          linkToUrl: ""
         }
       ],
       enterSchoolTime: "-- : --",
@@ -263,14 +264,11 @@ export default {
         v: sessionStorage.getItem("v")
       };
       homeShowStudent(data).then(res => {
-        console.log("-----------------------------------------");
-        console.log(res.data.student);
-        console.log("-----------------------------------------");
+        // console.log(res.data.student);
         if (res.code == 200) {
           this.homeTopList = res.data.student;
           this.homeTopList.map((e, i) => {
             if (e.student_id == sessionStorage.getItem("si") * 1) {
-              console.log(this.homeTopListName);
               this.homeTopListIndex = i;
             }
           });
@@ -285,7 +283,6 @@ export default {
             this.setTopListAction();
           }
           this.homeTopListName = this.homeTopList[this.homeTopListIndex].name;
-          console.log(this.homeTopListName);
         }
       });
     },
@@ -352,7 +349,7 @@ export default {
     },
     // title点击
     homeTopListClick(i, item) {
-      console.log(item.student_id);
+      // console.log(item.student_id);
       this.homeTopListIndex = i;
       this.homeTopListName = item.name;
       sessionStorage.setItem("si", item.student_id);
@@ -377,8 +374,16 @@ export default {
       }
     },
     // 中间功能跳转
-    unitLinkTo(n) {
-      window.location.href = n + this.urlParamStr;
+    unitLinkTo(item, i) {
+      if(i != 3){
+        window.location.href = item.linkToUrl + this.urlParamStr;
+      } else {
+        console.log(item.name);
+        this.$router.push({
+          path: "/habitClockIn"
+        })
+      }
+      
     },
     // 今日出勤详情点击
     attendanceMoreClick() {

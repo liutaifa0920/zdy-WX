@@ -1,7 +1,7 @@
 <template>
   <div class="msg">
-    <van-nav-bar class="msgTopNav" title="消息" left-text right-text />
-    <div class="msgTopBlock"></div>
+    <!-- <van-nav-bar class="msgTopNav" title="消息" left-text right-text />
+    <div class="msgTopBlock"></div> -->
     <ul class="msgList">
       <li
         class="msgListItem"

@@ -27,6 +27,14 @@ Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key]);
 });
 
+// 动态标题
+router.beforeEach((to, from, next) => {
+  if (to.meta.title) {
+    document.title = to.meta.title;
+  }
+  next();
+});
+
 Vue.config.productionTip = false;
 
 new Vue({

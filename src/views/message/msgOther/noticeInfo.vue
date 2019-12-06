@@ -181,6 +181,7 @@ export default {
 <style scoped>
 .noticeInfo {
   /* padding: 0 0.8rem 0; */
+  background-color: white;
 }
 p {
   margin: 0 !important;
