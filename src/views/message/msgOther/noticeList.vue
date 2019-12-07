@@ -25,14 +25,14 @@
           <div
             v-if="item.img != ''"
             class="noticeListItemConImg"
-            :style="currentType == 2 ? 'height: 8rem;' : ''"
+            :style="currentType == 2 ? 'height: 8rem;' : 'display: none;'"
           >
             <img :src="item.img" :alt="item.title" />
           </div>
           <div
             v-if="currentType == 1 || currentType == 4"
             class="noticeListItemConCon"
-            :style="item.img == '' ? 'height: 8rem;':'height: 3.5rem;'"
+            :style="item.img == '' || currentType == 4 ? 'height: 8rem;':'height: 3.5rem;'"
           >{{item.content}}</div>
           <p class="noticeListItemConMore" v-if="currentType == 1 || currentType == 4">查看详情</p>
           <p class="noticeListItemConMore" v-if="currentType == 2">{{item.name}}老师上传</p>

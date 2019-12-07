@@ -24,7 +24,7 @@
           <img v-if="item.img[0] != '#'" :src="item.img" :alt="item.name" />
         </div>
         <div class="listItemRight">
-          <p>{{item.name}}</p>
+          <p>{{item.name == '' ? item.student_name : item.name}}</p>
         </div>
       </div>
       <!-- teacherItem -->
@@ -44,7 +44,7 @@
           <img v-if="item.img[0] != '#'" :src="item.img" :alt="item.name" />
         </div>
         <div class="listItemRight">
-          <p>{{item.name}}</p>
+          <p>{{item.name == '' ? item.student_name : item.name}}</p>
         </div>
       </div>
       <!-- parentItem -->
@@ -64,7 +64,7 @@
           <img v-if="item.img[0] != '#'" :src="item.img" :alt="item.name" />
         </div>
         <div class="listItemRight">
-          <p>{{item.name}}</p>
+          <p>{{item.name == '' ? item.student_name : item.name}}</p>
         </div>
       </div>
     </div>
@@ -85,7 +85,7 @@
           <img v-if="item.img[0] != '#'" :src="item.img" :alt="item.name" />
         </div>
         <div class="listItemRight">
-          <p>{{item.name}}</p>
+          <p>{{item.name == '' ? item.student_name : item.name}}</p>
         </div>
       </div>
     </div>

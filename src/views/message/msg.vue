@@ -1,7 +1,7 @@
 <template>
   <div class="msg">
     <!-- <van-nav-bar class="msgTopNav" title="消息" left-text right-text />
-    <div class="msgTopBlock"></div> -->
+    <div class="msgTopBlock"></div>-->
     <ul class="msgList">
       <li
         class="msgListItem"
@@ -20,10 +20,10 @@
           <img
             v-if="item.type == 4"
             src="../../assets/imgs/msg/msgClassNotice.png"
-            :alt="item.title"
+            :alt="item.title.length > 15 ? (item.title.substr(0, 15) + '...'): item.title"
           />
           <div class="msgListItemLeftRight">
-            <p>{{item.title}}</p>
+            <p>{{item.title.length > 15 ? (item.title.substr(0, 15) + "..."): item.title}}</p>
             <p>{{"消息简介"}}</p>
           </div>
         </div>
@@ -62,7 +62,7 @@ export default {
     },
     // itemClick
     linkToItem(t) {
-      console.log(t)
+      console.log(t);
       this.$router.push({
         path: "/noticeList",
         query: {

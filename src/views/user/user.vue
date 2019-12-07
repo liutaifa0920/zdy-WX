@@ -66,15 +66,18 @@
 </template>
 
 <script>
-import { userIndex } from "@/api/api";
+import { userIndex, userBindBracelet } from "@/api/api";
+import { Dialog } from "vant";
 import { mapState } from "vuex";
 import { unBase64 } from "@/utils/unBase64.js";
 export default {
   data() {
     return {
+      urlParamStr: "",
       studentInfo: null,
       parentName: "",
       parentMobile: "",
+      currentStuBindB: null,
       userUnitList: [
         {
           name: "健康数据",
@@ -132,26 +135,28 @@ export default {
   created() {
     this.queryStudentInfo();
     this.queryStudentInfoAll();
+    this.queryBindStuInfo();
   },
   computed: {
-    urlParamStr() {
-      return this.$store.state.home.urlParamStr;
-    }
+    // urlParamStr() {
+    //   return this.$store.state.home.urlParamStr;
+    // }
   },
   methods: {
     // 获取本地当前学生信息
     queryStudentInfo() {
-      this.studentInfo = JSON.parse(sessionStorage.getItem("studentInfo"));
+      this.studentInfo = JSON.parse(localStorage.getItem("studentInfo"));
       this.parentName = sessionStorage.getItem("parentName");
-      console.log(this.studentInfo.student_id);
+      // console.log(localStorage.getItem("urlParamStr"));
+      this.urlParamStr = localStorage.getItem("urlParamStr");
 
       // 获取返回User页面 param
-      if (localStorage.getItem("urlParamStr")) {
-        this.$store.commit(
-          "home/SET_UrlParamStr",
-          localStorage.getItem("urlParamStr")
-        );
-      }
+      // if (sessionStorage.getItem("urlParamStr")) {
+      //   this.$store.commit(
+      //     "home/SET_UrlParamStr",
+      //     sessionStorage.getItem("urlParamStr")
+      //   );
+      // }
     },
     // 获取请求user学生信息
     queryStudentInfoAll() {
@@ -161,11 +166,46 @@ export default {
         v: sessionStorage.getItem("v")
       };
       userIndex(data).then(res => {
-        console.log(res.data.userinfo);
+        // console.log(res.data.userinfo);
         this.studentInfo = res.data.userinfo;
         this.parentName = this.studentInfo.relation;
         this.parentMobile = this.studentInfo.mobile;
       });
+    },
+    // 获取绑定学生信息
+    queryBindStuInfo() {
+      let data = {
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
+        v: sessionStorage.getItem("v")
+      };
+      console.log(data);
+      userBindBracelet(data).then(res => {
+        console.log(res.data)
+        if (res.code == 200) {
+          res.data.student.map((e, i) => {
+            if (e.student_id == data.si) {
+              this.currentStuBindB = e.is_bind_bracelet;
+              console.log(this.currentStuBindB);
+            }
+          });
+        }
+      });
+    },
+    // 未绑定手环弹框
+    setBindBracelet() {
+      Dialog.confirm({
+        title: "绑定手环",
+        message: "还未绑定手环, 请前去绑定",
+        confirmButtonText: "去绑定"
+      })
+        .then(() => {
+          let tempData = JSON.parse(unBase64(this.urlParamStr)).data;
+          window.location.href = this.bottomList[0].linkToUrl + tempData;
+        })
+        .catch(() => {
+          // on cancel
+        });
     },
     // toLinkuserSetting
     userInfoClick() {
@@ -179,6 +219,13 @@ export default {
         let tempData = JSON.parse(unBase64(this.urlParamStr)).data;
         console.log(tempData);
         window.location.href = this.userUnitList[i].linkToUrl + tempData;
+      } else if (i == 0) {
+        if (this.currentStuBindB == 2) {
+          this.setBindBracelet();
+        } else {
+          window.location.href =
+            this.userUnitList[i].linkToUrl + this.urlParamStr;
+        }
       } else {
         window.location.href =
           this.userUnitList[i].linkToUrl + this.urlParamStr;

@@ -89,7 +89,7 @@
         </div>
         <p class="homeTipLeftCon">· 您有{{classNoticeInfoNum}}条未读的班级通知消息</p>
       </div>
-      <p class="homeTipRight">{{classNoticeInfoTime}} ></p>
+      <p class="homeTipRight">{{noticeTimeFilter}} ></p>
     </div>
 
     <!-- parentClass -->
@@ -187,7 +187,7 @@ export default {
       leaveSchoolDate: "2019-11-22",
       isLeave: 1,
       classNoticeInfoNum: "",
-      classNoticeInfoTime: "",
+      classNoticeInfoTime: null,
       parentClassInfo: [],
       topToParentClassFlag: false,
       loadMoreList: [],
@@ -200,16 +200,11 @@ export default {
     window.addEventListener("scroll", this.homeRootScroll);
     this.signAttendanceFilter();
     this.queryParams();
-    this.queryHomeInfo();
+    // this.queryHomeInfo();
     this.queryShowStudent();
   },
   destroyed() {
     window.removeEventListener("scroll", this.homeRootScroll);
-  },
-  computed: {
-    urlParamStr() {
-      return this.$store.state.home.urlParamStr;
-    }
   },
   methods: {
     // 处理接收参数
@@ -224,27 +219,26 @@ export default {
         sessionStorage.setItem("si", this.params.si);
         sessionStorage.setItem("v", "10108");
       } else {
-        // console.log(JSON.parse(sessionStorage.getItem("studentInfo")));
         sessionStorage.setItem(
           "si",
-          JSON.parse(sessionStorage.getItem("studentInfo")).student_id
+          JSON.parse(localStorage.getItem("studentInfo")).student_id
         );
       }
     },
     // 首页数据信息
     queryHomeInfo() {
+      console.log(sessionStorage.getItem("si"));
       let data = {
         ui: sessionStorage.getItem("ui"),
         si: sessionStorage.getItem("si"),
         v: sessionStorage.getItem("v")
       };
       homeNewindex(data).then(res => {
-        // console.log(res.data);
+        console.log(res.data);
         if (res.code == 200) {
           this.classNoticeInfoNum = res.data.notice.notice_num;
-          this.classNoticeInfoTime = this.noticeTimeFilter(
-            res.data.notice.date_time
-          );
+          this.classNoticeInfoTime = res.data.notice.date_time;
+          // alert(this.noticeTimeFilter);
           this.parentClassInfo = res.data.article;
           this.bottomLoadMorePg = this.parentClassInfo.length;
           sessionStorage.setItem("parentName", res.data.parent_name);
@@ -257,14 +251,13 @@ export default {
     },
     // 首页顶部学生
     queryShowStudent() {
-      // console.log(sessionStorage.getItem("si"));
       let data = {
         ui: sessionStorage.getItem("ui"),
         si: sessionStorage.getItem("si"),
         v: sessionStorage.getItem("v")
       };
       homeShowStudent(data).then(res => {
-        // console.log(res.data.student);
+        console.log(res.data.student);
         if (res.code == 200) {
           this.homeTopList = res.data.student;
           this.homeTopList.map((e, i) => {
@@ -272,32 +265,39 @@ export default {
               this.homeTopListIndex = i;
             }
           });
+          console.log("--------------------------------------------");
+          console.log(this.homeTopListIndex);
+          console.log("--------------------------------------------");
 
-          if (sessionStorage.getItem("studentInfo")) {
+          if (localStorage.getItem("studentInfo")) {
+            // console.log(localStorage.getItem("studentInfo"));
             this.homeTopListName = JSON.parse(
-              sessionStorage.getItem("studentInfo")
+              localStorage.getItem("studentInfo")
             ).name;
-            // console.log(this.homeTopListName);
+            sessionStorage.setItem(
+              "si",
+              JSON.parse(localStorage.getItem("studentInfo")).student_id
+            );
+            this.homeTopList.map((e, i) => {
+              if (e.student_id == sessionStorage.getItem("si") * 1) {
+                this.homeTopListIndex = i;
+              }
+            });
             this.setParams();
           } else {
             this.setTopListAction();
           }
-          this.homeTopListName = this.homeTopList[this.homeTopListIndex].name;
         }
       });
     },
     // 设置顶部选中
     setTopListAction() {
       this.homeTopListName = this.homeTopList[0].name;
-      sessionStorage.setItem(
-        "studentInfo",
-        JSON.stringify(this.homeTopList[0])
-      );
+      localStorage.setItem("studentInfo", JSON.stringify(this.homeTopList[0]));
       this.setParams();
     },
     // 拼接跳转页面路径参数
     setParams() {
-      // console.log(sessionStorage.getItem("si"));
       let tempDataObj = {
         ci: sessionStorage.getItem("ci"),
         ui: sessionStorage.getItem("ui"),
@@ -314,15 +314,9 @@ export default {
         data: tempDataObjSN,
         studentName: this.homeTopListName
       };
-      // this.urlParamStr = base64(JSON.stringify(tempObj));
-      this.$store.commit(
-        "home/SET_UrlParamStr",
-        base64(JSON.stringify(tempObj))
-      );
-      // console.log(this.urlParamStr);
-
-      localStorage.clear();
+      this.urlParamStr = base64(JSON.stringify(tempObj));
       localStorage.setItem("urlParamStr", this.urlParamStr);
+      this.queryHomeInfo();
     },
     // 首页家长课堂
     queryParentClass() {
@@ -349,11 +343,14 @@ export default {
     },
     // title点击
     homeTopListClick(i, item) {
-      // console.log(item.student_id);
       this.homeTopListIndex = i;
       this.homeTopListName = item.name;
+      // console.clear();
+      console.log(sessionStorage.getItem("si"));
       sessionStorage.setItem("si", item.student_id);
-      sessionStorage.setItem("studentInfo", JSON.stringify(item));
+
+      localStorage.setItem("studentInfo", JSON.stringify(item));
+      // sessionStorage.setItem("studentInfo", JSON.stringify(item));
       this.queryHomeInfo();
       this.setParams();
     },
@@ -375,15 +372,14 @@ export default {
     },
     // 中间功能跳转
     unitLinkTo(item, i) {
-      if(i != 3){
+      if (i != 3) {
         window.location.href = item.linkToUrl + this.urlParamStr;
       } else {
         console.log(item.name);
         this.$router.push({
           path: "/habitClockIn"
-        })
+        });
       }
-      
     },
     // 今日出勤详情点击
     attendanceMoreClick() {
@@ -435,10 +431,24 @@ export default {
         }
       });
     },
+    // 家长课堂点击
+    homeBottomListClick(u) {
+      window.location.href = u;
+    },
+    // 下拉加载更多
+    bottomOnLoad() {
+      if (this.bottomLoading == true) {
+        setTimeout(() => {
+          this.queryParentClass();
+        }, 500);
+      }
+    }
+  },
+  computed: {
     // 通知时间描述
-    noticeTimeFilter(time) {
+    noticeTimeFilter() {
       let curTime = new Date();
-      let postTime = new Date(time);
+      let postTime = new Date(this.classNoticeInfoTime);
       let timeDiff = curTime.getTime() - postTime.getTime();
 
       let min = 60 * 1000;
@@ -450,7 +460,6 @@ export default {
       let exceedDay = Math.floor(timeDiff / day);
       let exceedHour = Math.floor(timeDiff / hour);
       let exceedMin = Math.floor(timeDiff / min);
-
       if (exceedWeek > 0) {
         return exceedWeek + "周前";
       } else {
@@ -463,18 +472,6 @@ export default {
             return exceedMin + "分钟前";
           }
         }
-      }
-    },
-    // 家长课堂点击
-    homeBottomListClick(u) {
-      window.location.href = u;
-    },
-    // 下拉加载更多
-    bottomOnLoad() {
-      if (this.bottomLoading == true) {
-        setTimeout(() => {
-          this.queryParentClass();
-        }, 500);
       }
     }
   }

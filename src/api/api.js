@@ -72,6 +72,14 @@ export function userModInfo(data) {
     data
   });
 }
+// bindBracelet
+export function userBindBracelet(data) {
+  return request({
+    url: "/parent/ucenter/showStudent",
+    method: "post",
+    data
+  });
+}
 
 // ---------------------- Message --------------------------- //
 export function msgIndex(data) {
