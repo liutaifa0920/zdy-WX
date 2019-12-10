@@ -16,16 +16,16 @@
         @click="noticeItemClick(item)"
       >
         <div class="noticeListItemTime">
-          <span>{{item.add_time.split(" ")[0].substr(5)}}</span>
+          <span v-if="currentType != 2">{{item.add_time.split(" ")[0].substr(5)}}</span>
         </div>
-        <div class="noticeListItemCon">
+        <div class="noticeListItemCon" :style="currentType == 2 ? 'height: 7rem;': ''">
+          <span class="noticeListlistTime" v-if="currentType == 2">{{item.add_time.split(" ")[0]}}</span>
           <p
             class="noticeListItemConTit"
           >{{item.title.length > 14 ? (item.title.substr(0, 14) + "..."):item.title}}</p>
           <div
-            v-if="item.img != ''"
+            v-if="(item.img != '') && (item.img[0] != '#') && (currentType != 2)"
             class="noticeListItemConImg"
-            :style="currentType == 2 ? 'height: 8rem;' : 'display: none;'"
           >
             <img :src="item.img" :alt="item.title" />
           </div>
@@ -199,6 +199,16 @@ p {
   box-sizing: border-box;
   margin: 1rem 0;
   overflow: hidden;
+  text-align: left;
+}
+.noticeListlistTime {
+  background-color: #38b48b;
+  color: white;
+  padding: .2rem .8rem;
+  font-size: .9rem;
+  border-radius: .2rem;
+  display: inline-block;
+  margin-bottom: .8rem;
 }
 .noticeListItemConTit {
   text-align: left;

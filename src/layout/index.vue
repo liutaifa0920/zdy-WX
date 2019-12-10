@@ -7,6 +7,16 @@
         <img slot="icon" slot-scope="props" :src="props.active ? item.active : item.inactive" />
       </van-tabbar-item>
     </van-tabbar>
+    <van-overlay vertical :show="show">
+      <div class="wrapper">
+        <div>
+          <div style="margin-bottom: 1rem;">
+            <van-loading color="#38b48b" />
+          </div>
+          <div style="color: #38b48b;font-size: .9rem;">加载中</div>
+        </div>
+      </div>
+    </van-overlay>
   </div>
 </template>
 
@@ -15,6 +25,7 @@ export default {
   name: "defaut-layout",
   data() {
     return {
+      show: false,
       // 当前tab高亮
       tabHighLight: 0,
       tabIconList: [
@@ -62,13 +73,44 @@ export default {
       }
     }
   },
+  watch: {
+    $route(from, to) {
+      if (from.path == "/layout/user") {
+        // this.show = true;
+        this.tabHighLight = 3;
+      }
+    },
+    tabHighLight() {
+      if (this.tabHighLight == 3) {
+        // this.show = false;
+      }
+    }
+  },
   mounted() {
+    this.show = true;
+    setTimeout(() => {
+      this.show = false;
+    }, 500);
     this.tabAction();
   }
 };
 </script>
+<style>
+.home .van-overlay {
+  background-color: rgba(255, 255, 255, 0) !important;
+}
+</style>
 <style scoped>
 .defaut-layout {
   width: 100%;
+}
+.van-overlay {
+  background-color: white !important;
+}
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 </style>

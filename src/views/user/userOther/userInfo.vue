@@ -75,7 +75,7 @@
 </template>
 <script>
 import { userIndex, userModImg, userModInfo } from "@/api/api";
-import { Notify } from "vant";
+import { Toast } from "vant";
 import axios from "axios";
 import qs from "qs";
 import { signFun } from "../../../utils/sign";
@@ -106,7 +106,7 @@ export default {
         v: sessionStorage.getItem("v")
       };
       userIndex(data).then(res => {
-        console.log(res.data.userinfo);
+        // console.log(res.data.userinfo);
         if (res.code == 200) {
           this.userInfo = res.data.userinfo;
         }
@@ -124,11 +124,12 @@ export default {
       axios
         .post("http://app.sdxxtop.com/parent/ucenter/modImg", fd, config)
         .then(res => {
-          console.log(res.data);
+          // console.log(res.data);
           if (res.data.code == 200) {
+            Toast(res.data.msg);
             this.queryUserInfo();
           } else {
-            Notify({ type: "danger", message: res.data.msg });
+            Toast(res.data.msg);
           }
         });
     },
@@ -172,7 +173,7 @@ export default {
     },
     // SexSelect
     sexCheckSelect(item) {
-      console.log(item);
+      // console.log(item);
       this.setSexShow = false;
       let data = {
         ui: sessionStorage.getItem("ui"),
@@ -185,11 +186,11 @@ export default {
         v: sessionStorage.getItem("v")
       };
       userModInfo(data).then(res => {
-        console.log(res);
+        // console.log(res);
         if (res.code == 200) {
-          Notify({ type: "success", message: res.msg });
+          Toast(res.msg);
         } else {
-          Notify({ type: "danger", message: res.msg });
+          Toast(res.msg);
         }
         this.queryUserInfo();
       });

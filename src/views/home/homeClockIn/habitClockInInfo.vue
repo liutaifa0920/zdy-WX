@@ -63,7 +63,7 @@ export default {
       });
     },
     // 跳转打卡统计
-    routeToClockInStatistics(){
+    routeToClockInStatistics() {
       this.$router.push({
         path: "/clockInStatistics"
       });

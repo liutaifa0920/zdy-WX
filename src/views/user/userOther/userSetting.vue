@@ -36,7 +36,7 @@
 </template>
 <script>
 import { userIndex, userModInfo } from "@/api/api";
-import { Notify } from "vant";
+import { Toast } from "vant";
 export default {
   data() {
     return {
@@ -120,10 +120,10 @@ export default {
         console.log(res);
         if (res.code == 200) {
           this.hideShow = false;
-          Notify({ type: "success", message: res.msg });
+          Toast(res.msg);
           this.onClickLeft();
         } else {
-          Notify({ type: "danger", message: res.msg });
+          Toast(res.msg);
         }
       });
     },

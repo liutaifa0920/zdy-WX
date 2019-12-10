@@ -87,7 +87,15 @@ const routes = [
       title: "知点云"
     }
   },
-
+  // 打卡
+  {
+    path: "/clockIn",
+    name: "clockIn",
+    component: () => import("@/views/home/homeClockIn/clockIn.vue"),
+    meta: {
+      title: "知点云"
+    }
+  },
 
   // -------------------- 消 息 ------------------------
   {

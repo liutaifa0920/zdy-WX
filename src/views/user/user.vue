@@ -83,7 +83,7 @@ export default {
           name: "健康数据",
           imgUrl: require("../../assets/imgs/user/jiankangshuju.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/healthData/index?para="
+            "http://wechat.sdxxtop.com/parent/classroom/index.html#/views/healthData/index?para="
         },
         {
           name: "课程表",
@@ -93,36 +93,36 @@ export default {
         {
           name: "请假",
           imgUrl: require("../../assets/imgs/user/qingjia.png"),
-          linkToUrl: "http://wechat.sdxxtop.com/parent/student/leave_list/data/"
+          linkToUrl: "http://wechat.sdxxtop.com/parent/student/leave_list"
         },
         {
           name: "拜访",
           imgUrl: require("../../assets/imgs/user/baifang.png"),
-          linkToUrl: "http://wechat.sdxxtop.com/parent/student/visit_list/data/"
+          linkToUrl: "http://wechat.sdxxtop.com/parent/student/visit_list"
         },
         {
           name: "联系孩子",
           imgUrl: require("../../assets/imgs/user/lianxihaizi.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#/views/talkChild?para="
+            "http://wechat.sdxxtop.com/parent/classroom/index.html#/views/talkChild?para="
         },
         {
           name: "心理测评",
           imgUrl: require("../../assets/imgs/user/xinliceping.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/psychic/index.html#/evaluation_e?data="
+            "http://wechat.sdxxtop.com/parent/psychic/index.html#/evaluation_e?data="
         }
       ],
       bottomList: [
         {
           name: "添加学生 / 绑定人脸",
           imgUrl: require("../../assets/imgs/user/addStudent.png"),
-          linkToUrl: "http://wechat.sdxxtop.com/parent/ucenter/students/data/"
+          linkToUrl: "http://wechat.sdxxtop.com/parent/ucenter/students"
         },
         {
           name: "密码账号管理",
           imgUrl: require("../../assets/imgs/user/userAdmin.png"),
-          linkToUrl: "http://wechat.sdxxtop.com/parent/ucenter/password/data/"
+          linkToUrl: "http://wechat.sdxxtop.com/parent/ucenter/password"
         }
         // {
         //   name: "困难申请",
@@ -179,14 +179,14 @@ export default {
         si: sessionStorage.getItem("si"),
         v: sessionStorage.getItem("v")
       };
-      console.log(data);
+      // console.log(data);
       userBindBracelet(data).then(res => {
-        console.log(res.data)
+        // console.log(res.data)
         if (res.code == 200) {
           res.data.student.map((e, i) => {
             if (e.student_id == data.si) {
               this.currentStuBindB = e.is_bind_bracelet;
-              console.log(this.currentStuBindB);
+              // console.log(this.currentStuBindB);
             }
           });
         }
@@ -214,11 +214,12 @@ export default {
       });
     },
     topListClick(i) {
-      console.log(this.userUnitList[i].name);
+      // console.log(this.userUnitList[i].name);
       if (i == 5 || i == 1 || i == 2 || i == 3) {
         let tempData = JSON.parse(unBase64(this.urlParamStr)).data;
-        console.log(tempData);
-        window.location.href = this.userUnitList[i].linkToUrl + tempData;
+        // console.log(tempData);
+        window.location.href =
+          this.userUnitList[i].linkToUrl + "?data=" + tempData;
       } else if (i == 0) {
         if (this.currentStuBindB == 2) {
           this.setBindBracelet();
@@ -233,19 +234,21 @@ export default {
     },
     bottomListClick(i) {
       let tempData = JSON.parse(unBase64(this.urlParamStr)).data;
-      console.log(this.studentInfo);
+      // console.log(this.studentInfo);
       if (i == 3) {
         window.location.href =
-          "http://wechat.sdxxtop.com/parent/ucenter/set/data/" + tempData;
+          "http://wechat.sdxxtop.com/parent/ucenter/set" + "?data=" + tempData;
       } else if (i == 1) {
         window.location.href =
-          "http://wechat.sdxxtop.com/parent/ucenter/password/data/" +
+          "http://wechat.sdxxtop.com/parent/ucenter/password" +
+          "?data=" +
           tempData +
-          "/mobile/" +
+          "&mobile=" +
           this.parentMobile;
       } else {
         // alert(this.bottomList[i].linkToUrl + this.urlParamStr);
-        window.location.href = this.bottomList[i].linkToUrl + tempData;
+        window.location.href =
+          this.bottomList[i].linkToUrl + "?data=" + tempData;
       }
     }
   }

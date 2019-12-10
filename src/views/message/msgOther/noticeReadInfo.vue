@@ -15,7 +15,7 @@
               v-if="items.img[0] == '#'"
               class="itemIcon"
               :style="'background-color: '+items.img+';'"
-            ></div>
+            >{{items.name[0]}}</div>
             <p class="itemName">{{items.name == ''? '...':items.name}}</p>
           </van-grid-item>
           <van-grid-item
@@ -144,6 +144,10 @@ p {
   height: 3.6rem;
   border-radius: 50%;
   background-color: #1989fa;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .itemName {
   width: 3.6rem;

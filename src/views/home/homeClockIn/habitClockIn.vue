@@ -21,18 +21,22 @@
             v-for="(item, i) in clockInList"
             :key="i"
             class="habitClockItem"
-            @click="clockItemClick(item)"
           >
-            <div>
-              <span>每日阅读</span>
-              <span>去打卡</span>
-            </div>
-            <p>已进行1天，已坚持打卡1天</p>
-            <p>40位学生参加，10位今日已打卡</p>
-            <div>
-              <p>排行榜</p>
-              <p></p>
-              <p>打卡统计</p>
+            <div class="habitClockItemTime">1分钟前</div>
+            <div class="habitClockItemCon">
+              <div class="habitClockItemConT">
+                <span @click="clockItemClick(item)">每日阅读</span>
+                <span @click="linkToToClockIn">去打卡</span>
+              </div>
+              <p @click="clockItemClick(item)" class="habitClockItemConCP1">已进行1天，已坚持打卡1天</p>
+              <p @click="clockItemClick(item)" class="habitClockItemConCP2">40位学生参加，10位今日已打卡</p>
+              <div class="habitClockItemConB">
+                <p @click="linkToClockItem(1)">排行榜</p>
+                <div class="habitClockItemConBB"></div>
+                <p @click="linkToClockItem(2)">打卡统计</p>
+                <div class="habitClockItemConBB"></div>
+                <p @click="linkToClockItem(3)">分享</p>
+              </div>
             </div>
           </div>
           <div
@@ -40,20 +44,23 @@
             v-for="(item, i) in clockInOverList"
             :key="i + 'b'"
             class="habitClockItem"
-            @click="clockItemClick(item)"
           >
-            <div>
-              <span>每日阅读</span>
-              <span>已结束</span>
-            </div>
-            <p>已进行1天，已坚持打卡1天</p>
-            <p></p>
-            <div>
-              <p>排行榜</p>
-              <p></p>
-              <p>打卡统计</p>
+            <div style="height: .6rem;width: 100vw;"></div>
+            <div class="habitClockItemCon">
+              <div class="habitClockItemConT">
+                <span>每日阅读</span>
+                <span style="background-color: #E0E0E0;">已结束</span>
+              </div>
+              <p @click="clockItemClick(item)" class="habitClockItemConCP1">已进行1天，已坚持打卡1天</p>
+              <p @click="clockItemClick(item)" class="habitClockItemConCP2"></p>
+              <div class="habitClockItemConB">
+                <p @click="linkToClockItem(1)">排行榜</p>
+                <div class="habitClockItemConBB"></div>
+                <p @click="linkToClockItem(2)">打卡统计</p>
+              </div>
             </div>
           </div>
+          <div style="margin-bottom: 1rem;"></div>
         </div>
       </van-tab>
     </van-tabs>
@@ -80,12 +87,32 @@ export default {
   },
   mounted() {},
   methods: {
-    // 打卡item
+    // 打卡itemClick
     clockItemClick(item) {
-        console.log(item)
+      console.log(item);
+      this.$router.push({
+        path: "/habitClockInInfo"
+      });
+    },
+    // 跳转至打卡页面
+    linkToToClockIn() {
+      this.$router.push({
+        path: "/clockIn"
+      });
+    },
+    // 打卡ItemBottomClick
+    linkToClockItem(t) {
+      if (t == 1) {
         this.$router.push({
-          path: "/habitClockInInfo"
-        })
+          path: "/rankingList"
+        });
+      } else if (t == 2) {
+        this.$router.push({
+          path: "/clockInStatistics"
+        });
+      } else if (t == 3) {
+        console.log("分享");
+      }
     },
     // 返回上一级
     onClickLeft() {
@@ -94,6 +121,15 @@ export default {
   }
 };
 </script>
+<style>
+.habitClock .van-tab--active {
+  color: #38b48b !important;
+}
+.habitClock .van-tabs__line {
+  background-color: #38b48b !important;
+  width: 2.7rem !important;
+}
+</style>
 <style scoped>
 p {
   margin: 0 !important;
@@ -119,11 +155,87 @@ p {
   width: 100%;
   height: calc(100vh - 5.55rem) !important;
   overflow-y: scroll;
+  background-color: #f4f4f4;
 }
 
 /* List */
 .habitClockItem {
-  background-color: blanchedalmond;
-  margin: 0.5rem 0;
+  /* margin: 0.5rem 0; */
+}
+.habitClockItemTime {
+  color: #999999;
+  font-size: 0.9rem;
+  width: 100vw;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.habitClockItemCon {
+  width: 92vw;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+  border: 1px solid #f4f4f4;
+  /* padding: 0.9rem; */
+}
+.habitClockItemConT {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.habitClockItemConT > span:nth-child(1) {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.habitClockItemConT > span:nth-child(2) {
+  background-color: #38b48b;
+  color: white;
+  font-size: 0.9rem;
+  padding: 0.4rem 1.5rem;
+  border-radius: 2rem;
+}
+.habitClockItemConCP1,
+.habitClockItemConCP2 {
+  text-align: left;
+  /* padding: 0 1rem; */
+  box-sizing: border-box;
+}
+.habitClockItemConCP1 {
+  padding: 0.2rem 1rem 0 !important;
+  font-size: 0.8rem;
+  color: #b6b6b6;
+}
+.habitClockItemConCP2 {
+  padding: 0.7rem 1rem !important;
+  font-size: 0.9rem;
+  color: #313131;
+}
+
+.habitClockItemConB {
+  width: 100%;
+  height: 3rem;
+  box-sizing: border-box;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #38b48b10;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+}
+.habitClockItemConB > p {
+  font-size: 0.9rem;
+  color: #b6b6b6;
+}
+.habitClockItemConBB {
+  width: 1px;
+  height: 1rem;
+  background-color: #b6b6b6;
 }
 </style>

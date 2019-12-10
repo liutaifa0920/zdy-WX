@@ -64,7 +64,7 @@
           <img v-if="item.img[0] != '#'" :src="item.img" :alt="item.name" />
         </div>
         <div class="listItemRight">
-          <p>{{item.name == '' ? item.student_name : item.name}}</p>
+          <p>{{item.student_name}}家长{{item.name == '' ? '' : ('('+item.name+')')}}</p>
         </div>
       </div>
     </div>
@@ -223,6 +223,7 @@ p {
   display: flex;
   padding: 0 1rem;
   box-sizing: border-box;
+  background-color: white;
   border-bottom: 1px solid #f7f8fa;
 }
 .listItemLeft {

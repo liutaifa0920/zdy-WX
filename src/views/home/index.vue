@@ -50,8 +50,8 @@
         <div class="homeAttendanceBoxBot">
           <div class="homeAttendanceBoxBotItem">
             <div class="homeAttendanceBoxBotItemTime">
-              <p>{{enterSchoolTime == "" ? "-- : --" : enterSchoolTime}}</p>
-              <p>{{enterSchoolDate}}</p>
+              <p>{{enterSchoolTime == "" ? "-- : --" : enterSchoolTime.split(" ")[1].substr(0, 5)}}</p>
+              <p>{{enterSchoolTime == "" ? enterSchoolDate : enterSchoolTime.split(" ")[0]}}</p>
             </div>
             <div
               class="homeAttendanceBoxBotItemBtn"
@@ -161,25 +161,24 @@ export default {
           name: "课堂报告",
           imgUrl: require("../../assets/imgs/home/home_class.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/classroomreport?para="
+            "http://wechat.sdxxtop.com/parent/classroom/index.html#views/classroomreport?para="
         },
         {
           name: "作业",
           imgUrl: require("../../assets/imgs/home/home_work.png"),
-          linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/task/index.html#/?para="
+          linkToUrl: "http://wechat.sdxxtop.com/parent/task/index.html#/?para="
         },
         {
           name: "学情报告",
           imgUrl: require("../../assets/imgs/home/home_report.png"),
           linkToUrl:
-            "http://wechat.test.sdxxtop.com/parent/classroom/index.html#views/studentReport?para="
-        },
-        {
-          name: "习惯打卡",
-          imgUrl: require("../../assets/imgs/home/home_report.png"),
-          linkToUrl: ""
+            "http://wechat.sdxxtop.com/parent/classroom/index.html#views/studentReport?para="
         }
+        // {
+        //   name: "习惯打卡",
+        //   imgUrl: require("../../assets/imgs/home/home_report.png"),
+        //   linkToUrl: ""
+        // }
       ],
       enterSchoolTime: "-- : --",
       leaveSchoolTime: "-- : --",
@@ -187,7 +186,7 @@ export default {
       leaveSchoolDate: "2019-11-22",
       isLeave: 1,
       classNoticeInfoNum: "",
-      classNoticeInfoTime: null,
+      classNoticeInfoTime: "",
       parentClassInfo: [],
       topToParentClassFlag: false,
       loadMoreList: [],
@@ -211,6 +210,13 @@ export default {
     queryParams() {
       this.params = window.location.href.split("?")[1];
       if (this.params != undefined) {
+        let toUser = false;
+        if (this.params.indexOf("php=1") != -1) {
+          toUser = true;
+          this.params = this.params.replace("&php=1", "");
+        }
+
+        console.log(this.params);
         this.params = this.params.replace("#/", "").split("=")[1];
         this.params = JSON.parse(unBase64(decodeURIComponent(this.params)));
         console.log(this.params);
@@ -218,6 +224,13 @@ export default {
         sessionStorage.setItem("ui", this.params.ui);
         sessionStorage.setItem("si", this.params.si);
         sessionStorage.setItem("v", "10108");
+        if (toUser) {
+          // this.$router.push({
+          //   path: "/layout/user"
+          // });
+          window.location.href =
+            "http://wechat.sdxxtop.com/parent/index.html#/layout/user";
+        }
       } else {
         sessionStorage.setItem(
           "si",
@@ -385,7 +398,7 @@ export default {
     attendanceMoreClick() {
       let tempData = JSON.parse(unBase64(this.urlParamStr)).data;
       window.location.href =
-        "http://wechat.test.sdxxtop.com/parent/student/attend/data/" + tempData;
+        "http://wechat.sdxxtop.com/parent/student/attend/data/" + tempData;
     },
     // 进校 离校按钮
     enterSchoolBtn() {
@@ -461,15 +474,23 @@ export default {
       let exceedHour = Math.floor(timeDiff / hour);
       let exceedMin = Math.floor(timeDiff / min);
       if (exceedWeek > 0) {
-        return exceedWeek + "周前";
+        return exceedWeek.toString() + "周前";
       } else {
         if (exceedDay < 7 && exceedDay > 0) {
-          return exceedDay + "天前";
+          return exceedDay.toString() + "天前";
         } else {
           if (exceedHour < 24 && exceedHour > 0) {
-            return exceedHour + "小时前";
+            return exceedHour.toString() + "小时前";
           } else {
-            return exceedMin + "分钟前";
+            if (exceedMin.toString() + "分钟前" == "NaN分钟前") {
+              this.classNoticeInfoTime = this.classNoticeInfoTime
+                .split(" ")[0]
+                .split("-")
+                .splice(1)
+                .join("/");
+              return this.classNoticeInfoTime;
+            }
+            return exceedMin.toString() + "分钟前";
           }
         }
       }
@@ -511,7 +532,7 @@ p {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 1;
 }
 .homeTopToParLog {
   position: absolute;
@@ -531,6 +552,10 @@ p {
   overflow-y: scroll;
   /* padding: 0 0.5rem; */
   box-sizing: border-box;
+}
+
+.homeTopList::-webkit-scrollbar {
+  display: none;
 }
 .homeTopListItem {
   font-size: 1rem;
@@ -603,7 +628,6 @@ p {
   width: 100vw;
   height: 4.5rem;
   position: relative;
-  z-index: 200;
 }
 .homeAttendanceBox {
   width: 90vw;
@@ -616,7 +640,6 @@ p {
   border-radius: 0.5rem;
   background-color: white;
   box-shadow: 0 0 5px rgb(224, 224, 224) !important;
-  z-index: 500;
 }
 .homeAttendanceBoxTop {
   display: flex;

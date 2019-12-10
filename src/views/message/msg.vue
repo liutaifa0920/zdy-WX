@@ -20,10 +20,10 @@
           <img
             v-if="item.type == 4"
             src="../../assets/imgs/msg/msgClassNotice.png"
-            :alt="item.title.length > 15 ? (item.title.substr(0, 15) + '...'): item.title"
+            :alt="item.title.length > 10 ? (item.title.substr(0, 10) + '...'): item.title"
           />
           <div class="msgListItemLeftRight">
-            <p>{{item.title.length > 15 ? (item.title.substr(0, 15) + "..."): item.title}}</p>
+            <p>{{item.title.length > 10 ? (item.title.substr(0, 10) + "..."): item.title}}</p>
             <p>{{"消息简介"}}</p>
           </div>
         </div>
