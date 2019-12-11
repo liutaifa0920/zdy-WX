@@ -3,18 +3,41 @@
     <van-nav-bar class="topNavBar" left-text="返回" title="打卡" left-arrow @click-left="onClickLeft" />
     <div class="topBlock"></div>
     <div class="block" @click="recorderStart">开始录制</div>
+    <p>录音时间{{time}}</p>
     <div class="block" @click="recorderStop">结束录制</div>
     <div class="block" @click="recorderPlay">录音播放</div>
     <audio autoplay></audio>
   </div>
 </template>
 <script>
+import wx from "weixin-js-sdk";
+import axios from "axios";
 import Recorder from "js-audio-recorder";
 export default {
   data() {
     return {
-      recorderRoot: null
+      recorderRoot: null,
+      localId: "",
+      serverId: "",
+      downLoadId: "",
+      Soff: true,
+      time: 0,
+      timer: null
     };
+  },
+  created() {
+    var apiUrl = window.location.href;
+    // axios({
+    //   method: 'post',
+    //   url: 'api', // 写入api
+    //   headers: {'Content-Type': 'application/json'},
+    //   data: {
+    //     url: apiUrl
+    //   }
+    // })
+    wx.ready(function() {
+      // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+    });
   },
   mounted() {
     this.initRecorder();
@@ -39,46 +62,20 @@ export default {
   methods: {
     // 初始化录音
     initRecorder() {
-      // navigator.getUserMedia =
-      //   navigator.getUserMedia ||
-      //   navigator.webkitGetUserMedia ||
-      //   navigator.mozGetUserMedia ||
-      //   navigator.msGetUserMedia;
-      console.log(this.hasGetUserMedia)
-      if (this.hasGetUserMedia) {
-        // alert("Good to go!");
-      } else {
-        alert("getUserMedia() is not supported in your browser");
-      }
-
-      let onFailSoHard = function(e) {
-        console.log("拒绝访问", e);
-      };
-      navigator.getUserMedia(
-        "audio",
-        function(localMediaStream) {
-          var audio = document.querySelector("audio");
-          audio.src = window.URL.createObjectURL(localMediaStream);
-
-          audio.onloadedmetadata = function(e) {
-            // Ready to go. Do some stuff.
-          };
-        },
-        onFailSoHard
-      );
-
-      this.recorder = new Recorder();
+      let timestamp = new Date().getTime();
+      wx.config({
+        debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+        appId: "", // 必填，企业号的唯一标识，此处填写企业号corpid
+        timestamp, // 必填，生成签名的时间戳
+        nonceStr: "", // 必填，生成签名的随机串
+        signature: "", // 必填，签名，见附录1
+        jsApiList: [] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+      });
     },
 
-    recorderStart() {
-      this.recorder.start();
-    },
-    recorderStop() {
-      this.recorder.stop();
-    },
-    recorderPlay() {
-      this.recorder.play();
-    },
+    recorderStart() {},
+    recorderStop() {},
+    recorderPlay() {},
     // 返回上一级
     onClickLeft() {
       this.$router.go(-1);

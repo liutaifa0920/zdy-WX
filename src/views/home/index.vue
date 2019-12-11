@@ -173,12 +173,12 @@ export default {
           imgUrl: require("../../assets/imgs/home/home_report.png"),
           linkToUrl:
             "http://wechat.sdxxtop.com/parent/classroom/index.html#views/studentReport?para="
+        },
+        {
+          name: "习惯打卡",
+          imgUrl: require("../../assets/imgs/home/habitClock.png"),
+          linkToUrl: ""
         }
-        // {
-        //   name: "习惯打卡",
-        //   imgUrl: require("../../assets/imgs/home/home_report.png"),
-        //   linkToUrl: ""
-        // }
       ],
       enterSchoolTime: "-- : --",
       leaveSchoolTime: "-- : --",

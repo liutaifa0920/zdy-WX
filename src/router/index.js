@@ -87,6 +87,15 @@ const routes = [
       title: "知点云"
     }
   },
+  // 班级打卡统计
+  {
+    path: "/classClockInStatistics",
+    name: "classClockInStatistics",
+    component: () => import("@/views/home/homeClockIn/classClockInStatistics.vue"),
+    meta: {
+      title: "知点云"
+    }
+  },
   // 打卡
   {
     path: "/clockIn",

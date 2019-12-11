@@ -3,6 +3,11 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 
+// 引入element日历组件
+import { Calendar } from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+Vue.use(Calendar);
+
 // vant组件按需引入;
 import "@/utils/vant.js";
 
