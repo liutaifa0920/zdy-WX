@@ -31,11 +31,17 @@
               <p @click="clockItemClick(item)" class="habitClockItemConCP1">已进行1天，已坚持打卡1天</p>
               <p @click="clockItemClick(item)" class="habitClockItemConCP2">40位学生参加，10位今日已打卡</p>
               <div class="habitClockItemConB">
-                <p @click="linkToClockItem(1)">排行榜</p>
+                <p @click="linkToClockItem(1)">
+                  <img src="~@/assets/imgs/home/habitClock/ranking.png" />
+                  排行榜
+                </p>
                 <div class="habitClockItemConBB"></div>
-                <p @click="linkToClockItem(2)">打卡统计</p>
-                <div class="habitClockItemConBB"></div>
-                <p @click="linkToClockItem(3)">分享</p>
+                <p @click="linkToClockItem(2)">
+                  <img src="~@/assets/imgs/home/habitClock/statistics.png" />
+                  打卡统计
+                </p>
+                <!-- <div class="habitClockItemConBB"></div>
+                <p @click="linkToClockItem(3)">分享</p>-->
               </div>
             </div>
           </div>
@@ -54,9 +60,15 @@
               <p @click="clockItemClick(item)" class="habitClockItemConCP1">已进行1天，已坚持打卡1天</p>
               <p @click="clockItemClick(item)" class="habitClockItemConCP2"></p>
               <div class="habitClockItemConB">
-                <p @click="linkToClockItem(1)">排行榜</p>
+                <p @click="linkToClockItem(1)">
+                  <img src="~@/assets/imgs/home/habitClock/ranking.png" />
+                  排行榜
+                </p>
                 <div class="habitClockItemConBB"></div>
-                <p @click="linkToClockItem(2)">打卡统计</p>
+                <p @click="linkToClockItem(2)">
+                  <img src="~@/assets/imgs/home/habitClock/statistics.png" />
+                  打卡统计
+                </p>
               </div>
             </div>
           </div>
@@ -231,7 +243,16 @@ p {
 }
 .habitClockItemConB > p {
   font-size: 0.9rem;
+  height: 3rem;
   color: #b6b6b6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.habitClockItemConB img {
+  width: 0.9rem;
+  height: 0.9rem;
+  margin-right: .3rem;
 }
 .habitClockItemConBB {
   width: 1px;

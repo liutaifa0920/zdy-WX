@@ -386,6 +386,7 @@ export default {
     // 中间功能跳转
     unitLinkTo(item, i) {
       if (i != 3) {
+        console.log(item.linkToUrl + this.urlParamStr)
         window.location.href = item.linkToUrl + this.urlParamStr;
       } else {
         console.log(item.name);
