@@ -105,6 +105,15 @@ const routes = [
       title: "知点云"
     }
   },
+  // 历史打卡
+  {
+    path: "/historyClockIn",
+    name: "historyClockIn",
+    component: () => import("@/views/home/homeClockIn/historyClockIn.vue"),
+    meta: {
+      title: "知点云"
+    }
+  },
 
   // -------------------- 消 息 ------------------------
   {

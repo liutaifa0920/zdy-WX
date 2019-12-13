@@ -13,7 +13,6 @@ export function test(data) {
   });
 }
 
-
 // ---------------------- Home --------------------------- //
 export function homeParentClass(data) {
   return request({
@@ -46,6 +45,16 @@ export function homeModify(data) {
     data
   });
 }
+
+// 获取wxToken
+// export function homeGetAccessToken(data) {
+//   return request({
+//     url: "/parent/wechat/getAccessToken",
+//     method: "post",
+//     data
+//   });
+// }
+
 
 // ---------------------- User --------------------------- //
 export function userIndex(data) {

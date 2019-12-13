@@ -1,5 +1,5 @@
 <template>
-  <div class="clockInfo">
+  <div class="history">
     <van-nav-bar
       class="topNavBar"
       title="打卡详情"
@@ -8,22 +8,22 @@
       @click-left="onClickLeft"
     />
     <div class="topBlock"></div>
-    <div class="clockInfoMain">
-      <div class="clockInfoTit">
+    <div class="historyMain">
+      <div class="historyTit">
         <span>每日阅读</span>
-        <div class="clockInfoTitRight">
+        <div class="historyTitRight">
           <span>打卡设置</span>
           <img src="~@/assets/imgs/home/habitClock/向下.png" alt />
         </div>
       </div>
-      <p class="clockInfoTimeName">{{"2019-11-11 16:30"}}</p>
-      <p class="clockInfoTimeName">{{"二年级十一班"+" "+"张三老师"}}</p>
-      <p class="clockInfoInfo">
+      <p class="historyTimeName">{{"2019-11-11 16:30"}}</p>
+      <p class="historyTimeName">{{"二年级十一班"+" "+"张三老师"}}</p>
+      <p class="historyInfo">
         <span>剩余：{{"20天"}}</span>
         <span>频次：{{"每周一/二/三/四/五/六"}}</span>
       </p>
     </div>
-    <div class="clockInfoCon">
+    <div class="historyCon">
       <p>坚持阅读养成好习惯-朗读音频打卡</p>
       <p>
         详情
@@ -31,27 +31,27 @@
       </p>
     </div>
     <!-- List -->
-    <div class="clockInfoListTit">班级打卡动态</div>
+    <div class="historyListTit">{{"李四"}}的历史打卡日记</div>
     <!-- 单条动态 -->
-    <div class="clockInfoList" v-for="(item, i) in 5" :key="i">
-      <div class="clockInfoListItem">
-        <div @click="linkToHistory" class="clockInfoListItemLeft">
+    <div class="historyList" v-for="(item, i) in 5" :key="i">
+      <div class="historyListItem">
+        <div class="historyListItemLeft">
           <img src="~@/assets/imgs/home/habitClock/bg.png" alt />
-          <div class="clockInfoListItemTopRight">
+          <div class="historyListItemTopRight">
             <p>{{"李四爸爸"}}</p>
             <p>{{"2019-11-16 18:24"}} 已坚持{{"1"}}天</p>
           </div>
         </div>
         <img src="~@/assets/imgs/home/habitClock/更多.png" alt />
       </div>
-      <div class="clockInfoListItemCon">
-        <p @click="linkToHistory">{{"知点云是由山东旭兴网络科技有限公司专为K12公办学校研发的数字孪生教育SaaS软件。"}}</p>
+      <div class="historyListItemCon">
+        <p>{{"知点云是由山东旭兴网络科技有限公司专为K12公办学校研发的数字孪生教育SaaS软件。"}}</p>
         <div>录音</div>
         <div>图片/视频</div>
       </div>
       <!-- 按钮行 -->
-      <div class="clockInfoListItemBtn">
-        <div class="clockInfoListItemIsGood">
+      <div class="historyListItemBtn">
+        <div class="historyListItemIsGood">
           <img v-if="true" src="~@/assets/imgs/home/habitClock/no_good.png" alt="未点赞" />
           <img v-if="false" src="~@/assets/imgs/home/habitClock/is_good.png" alt="已点赞" />
           <p>{{5}}</p>
@@ -60,18 +60,18 @@
         <img src="~@/assets/imgs/home/habitClock/is_fenxiang.png" alt="分享" />
       </div>
       <!-- 回复区 -->
-      <div class="clockInfoListItemReport">
+      <div class="historyListItemReport">
         <!-- 点赞区 -->
-        <div class="clockInfoListItemReportTop">
+        <div class="historyListItemReportTop">
           <img src="~@/assets/imgs/home/habitClock/no_good.png" alt="点赞" />
           <p>{{"王五老师"}}</p>
         </div>
         <!-- 评论内容 -->
-        <div class="clockInfoListItemReportBot">
-          <div class="clockInfoListItemReportBotLeft">
+        <div class="historyListItemReportBot">
+          <div class="historyListItemReportBotLeft">
             <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
           </div>
-          <div class="clockInfoListItemReportBotRig">
+          <div class="historyListItemReportBotRig">
             <p v-for="(item ,i) in 3" :key="i">
               <span>{{"王五老师"}}:</span>
               <span>棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒</span>
@@ -81,18 +81,6 @@
       </div>
     </div>
     <div class="bottomBlock"></div>
-    <div class="bottomBlock"></div>
-    <div class="clockBottomNav">
-      <div class="clockBottomNavItem" @click="routeToRankingList">
-        <img src="~@/assets/imgs/home/habitClock/ranking.png" alt />
-        <p>排行榜</p>
-      </div>
-      <div class="clockBottomNavItem" @click="routeToClockInStatistics">
-        <img src="~@/assets/imgs/home/habitClock/statistics.png" alt />
-        <p>打卡统计</p>
-      </div>
-      <div class="clockBottomNavBtn" @click="linkToClockIn">打卡</div>
-    </div>
   </div>
 </template>
 <script>
@@ -102,37 +90,9 @@ export default {
   },
   mounted() {},
   methods: {
-    // 跳转历史打卡页面
-    linkToHistory() {
-      this.$router.push({
-        path: "/historyClockIn"
-      });
-    },
-    // 跳转排行榜
-    routeToRankingList() {
-      this.$router.push({
-        path: "/rankingList"
-      });
-    },
-    // 跳转打卡统计
-    routeToClockInStatistics() {
-      this.$router.push({
-        path: "/clockInStatistics"
-      });
-    },
     // 返回上一级
     onClickLeft() {
       this.$router.go(-1);
-    },
-    // 分享
-    onClickRight() {
-      console.log("分享");
-    },
-    // 去打卡
-    linkToClockIn() {
-      this.$router.push({
-        path: "/clockIn"
-      });
     }
   }
 };
@@ -142,7 +102,7 @@ p {
   margin: 0 !important;
   text-align: left;
 }
-.clockInfo {
+.history {
   background-color: white;
 }
 
@@ -159,23 +119,23 @@ p {
   height: 2.8rem;
 }
 
-.clockInfoMain {
+.historyMain {
   width: 100vw;
   padding: 0.8rem;
   box-sizing: border-box;
   border-bottom: 1px solid #d3d3d3;
 }
-.clockInfoTit {
+.historyTit {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 0.4rem;
 }
-.clockInfoTit > span:nth-child(1) {
+.historyTit > span:nth-child(1) {
   font-size: 1.1rem;
   color: #000000;
 }
-.clockInfoTitRight {
+.historyTitRight {
   height: 1rem;
   line-height: 1rem;
   display: flex;
@@ -184,21 +144,21 @@ p {
   font-size: 0.8rem;
   color: #38b48b;
 }
-.clockInfoTitRight > img {
+.historyTitRight > img {
   width: 0.8rem;
   height: 0.8rem;
   background-color: #eeeeee;
   margin-left: 0.4rem;
 }
-.clockInfoTimeName {
+.historyTimeName {
   color: #999999;
   font-size: 0.8rem;
 }
-.clockInfoInfo {
+.historyInfo {
   font-size: 0.9rem;
   margin-top: 0.4rem !important;
 }
-.clockInfoCon {
+.historyCon {
   width: 100vw;
   height: 3rem;
   line-height: 3rem;
@@ -208,10 +168,10 @@ p {
   padding: 0 0.8rem;
   box-sizing: border-box;
 }
-.clockInfoCon > p:nth-child(1) {
+.historyCon > p:nth-child(1) {
   font-size: 1rem;
 }
-.clockInfoCon > p:nth-child(2) {
+.historyCon > p:nth-child(2) {
   font-size: 0.9rem;
   height: 3rem;
   color: #38b48b;
@@ -219,12 +179,12 @@ p {
   justify-content: space-between;
   align-items: center;
 }
-.clockInfoCon img {
+.historyCon img {
   width: 0.8rem;
   height: 0.8rem;
   margin-left: 0.4rem;
 }
-.clockInfoListTit {
+.historyListTit {
   width: 100vw;
   height: 2.8rem;
   font-weight: 600;
@@ -287,83 +247,82 @@ p {
 }
 
 /* list */
-.clockInfoList {
+.historyList {
   width: 100vw;
   padding: 0.8rem;
   box-sizing: border-box;
   background-color: white;
-  position: relative;
 }
-.clockInfoListItem {
+.historyListItem {
   width: 100%;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
 }
-.clockInfoListItem > img {
+.historyListItem > img {
   padding: 0 0 1rem 1rem;
   width: 1rem;
   height: 0.8rem;
 }
-.clockInfoListItemLeft {
+.historyListItemLeft {
   display: flex;
   justify-content: left;
 }
-.clockInfoListItemLeft > img {
+.historyListItemLeft > img {
   width: 3.2rem;
   height: 3.2rem;
   border-radius: 50%;
   margin-right: 0.8rem;
 }
-.clockInfoListItemTopRight {
+.historyListItemTopRight {
   height: 3.2rem;
 }
-.clockInfoListItemTopRight > p:nth-child(1) {
+.historyListItemTopRight > p:nth-child(1) {
   font-size: 0.9rem;
   color: #313131;
 }
-.clockInfoListItemTopRight > p:nth-child(2) {
+.historyListItemTopRight > p:nth-child(2) {
   font-size: 0.8rem;
   color: #999999;
 }
-.clockInfoListItemCon {
+.historyListItemCon {
   padding-left: 4rem;
   font-size: 0.9rem;
 }
-.clockInfoListItemBtn {
+.historyListItemBtn {
   width: 100%;
   height: 2.8rem;
   display: flex;
   justify-content: flex-end;
   align-items: center;
 }
-.clockInfoListItemIsGood {
+.historyListItemIsGood {
   display: flex;
   align-items: center;
   height: 1rem;
 }
-.clockInfoListItemIsGood > img {
+.historyListItemIsGood > img {
   width: 1rem;
   height: 1rem;
   margin-right: 0.4rem;
 }
-.clockInfoListItemIsGood > p {
+.historyListItemIsGood > p {
   height: 0.8rem;
   font-size: 0.8rem;
   line-height: 0.8rem;
   color: #999999;
 }
-.clockInfoListItemBtn > img {
+.historyListItemBtn > img {
   margin-left: 1rem;
   width: 1rem;
   height: 1rem;
 }
 
 /* report */
-.clockInfoListItemReport {
+.historyListItemReport {
   background-color: #f5f5f5;
 }
-.clockInfoListItemReportTop {
+.historyListItemReportTop {
   width: 100%;
   padding: 0.6rem 1rem;
   box-sizing: border-box;
@@ -373,7 +332,7 @@ p {
   border-bottom: 1px solid #e0e0e0;
   position: relative;
 }
-.clockInfoListItemReportTop::after {
+.historyListItemReportTop::after {
   content: "";
   display: block;
   position: absolute;
@@ -386,42 +345,42 @@ p {
   border-left: 0.4rem solid rgb(255, 255, 255);
   border-bottom: 0.4rem solid #f5f5f5;
 }
-.clockInfoListItemReportTop > img {
+.historyListItemReportTop > img {
   width: 1rem;
   height: 1rem;
   margin-right: 1rem;
 }
-.clockInfoListItemReportTop > p {
+.historyListItemReportTop > p {
   font-size: 0.9rem;
   color: #313131;
 }
-.clockInfoListItemReportBot {
+.historyListItemReportBot {
   width: 100%;
   padding: 0.6rem 1rem;
   box-sizing: border-box;
   display: flex;
 }
-/* .clockInfoListItemReportBotLeft {
+/* .historyListItemReportBotLeft {
 } */
-.clockInfoListItemReportBotLeft > img {
+.historyListItemReportBotLeft > img {
   width: 1rem;
   height: 1rem;
   margin-right: 1rem;
 }
-/* .clockInfoListItemReportBotRig{
+/* .historyListItemReportBotRig{
 } */
-.clockInfoListItemReportBotRig > p {
+.historyListItemReportBotRig > p {
   /* height: 0.9rem; */
   font-size: 0.9rem;
   line-height: 0.9rem;
   margin-bottom: 0.3rem !important;
 }
-.clockInfoListItemReportBotRig > p > span:nth-child(1) {
+.historyListItemReportBotRig > p > span:nth-child(1) {
   color: #38b48b;
   padding-right: 0.3rem;
   line-height: 1rem;
 }
-.clockInfoListItemReportBotRig > p > span:nth-child(2) {
+.historyListItemReportBotRig > p > span:nth-child(2) {
   color: #313131;
   line-height: 1rem;
 }
