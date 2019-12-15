@@ -16,27 +16,49 @@
         :name="item.value"
       >
         <div class="tabsConBox">
+          <div v-show="(tabAction == 1) && (clockInList.length == 0)" class="noCon">暂无内容</div>
+          <div v-show="(tabAction == 2) && (clockInOverList.length == 0)" class="noCon">暂无内容</div>
           <div
             v-show="tabAction == 1"
             v-for="(item, i) in clockInList"
             :key="i"
             class="habitClockItem"
           >
-            <div class="habitClockItemTime">1分钟前</div>
+            <div class="habitClockItemTime">{{item.add_time}}</div>
             <div class="habitClockItemCon">
               <div class="habitClockItemConT">
-                <span @click="clockItemClick(item)">每日阅读</span>
-                <span @click="linkToToClockIn">去打卡</span>
+                <span @click="clockItemClick(item)">{{item.title}}</span>
+                <span
+                  v-show="(item.is_clock == 1) && (item.is_clock_today == 0)"
+                  class="habitClockItemConT2"
+                  @click="linkToToClockIn"
+                >去打卡</span>
+                <span
+                  v-show="(item.is_clock == 1) && (item.is_clock_today == 1)"
+                  class="habitClockItemConT3"
+                  @click="clockItemClick(item)"
+                >已打卡</span>
+                <span
+                  v-show="item.is_clock == 0"
+                  @click="clockItemClick(item)"
+                  class="habitClockItemConTNoclock"
+                >今日无需打卡</span>
               </div>
-              <p @click="clockItemClick(item)" class="habitClockItemConCP1">已进行1天，已坚持打卡1天</p>
-              <p @click="clockItemClick(item)" class="habitClockItemConCP2">40位学生参加，10位今日已打卡</p>
+              <p
+                @click="clockItemClick(item)"
+                class="habitClockItemConCP1"
+              >已进行{{item.last_days}}天，已坚持打卡{{item.have_days}}天</p>
+              <p
+                @click="clockItemClick(item)"
+                class="habitClockItemConCP2"
+              >{{item.all_student}}位学生参加，{{item.clock_student}}位今日已打卡</p>
               <div class="habitClockItemConB">
-                <p @click="linkToClockItem(1)">
+                <p @click="linkToClockItem(1,item)">
                   <img src="~@/assets/imgs/home/habitClock/ranking.png" />
                   排行榜
                 </p>
                 <div class="habitClockItemConBB"></div>
-                <p @click="linkToClockItem(2)">
+                <p @click="linkToClockItem(2,item)">
                   <img src="~@/assets/imgs/home/habitClock/statistics.png" />
                   打卡统计
                 </p>
@@ -55,17 +77,17 @@
             <div class="habitClockItemCon">
               <div class="habitClockItemConT">
                 <span>每日阅读</span>
-                <span style="background-color: #E0E0E0;">已结束</span>
+                <span class="habitClockItemConT2" style="background-color: #E0E0E0;">已结束</span>
               </div>
               <p @click="clockItemClick(item)" class="habitClockItemConCP1">已进行1天，已坚持打卡1天</p>
               <p @click="clockItemClick(item)" class="habitClockItemConCP2"></p>
               <div class="habitClockItemConB">
-                <p @click="linkToClockItem(1)">
+                <p @click="linkToClockItem(1,item)">
                   <img src="~@/assets/imgs/home/habitClock/ranking.png" />
                   排行榜
                 </p>
                 <div class="habitClockItemConBB"></div>
-                <p @click="linkToClockItem(2)">
+                <p @click="linkToClockItem(2,item)">
                   <img src="~@/assets/imgs/home/habitClock/statistics.png" />
                   打卡统计
                 </p>
@@ -79,6 +101,7 @@
   </div>
 </template>
 <script>
+import { homeHabitIndex, homeHabitEndindex } from "@/api/api";
 export default {
   data() {
     return {
@@ -93,17 +116,48 @@ export default {
         }
       ],
       tabAction: 1,
-      clockInList: [{}, {}, {}, {}],
-      clockInOverList: [{}, {}, {}, {}, {}, {}, {}]
+      clockInList: [],
+      clockInOverList: []
     };
   },
-  mounted() {},
+  mounted() {
+    this.queryListInfo();
+  },
   methods: {
+    // 获取进行中已结束列表信息
+    queryListInfo() {
+      // let data = {
+      //   ui: sessionStorage.getItem("ui"),
+      //   si: sessionStorage.getItem("si"),
+      //   v: sessionStorage.getItem("v")
+      // };
+      let data = {
+        ui: 30001120,
+        si: 20004910,
+        v: 100000
+      };
+      console.log(data);
+      homeHabitIndex(data).then(res => {
+        console.log(res.data.habit);
+        if (res.code == 200) {
+          this.clockInList = res.data.habit;
+        }
+      });
+      homeHabitEndindex(data).then(res => {
+        console.log(res.data.habit);
+        if (res.code == 200) {
+          this.clockInOverList = res.data.habit;
+        }
+      });
+    },
     // 打卡itemClick
     clockItemClick(item) {
       console.log(item);
       this.$router.push({
-        path: "/habitClockInInfo"
+        path: "/habitClockInInfo",
+        query: {
+          hi: item.habit_id
+        }
       });
     },
     // 跳转至打卡页面
@@ -113,14 +167,22 @@ export default {
       });
     },
     // 打卡ItemBottomClick
-    linkToClockItem(t) {
+    linkToClockItem(t, item) {
       if (t == 1) {
+        // 排行榜
         this.$router.push({
-          path: "/rankingList"
+          path: "/rankingList",
+          query: {
+            hi: item.habit_id
+          }
         });
       } else if (t == 2) {
+        // 打卡统计
         this.$router.push({
-          path: "/clockInStatistics"
+          path: "/clockInStatistics",
+          query: {
+            hi: item.habit_id
+          }
         });
       } else if (t == 3) {
         console.log("分享");
@@ -129,6 +191,45 @@ export default {
     // 返回上一级
     onClickLeft() {
       this.$router.go(-1);
+    }
+  },
+  computed: {
+    // 通知时间描述
+    clockInTime() {
+      let curTime = new Date();
+      let postTime = new Date(this.classNoticeInfoTime);
+      let timeDiff = curTime.getTime() - postTime.getTime();
+
+      let min = 60 * 1000;
+      let hour = min * 60;
+      let day = hour * 24;
+      let week = day * 7;
+
+      let exceedWeek = Math.floor(timeDiff / week);
+      let exceedDay = Math.floor(timeDiff / day);
+      let exceedHour = Math.floor(timeDiff / hour);
+      let exceedMin = Math.floor(timeDiff / min);
+      if (exceedWeek > 0) {
+        return exceedWeek.toString() + "周前";
+      } else {
+        if (exceedDay < 7 && exceedDay > 0) {
+          return exceedDay.toString() + "天前";
+        } else {
+          if (exceedHour < 24 && exceedHour > 0) {
+            return exceedHour.toString() + "小时前";
+          } else {
+            if (exceedMin.toString() + "分钟前" == "NaN分钟前") {
+              this.classNoticeInfoTime = this.classNoticeInfoTime
+                .split(" ")[0]
+                .split("-")
+                .splice(1)
+                .join("/");
+              return this.classNoticeInfoTime;
+            }
+            return exceedMin.toString() + "分钟前";
+          }
+        }
+      }
     }
   }
 };
@@ -169,6 +270,14 @@ p {
   overflow-y: scroll;
   background-color: #f4f4f4;
 }
+.noCon {
+  width: 100%;
+  height: calc(100% - 1rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999999;
+}
 
 /* List */
 .habitClockItem {
@@ -205,12 +314,23 @@ p {
   font-size: 1.2rem;
   font-weight: 600;
 }
-.habitClockItemConT > span:nth-child(2) {
+.habitClockItemConT2 {
   background-color: #38b48b;
   color: white;
   font-size: 0.9rem;
   padding: 0.4rem 1.5rem;
   border-radius: 2rem;
+}
+.habitClockItemConT3 {
+  background-color: #e0e0e0;
+  color: white;
+  font-size: 0.9rem;
+  padding: 0.4rem 1.5rem;
+  border-radius: 2rem;
+}
+.habitClockItemConTNoclock {
+  color: #ff0000;
+  font-size: 0.8rem;
 }
 .habitClockItemConCP1,
 .habitClockItemConCP2 {
@@ -252,7 +372,7 @@ p {
 .habitClockItemConB img {
   width: 0.9rem;
   height: 0.9rem;
-  margin-right: .3rem;
+  margin-right: 0.3rem;
 }
 .habitClockItemConBB {
   width: 1px;

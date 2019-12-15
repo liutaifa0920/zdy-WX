@@ -12,6 +12,7 @@
       <el-calendar>
         <template slot="dateCell" slot-scope="{date, data}">
           <div
+            @click="clickDate(data)"
             :class="'topCalendarItem'+(data.isSelected && (new Date().getTime() >= new Date(data.day).getTime()) ? ' is-selected' : ' is-close')"
           >
             <p>
@@ -40,34 +41,52 @@
       <div class="clockInItem is-gary" v-if="false">已打卡</div>
     </div>
     <div class="garyBlock"></div>
-    <div class="clockInStatisticsToclass" @click="toClassClockInSta">
-      <p>班级打卡{{"20"}}人，未打卡{{"2"}}人</p>
+    <div v-if="statisticsInfo.clock_log_data.length == 0" class="noContent">没有打卡动态哦~</div>
+    <div
+      v-if="statisticsInfo.clock_log_data.length != 0"
+      class="clockInStatisticsToclass"
+      @click="toClassClockInSta"
+    >
+      <p>班级打卡{{statisticsInfo.clock_num}}人，未打卡{{statisticsInfo.no_clock_num}}人</p>
       <p>></p>
     </div>
-    <div class="clockInRecord">打卡记录</div>
+    <div v-if="statisticsInfo.clock_log_data.length != 0" class="clockInRecord">打卡记录</div>
     <!-- 单条动态 -->
-    <div class="clockInfoList" v-for="(item, i) in 5" :key="i">
+    <div
+      v-show="statisticsInfo.clock_log_data.length != 0"
+      class="clockInfoList"
+      v-for="(item, i) in statisticsInfo.clock_log_data"
+      :key="i"
+    >
       <div class="clockInfoListItem">
         <div @click="linkToHistory" class="clockInfoListItemLeft">
-          <img src="~@/assets/imgs/home/habitClock/bg.png" alt />
+          <img :src="item.img" alt />
           <div class="clockInfoListItemTopRight">
-            <p>{{"李四爸爸"}}</p>
-            <p>{{"2019-11-16 18:24"}} 已坚持{{"1"}}天</p>
+            <p>{{item.name + item.relation}}</p>
+            <p>{{item.clock_date}} 已坚持{{item.clock_num}}天</p>
           </div>
         </div>
         <img src="~@/assets/imgs/home/habitClock/更多.png" alt />
       </div>
       <div class="clockInfoListItemCon">
-        <p @click="linkToHistory">{{"知点云是由山东旭兴网络科技有限公司专为K12公办学校研发的数字孪生教育SaaS软件。"}}</p>
+        <p @click="linkToHistory">{{item.content}}</p>
         <div>录音</div>
         <div>图片/视频</div>
       </div>
       <!-- 按钮行 -->
       <div class="clockInfoListItemBtn">
         <div class="clockInfoListItemIsGood">
-          <img v-if="true" src="~@/assets/imgs/home/habitClock/no_good.png" alt="未点赞" />
-          <img v-if="false" src="~@/assets/imgs/home/habitClock/is_good.png" alt="已点赞" />
-          <p>{{5}}</p>
+          <img
+            v-if="item.like_data.is_like == 0"
+            src="~@/assets/imgs/home/habitClock/no_good.png"
+            alt="未点赞"
+          />
+          <img
+            v-if="item.like_data.is_like == 1"
+            src="~@/assets/imgs/home/habitClock/is_good.png"
+            alt="已点赞"
+          />
+          <p>{{item.like_data.like_num == 0 ? '':item.like_data.like_num}}</p>
         </div>
         <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
         <img src="~@/assets/imgs/home/habitClock/is_fenxiang.png" alt="分享" />
@@ -77,7 +96,7 @@
         <!-- 点赞区 -->
         <div class="clockInfoListItemReportTop">
           <img src="~@/assets/imgs/home/habitClock/no_good.png" alt="点赞" />
-          <p>{{"王五老师"}}</p>
+          <p>{{item.like_data.like_user}}</p>
         </div>
         <!-- 评论内容 -->
         <div class="clockInfoListItemReportBot">
@@ -85,9 +104,14 @@
             <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
           </div>
           <div class="clockInfoListItemReportBotRig">
-            <p v-for="(item ,i) in 3" :key="i">
-              <span>{{"王五老师"}}:</span>
-              <span>棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒</span>
+            <p v-for="(items ,index) in item.comment_data" :key="index">
+              <span v-if="items.to_user.userid == 0" class="isName">{{items.commnet_user.name}}:</span>
+              <span v-if="items.to_user.userid == 0" class="isContent">{{items.content}}</span>
+
+              <span v-if="items.to_user.userid != 0" class="isName">{{items.commnet_user.name}}</span>
+              <span v-if="items.to_user.userid != 0" style="padding-right: .2rem;">回复</span>
+              <span v-if="items.to_user.userid != 0" class="isName">{{items.to_user.name}}:</span>
+              <span v-if="items.to_user.userid != 0" class="isContent">{{items.content}}</span>
             </p>
           </div>
         </div>
@@ -96,12 +120,135 @@
   </div>
 </template>
 <script>
+import { homeHabitClockStatistics } from "@/api/api";
 export default {
   data() {
-    return {};
+    return {
+      hi: "",
+      dt: "",
+      statisticsInfo: {
+        clock_log_data: [
+          {
+            img:
+              "http://xuxingtest.oss-cn-hangzhou.aliyuncs.com/face/20190624110133361657.png",
+            name: "诸葛亮",
+            relation: "爸爸",
+            clock_date: "2019-12-09",
+            clock_num: 3,
+            img_path: "",
+            video_path: "",
+            voice_path: "",
+            content: " dsjfk h hsdjk hjskd hfjkhs kj",
+            like_data: {
+              is_like: 0,
+              like_num: 0,
+              like_user: ""
+            },
+            comment_data: [
+              {
+                comment_id: 1, //评论id
+                content: "放大范德萨", //评论内容
+                commnet_user: {
+                  //评论人Info
+                  userid: 30001120,
+                  student_id: 20004910,
+                  name: "诸葛亮爸爸"
+                },
+                to_user: {
+                  //被回复人
+                  userid: 0,
+                  receiver_student_id: 0,
+                  name: ""
+                }
+              },
+              {
+                comment_id: 3,
+                content: "我的评论哈哈哈哈哈哈哈哈",
+                commnet_user: {
+                  userid: 30001120,
+                  student_id: 20004910,
+                  name: "诸葛亮爸爸"
+                },
+                to_user: {
+                  userid: 30001120,
+                  receiver_student_id: 20004910,
+                  name: "诸葛亮爸爸"
+                }
+              },
+              {
+                comment_id: 4,
+                content: "我的评论哈哈哈哈哈哈哈哈",
+                commnet_user: {
+                  userid: 30001120,
+                  student_id: 20004910,
+                  name: "诸葛亮爸爸"
+                },
+                to_user: {
+                  userid: 0,
+                  receiver_student_id: 0,
+                  name: ""
+                }
+              }
+            ]
+          }
+        ],
+        clock_num: 2,
+        is_clock_today: 1,
+        no_clock_num: 1
+      }
+    };
   },
-  mounted() {},
+  mounted() {
+    this.queryHi();
+  },
   methods: {
+    // 获取习惯ID
+    queryHi() {
+      console.log(this.$route.query.hi);
+      this.hi = this.$route.query.hi;
+      this.queryNowDate();
+      this.queryInfo();
+    },
+    // 获取当前日期
+    queryNowDate() {
+      this.dt =
+        new Date().getFullYear() +
+        "-" +
+        (new Date().getMonth() + 1) +
+        "-" +
+        new Date().getDate();
+      console.log(this.dt);
+    },
+    // 请求页面数据
+    queryInfo() {
+      // let data = {
+      //   ui: sessionStorage.getItem("ui"),
+      //   si: sessionStorage.getItem("si"),
+      //   hi: this.hi,
+      //   dt: this.dt,
+      //   nu: ,
+      //   v: sessionStorage.getItem("v")
+      // };
+      let data = {
+        ui: 30001120,
+        si: 20004910,
+        hi: 12,
+        dt: this.dt,
+        v: 100000
+      };
+      homeHabitClockStatistics(data).then(res => {
+        console.log(res.data.statis);
+        if (res.code == 200) {
+          this.statisticsInfo = res.data.statis;
+        }
+      });
+    },
+    // 日期点击
+    clickDate(data) {
+      console.log(data.day);
+      this.dt = data.day;
+      this.queryInfo();
+    },
     // 跳转历史打卡页面
     linkToHistory() {
       this.$router.push({
@@ -117,7 +264,11 @@ export default {
     // linkTo 班级打卡统计
     toClassClockInSta() {
       this.$router.push({
-        path: "/classClockInStatistics"
+        path: "/classClockInStatistics",
+        query: {
+          hi: this.hi,
+          dt: this.dt
+        }
       });
     },
     // 返回上一级
@@ -247,6 +398,16 @@ p {
   width: 100vw;
   height: 0.8rem;
   background-color: #f4f4f4;
+}
+.noContent {
+  width: 100%;
+  height: calc(100% - 13.2rem);
+  background-color: white;
+  color: #999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
 }
 
 /* linkToclassClockInfo */
@@ -394,20 +555,20 @@ p {
   height: 1rem;
   margin-right: 1rem;
 }
-/* .clockInfoListItemReportBotRig{
-} */
+.clockInfoListItemReportBotRig {
+}
+
 .clockInfoListItemReportBotRig > p {
-  /* height: 0.9rem; */
   font-size: 0.9rem;
   line-height: 0.9rem;
   margin-bottom: 0.3rem !important;
 }
-.clockInfoListItemReportBotRig > p > span:nth-child(1) {
+.isName {
   color: #38b48b;
   padding-right: 0.3rem;
   line-height: 1rem;
 }
-.clockInfoListItemReportBotRig > p > span:nth-child(2) {
+.isContent {
   color: #313131;
   line-height: 1rem;
 }

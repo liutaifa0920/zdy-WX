@@ -11,14 +11,14 @@
     <div class="rankingListBox">
       <div class="topBlock"></div>
       <div class="rankingListBoxTop">
-        <img src="~@/assets/imgs/home/habitClock/yun.png" alt />
+        <img :src="studentInfo.img" alt />
         <div class="rankingListBoxTopTil">
-          <p>{{"张三"}} 排名第一</p>
-          <span>我已坚持{{"12"}}天</span>
+          <p>{{studentInfo.name}} 排名第一</p>
+          <span>我已坚持{{studentInfo.rank_num}}天</span>
         </div>
       </div>
       <div class="rankingListBoxBot">
-        <div class="rankingListBoxBotList" v-for="(item,i) in 15" :key="i">
+        <div class="rankingListBoxBotList" v-for="(item,i) in rankingList" :key="i">
           <div class="rankingListBoxBotListLeft">
             <div class="rankingListBoxBotListLeftItem" v-if="i == 0">
               <img src="~@/assets/imgs/home/habitClock/1.png" alt />
@@ -33,22 +33,60 @@
               v-if="(i != 0) && (i != 1) && (i != 2) "
               class="rankingListBoxBotListLeftItem"
             >{{i+1}}</div>
-            <img src="~@/assets/imgs/home/habitClock/bg.png" alt />
-            <p>{{"张三"}}</p>
+            <img v-if="item.img != ''" :src="item.img" alt />
+            <div
+              v-if="item.img == ''"
+              class="imgText"
+            >{{item.name.length > 2 ? item.name.subStr(item.name.length - 2) : item.name}}</div>
+            <p>{{item.name}}</p>
           </div>
-          <div class="rankingListBoxBotListRight">{{"12"}}天</div>
+          <div class="rankingListBoxBotListRight">{{item.ranking}}天</div>
         </div>
       </div>
     </div>
   </div>
 </template>
 <script>
+import { homeHabitRankingList } from "@/api/api";
 export default {
   data() {
-    return {};
+    return {
+      hi: "",
+      studentInfo: {},
+      rankingList: []
+    };
   },
-  mounted() {},
+  mounted() {
+    this.queryHi();
+  },
   methods: {
+    // 获取习惯ID
+    queryHi() {
+      console.log(this.$route.query.hi);
+      this.hi = this.$route.query.hi;
+      this.queryRankingList();
+    },
+    // 获取排行数据
+    queryRankingList() {
+      // let data = {
+      //   ui: sessionStorage.getItem("ui"),
+      //   si: sessionStorage.getItem("si"),
+      //   v: sessionStorage.getItem("v")
+      // };
+      let data = {
+        ui: 30001120,
+        si: 20004910,
+        hi: this.hi,
+        v: 100000
+      };
+      homeHabitRankingList(data).then(res => {
+        console.log(res.data.ranking);
+        if (res.code == 200) {
+          this.studentInfo = res.data.ranking.student_info;
+          this.rankingList = res.data.ranking.ranking_list.list;
+        }
+      });
+    },
     // 返回上一级
     onClickLeft() {
       this.$router.go(-1);
@@ -90,7 +128,6 @@ p {
 .rankingListBoxTop > img {
   width: 4.5rem;
   height: 4.5rem;
-  background-color: red;
   border-radius: 50%;
   position: relative;
   top: 1.5rem;
@@ -150,7 +187,7 @@ p {
   border-bottom: 1px solid #e0e0e0;
 }
 .rankingListBoxBotListLeft {
-  width: 50%;
+  width: 70%;
   display: flex;
   justify-content: left;
   align-items: center;
@@ -161,6 +198,17 @@ p {
   border-radius: 50%;
   border: 1px solid white;
   margin-right: 0.8rem;
+}
+.imgText {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  border: 1px solid white;
+  margin-right: 0.8rem;
+  color: white;
+  text-align: center;
+  line-height: 3rem;
+  background-color: #027ffb;
 }
 .rankingListBoxBotListLeftItem {
   color: #999999;
@@ -174,7 +222,7 @@ p {
   justify-content: center;
 }
 .rankingListBoxBotListLeftItem > img {
-  width: 100%;
+  width: 2rem;
 }
 .rankingListBoxBotListRight {
   font-size: 0.9rem;

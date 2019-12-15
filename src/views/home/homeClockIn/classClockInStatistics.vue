@@ -14,23 +14,29 @@
       :data-clipboard-text="currentType == 1 ? noCopyClock : copyClock"
     >复制名单</div>
     <van-tabs v-model="currentType" animated swipeable>
-      <van-tab :name="1" :title="'未打卡' + 15 + '人'">
+      <van-tab :name="1" :title="'未打卡' + listInfo.no_clock_num + '人'">
         <div class="itemContentBox">
           <div class="itemContent">
+            <p>{{"以下学生未完成" + listInfo.date.substr(0, 4) + "年" + listInfo.date.substr(5, 2) + "月" + listInfo.date.substr(8) + "日" + "“" + listInfo.title + "”打卡:"}}</p>
             <p
-              v-for="(itme, i) in 15"
+              v-show="listInfo.no_clock.length > 0"
+              v-for="(item, i) in listInfo.no_clock"
               :key="i"
-            >{{i == 0 ? ("以下学生未完成" + "2019年11月26日"+"“"+"每日阅读"+"”打卡:"):((i+1)+"." + "李四")}}</p>
+            >{{(i + 1) + "." + item.name}}</p>
+            <p v-show="listInfo.no_clock.length == 0">无人未打卡</p>
           </div>
         </div>
       </van-tab>
-      <van-tab :name="2" :title="'已打卡' + 8 + '人'">
+      <van-tab :name="2" :title="'已打卡' + listInfo.clock_num + '人'">
         <div class="itemContentBox">
           <div class="itemContent">
+            <p>{{"以下学生已完成" + listInfo.date.substr(0, 4) + "年" + listInfo.date.substr(5, 2) + "月" + listInfo.date.substr(8) + "日" + "“" + listInfo.title + "”打卡:"}}</p>
             <p
-              v-for="(itme, i) in 8"
+              v-show="listInfo.clock.length > 0"
+              v-for="(item, i) in listInfo.clock"
               :key="i"
-            >{{i == 0 ? ("以下学生已完成" + "2019年11月26日"+"“"+"每日阅读"+"”打卡:"):((i+1)+"." + "李四")}}</p>
+            >{{(i + 1) + "." + item.name}}</p>
+            <p v-show="listInfo.clock.length == 0">无人已打卡</p>
           </div>
         </div>
       </van-tab>
@@ -40,9 +46,12 @@
 <script>
 import Clipboard from "clipboard";
 import { Toast } from "vant";
+import { homeHabitClassClockStatics } from "@/api/api";
 export default {
   data() {
     return {
+      hi: "",
+      dt: "",
       currentType: 1,
       listInfo: {
         habit_id: 12,
@@ -72,42 +81,70 @@ export default {
     };
   },
   mounted() {
-    let tempNoClockText = "";
-    this.listInfo.no_clock.map((e, i) => {
-      tempNoClockText += i + 1 + "." + e.name + "\n";
-    });
-    this.noCopyClock =
-      "以下学生未完成" +
-      this.listInfo.date.substr(0, 4) +
-      "年" +
-      this.listInfo.date.substr(5, 2) +
-      "月" +
-      this.listInfo.date.substr(8) +
-      "日“" +
-      this.listInfo.title +
-      "”打卡:\n" +
-      tempNoClockText;
-
-    let tempClockText = "";
-    this.listInfo.clock.map((e, i) => {
-      tempClockText += i + 1 + "." + e.name + "\n";
-    });
-    this.copyClock =
-      "以下学生已完成" +
-      this.listInfo.date.substr(0, 4) +
-      "年" +
-      this.listInfo.date.substr(5, 2) +
-      "月" +
-      this.listInfo.date.substr(8) +
-      "日“" +
-      this.listInfo.title +
-      "”打卡:\n" +
-      tempClockText;
-
-    console.log(this.copyClock);
-    console.log(this.noCopyClock);
+    this.queryHi();
   },
   methods: {
+    // 获取习惯ID 日期
+    queryHi() {
+      console.log(this.$route.query);
+      this.hi = this.$route.query.hi;
+      this.dt = this.$route.query.dt;
+      this.queryInfo();
+    },
+    // 请求页面数据
+    queryInfo() {
+      // let data = {
+      //   dt: this.dt,
+      //   hi: this.hi,
+      //   v: sessionStorage.getItem("v")
+      // };
+      let data = {
+        dt: this.dt,
+        hi: 12,
+        v: 100000
+      };
+      homeHabitClassClockStatics(data).then(res => {
+        console.log(res.data);
+        if (res.code == 200) {
+          this.listInfo = res.data;
+          // 临时字符串
+          let tempNoClockText = "";
+          this.listInfo.no_clock.map((e, i) => {
+            tempNoClockText += i + 1 + "." + e.name + "\n";
+          });
+          this.noCopyClock =
+            "以下学生未完成" +
+            this.listInfo.date.substr(0, 4) +
+            "年" +
+            this.listInfo.date.substr(5, 2) +
+            "月" +
+            this.listInfo.date.substr(8) +
+            "日“" +
+            this.listInfo.title +
+            "”打卡:\n" +
+            tempNoClockText;
+
+          let tempClockText = "";
+          this.listInfo.clock.map((e, i) => {
+            tempClockText += i + 1 + "." + e.name + "\n";
+          });
+          this.copyClock =
+            "以下学生已完成" +
+            this.listInfo.date.substr(0, 4) +
+            "年" +
+            this.listInfo.date.substr(5, 2) +
+            "月" +
+            this.listInfo.date.substr(8) +
+            "日“" +
+            this.listInfo.title +
+            "”打卡:\n" +
+            tempClockText;
+
+          console.log(this.copyClock);
+          console.log(this.noCopyClock);
+        }
+      });
+    },
     // 复制名单
     copyClick() {
       let clipboard = new Clipboard(".CopyBtn");

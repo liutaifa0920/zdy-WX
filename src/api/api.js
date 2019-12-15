@@ -46,14 +46,46 @@ export function homeModify(data) {
   });
 }
 
-// 获取wxToken
-// export function homeGetAccessToken(data) {
-//   return request({
-//     url: "/parent/wechat/getAccessToken",
-//     method: "post",
-//     data
-//   });
-// }
+// 习惯打卡---
+// 习惯打卡详情 进行中 已完成
+export function homeHabitIndex(data) {
+  return request({
+    url: "/parent/habit/index",
+    method: "post",
+    data
+  });
+}
+export function homeHabitEndindex(data) {
+  return request({
+    url: "/parent/habit/endindex",
+    method: "post",
+    data
+  });
+}
+// 排行榜
+export function homeHabitRankingList(data) {
+  return request({
+    url: "/parent/habit/rankingList",
+    method: "post",
+    data
+  });
+}
+// 打卡统计
+export function homeHabitClockStatistics(data) {
+  return request({
+    url: "/parent/habit/clockStatistics",
+    method: "post",
+    data
+  });
+}
+// 班级打卡统计
+export function homeHabitClassClockStatics(data) {
+  return request({
+    url: "/parent/habit/classClockStatics",
+    method: "post",
+    data
+  });
+}
 
 
 // ---------------------- User --------------------------- //
