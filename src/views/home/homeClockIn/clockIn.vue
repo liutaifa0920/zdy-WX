@@ -15,25 +15,39 @@
     </div>
     <div class="clockInContent">
       <textarea class="clockInContentText" placeholder="输入你想说的话..." type="text" />
-      <div class="recordList">
+      <audio autoplay src></audio>
+      <div v-for="(item, i) in adiouList" :key="i" class="recordPlayList">
+        <img @click="recorderPlay(item, i)" src="~@/assets/imgs/home/habitClock/playB.png" alt />
+      </div>
+      <div v-show="isRecord" class="recordList">
         <div class="recordListLeft">
           <img src="~@/assets/imgs/home/habitClock/错误.png" alt />
           <div class="shu"></div>
           <div class="redBall"></div>
-          <p>正在录音 {{"00:16"}}</p>
+          <p>正在录音 {{recordTime}}</p>
         </div>
         <div class="recordListRight">
-          <img @click="recorderPlay" src="~@/assets/imgs/home/habitClock/play.png" alt />
-          <img @click="recorderStop" src="~@/assets/imgs/home/habitClock/play_stop.png" alt />
+          <img
+            v-show="!isOverRecord"
+            @click="recorderStop"
+            src="~@/assets/imgs/home/habitClock/play_stop.png"
+            alt
+          />
           <p @click="recorderStop">完成</p>
         </div>
       </div>
 
       <div class="imgVideoList">
-        <div class="imgVideoListItem" v-for="(item , i) in 5" :key="i+'a'">
-          <img src="~@/assets/imgs/home/habitClock/play_stop.png" alt />
+        <div class="imgVideoListItem" v-for="(item, i) in imgList" :key="i+'img'">
+          <img :src="item.data" @click="imgLook(i)" />
           <div class="imgVideoListItemDele">
-            <img src="~@/assets/imgs/home/habitClock/item错误.png" alt />
+            <img src="~@/assets/imgs/home/habitClock/item错误.png" @click="deleItemClick(2, i)" alt />
+          </div>
+        </div>
+        <div class="imgVideoListItem" v-for="(item, i) in videoList" :key="i+'video'">
+          <video :src="item.data" @click="videoLook(i)"></video>
+          <div class="imgVideoListItemDele">
+            <img src="~@/assets/imgs/home/habitClock/item错误.png" @click="deleItemClick(3, i)" alt />
           </div>
         </div>
         <div
@@ -54,47 +68,68 @@
         </div>
       </div>
     </div>
-
-    <!-- <div class="block" @click="recorderStart">开始录制</div> -->
-    <!-- <p>录音时间</p> -->
-    <!-- <div class="block" @click="recorderStop">结束录制</div> -->
-    <!-- <div class="block" @click="recorderPlay">录音播放</div> -->
-    <!-- <div class="block" @click="chooseImgAdiou">拍照片</div> -->
-    <!-- <audio autoplay></audio> -->
     <div class="upLoadBtn">确定发布</div>
-    <van-popup v-model="imgVideoPopupFlag" position="bottom" :style="{ height: '6rem' }">
-      <div class="chooseImgOrAdiou">
-        添加/拍摄照片
-        <input @change="changeVideo" ref type="file" accept="video/*" capture="camera" />
+    <van-popup v-model="imgVideoPopupFlag" position="bottom" :style="{ height: '9rem' }">
+      <div class="chooseImgOrAdiou" @click="chooseImgClick">
+        添加照片
+        <input @change="changeImg" ref="chooseImg" type="file" accept="image/*" />
       </div>
-      <div class="chooseImgOrAdiou">
+      <div class="chooseImgOrAdiou" @click="chooseSetImgClick">
+        拍摄照片
+        <input
+          @change="changeSetImg"
+          ref="chooseSetImg"
+          type="file"
+          accept="image/*"
+          capture="camera"
+        />
+      </div>
+      <div class="chooseImgOrAdiou" @click="chooseAdiouClick">
         拍摄视频
-        <input @change="changeImg" ref type="file" accept="image/*" capture="camera" />
+        <input
+          @change="changeVideo"
+          ref="chooseVideo"
+          type="file"
+          accept="video/*"
+          capture="camera"
+        />
       </div>
     </van-popup>
-    <img :src="chooseImgLocalIds" />
-    <!-- <div class="topBlock"></div> -->
+    <van-overlay :show="videoShow" @click="videoShow = false">
+      <div class="wrapper">
+        <video ref="videoShow" autoplay :src="videoShowData"></video>
+      </div>
+    </van-overlay>
   </div>
 </template>
 <script>
+import { ImagePreview } from "vant";
 import wx from "weixin-js-sdk";
 import axios from "axios";
 import Recorder from "js-audio-recorder";
 export default {
   data() {
     return {
+      accessToken: "",
       noncestr: "",
       signature: "",
       timestamp: "",
-      chooseImgLocalIds: "",
       recordID: "",
-      imgVideoPopupFlag: false
+      serverId: "",
+      imgVideoPopupFlag: false,
+      isRecord: false,
+      isOverRecord: false,
+      recordTime: "00:00",
+      adiouList: [],
+      imgList: [],
+      videoList: [],
+      videoShow: false,
+      videoShowData: ""
     };
   },
   created() {},
   mounted() {
     this.queryAccessToken();
-    this.videotape();
   },
   destroyed() {},
   computed: {},
@@ -112,6 +147,7 @@ export default {
             this.noncestr = res.data.data.noncestr;
             this.timestamp = res.data.data.timestamp;
             this.signature = res.data.data.sign;
+            this.accessToken = res.data.data.accessToken;
             this.initRecorder();
           }
         });
@@ -120,7 +156,7 @@ export default {
     initRecorder() {
       let timestamp = new Date().getTime();
       wx.config({
-        debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+        debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
         appId: "wx108e8df5b6b8ace0", // 必填，企业号的唯一标识，此处填写企业号corpid
         timestamp: this.timestamp, // 必填，生成签名的时间戳
         nonceStr: this.noncestr, // 必填，生成签名的随机串
@@ -170,46 +206,132 @@ export default {
     },
     // 录音
     recorderStart() {
+      this.isRecord = true;
       wx.startRecord();
     },
     recorderStop() {
+      this.isRecord = false;
       let that = this;
       wx.stopRecord({
         success(res) {
           that.recordID = res.localId;
+          that.adiouList.push(res.localId);
+          wx.uploadVoice({
+            localId: that.recordID, // 需要上传的音频的本地ID，由stopRecord接口获得
+            isShowProgressTips: 1, // 默认为1，显示进度提示
+            success: function(res) {
+              that.serverId = res.serverId; // 返回音频的服务器端ID
+              axios
+                .post("http://wechat.sdxxtop.com/parent/wechat/getVoiceUrl", {
+                  media_id: that.serverId
+                })
+                .then(res => {
+                  console.log(res);
+                });
+            }
+          });
         }
       });
     },
-    recorderPlay() {
+    recorderPlay(item, i) {
       let that = this;
       wx.playVoice({
-        localId: that.recordID.toString() // 需要播放的音频的本地ID，由stopRecord接口获得
+        localId: item // 需要播放的音频的本地ID，由stopRecord接口获得
       });
     },
-    // 拍照
-    chooseImgAdiou() {
-      wx.chooseImage({
-        count: 1, // 默认9
-        sizeType: ["original", "compressed"], // 可以指定是原图还是压缩图，默认二者都有
-        sourceType: ["album", "camera"], // 可以指定来源是相册还是相机，默认二者都有
-        success(res) {
-          console.log(res.localIds);
-          this.chooseImgLocalIds = res.localIds; // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
-        }
-      });
-    },
-    // 添加照片 拍照弹窗
+    // 添加照片 拍照 录像弹窗---------------------------------
     imgVideoPopup() {
       this.imgVideoPopupFlag = true;
     },
-    changeVideo() {
-      console.log(132456);
+    // 选择照片
+    chooseImgClick() {
+      this.imgVideoPopupFlag = false;
     },
-    changeImg() {
-      console.log("qwertyuio");
+    // 拍摄照片
+    chooseSetImgClick() {
+      this.imgVideoPopupFlag = false;
     },
-    // 录像
-    videotape() {},
+    // 拍摄视频
+    chooseAdiouClick() {
+      this.imgVideoPopupFlag = false;
+    },
+    // 选择已有照片
+    changeImg(e) {
+      let that = this;
+      let freader = new FileReader();
+      console.log(e.target.files[0]);
+      freader.readAsDataURL(e.target.files[0]);
+      freader.onload = function(event) {
+        let tempObj = {
+          data: event.target.result,
+          file: e.target.files[0]
+        };
+        that.imgList.push(tempObj);
+        console.log(that.$refs.chooseImg);
+      };
+    },
+    // 选择拍摄照片
+    changeSetImg(e) {
+      let that = this;
+      let freader = new FileReader();
+      console.log(e.target.files[0]);
+      freader.readAsDataURL(e.target.files[0]);
+      freader.onload = function(event) {
+        let tempObj = {
+          data: event.target.result,
+          file: e.target.files[0]
+        };
+        that.imgList.push(tempObj);
+      };
+    },
+    // 选择拍摄视频
+    changeVideo(e) {
+      let that = this;
+      let freader = new FileReader();
+      console.log(e.target.files[0]);
+      freader.readAsDataURL(e.target.files[0]);
+      freader.onload = function(event) {
+        let tempObj = {
+          data: event.target.result,
+          file: e.target.files[0]
+        };
+        that.videoList.push(tempObj);
+      };
+    },
+    // 图片预览
+    imgLook(i) {
+      let arr = this.imgList.map(e => {
+        return e.data;
+      });
+      ImagePreview({
+        images: arr,
+        startPosition: i
+      });
+    },
+    // 视频预览
+    videoLook(i) {
+      this.videoShow = true;
+      this.videoShowData = this.videoList[i].data;
+      this.$refs.videoShow.currentTime = 0;
+      this.$refs.videoShow.play();
+      // console.log(this.$refs.videoShow.currentTime);
+    },
+    // 删除列表文件
+    deleItemClick(type, i) {
+      if (type == 1) {
+        // 录音
+      } else if (type == 2) {
+        this.imgList.splice(i, 1);
+        // if (this.imgList.length == 0) {
+        console.log(this.$refs.imgListRoot);
+        // }
+      } else if (type == 3) {
+        this.videoList.splice(i, 1);
+        if (this.videoList.length == 0) {
+          console.log(this.$refs.videoListRoot);
+        }
+      }
+    },
     // 返回上一级
     onClickLeft() {
       this.$router.go(-1);
@@ -221,6 +343,16 @@ export default {
 p {
   margin: 0 !important;
 }
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.wrapper > video {
+  width: 100vw;
+  height: 100vh;
+}
 
 /* top */
 .topNavBar {
@@ -229,6 +361,7 @@ p {
   left: 0;
   width: 100%;
   height: 2.8rem;
+  background-color: white;
 }
 .topBlock {
   width: 100%;
@@ -287,6 +420,22 @@ p {
 }
 .clockInContentText::placeholder {
   color: #99999993;
+}
+.recordPlayList {
+  width: 100%;
+  height: 3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0.2rem;
+  padding-left: 1rem;
+  box-sizing: border-box;
+  background-color: #f7fbff;
+}
+.recordPlayList > img {
+  width: 1.8rem;
+  height: 1.8rem;
 }
 .recordList {
   width: 100%;
@@ -359,7 +508,12 @@ p {
 .imgVideoListItem > img {
   width: 6rem;
   height: 6rem;
-  background-color: #9c9c9c;
+  background-color: #eeeeee88;
+}
+.imgVideoListItem > video {
+  width: 6rem;
+  height: 6rem;
+  background-color: #eeeeee88;
 }
 .imgVideoListItemDele {
   position: absolute;
@@ -419,5 +573,15 @@ p {
   text-align: center;
   position: relative;
   border-bottom: 1px solid #eeeeee;
+  box-sizing: border-box;
+}
+.chooseImgOrAdiou > input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3rem;
+  padding: 0;
+  opacity: 0;
 }
 </style>
