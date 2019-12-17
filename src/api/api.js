@@ -62,6 +62,14 @@ export function homeHabitEndindex(data) {
     data
   });
 }
+// 打卡详情
+export function homeHabitClockDetail(data) {
+  return request({
+    url: "/parent/habit/clockDetail",
+    method: "post",
+    data
+  });
+}
 // 排行榜
 export function homeHabitRankingList(data) {
   return request({
@@ -82,6 +90,14 @@ export function homeHabitClockStatistics(data) {
 export function homeHabitClassClockStatics(data) {
   return request({
     url: "/parent/habit/classClockStatics",
+    method: "post",
+    data
+  });
+}
+// 打卡
+export function homeHabitSubmitClock(data) {
+  return request({
+    url: "/parent/habit/submitClock",
     method: "post",
     data
   });

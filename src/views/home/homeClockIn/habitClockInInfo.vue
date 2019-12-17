@@ -96,12 +96,44 @@
   </div>
 </template>
 <script>
+import { homeHabitClockDetail } from "@/api/api";
 export default {
   data() {
-    return {};
+    return {
+      hi: "",
+      clockInInfo: {}
+    };
   },
-  mounted() {},
+  mounted() {
+    this.queryHi();
+    this.queryInfo();
+  },
   methods: {
+    // 获取习惯ID
+    queryHi() {
+      console.log(this.$route.query.hi);
+      this.hi = this.$route.query.hi;
+    },
+    queryInfo() {
+      // let data = {
+      //   ui: sessionStorage.getItem("ui"),
+      //   si: sessionStorage.getItem("si"),
+      //   hi: this.hi,
+      //   v: sessionStorage.getItem("v")
+      // };
+      let data = {
+        ui: 30001089,
+        si: 21004058,
+        hi: this.hi,
+        v: sessionStorage.getItem("v")
+      };
+      homeHabitClockDetail(data).then(res => {
+        console.log(res.data.statis);
+        if (res.code == 200) {
+          this.clockInInfo = res.data.statis;
+        }
+      });
+    },
     // 跳转历史打卡页面
     linkToHistory() {
       this.$router.push({
@@ -131,7 +163,10 @@ export default {
     // 去打卡
     linkToClockIn() {
       this.$router.push({
-        path: "/clockIn"
+        path: "/clockIn",
+        query: {
+          hi: item.habit_id
+        }
       });
     }
   }

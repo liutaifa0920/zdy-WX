@@ -31,7 +31,7 @@
                 <span
                   v-show="(item.is_clock == 1) && (item.is_clock_today == 0)"
                   class="habitClockItemConT2"
-                  @click="linkToToClockIn"
+                  @click="linkToToClockIn(item)"
                 >去打卡</span>
                 <span
                   v-show="(item.is_clock == 1) && (item.is_clock_today == 1)"
@@ -132,20 +132,20 @@ export default {
       //   v: sessionStorage.getItem("v")
       // };
       let data = {
-        ui: 30001120,
-        si: 20004910,
+        ui: 30001089,
+        si: 21004058,
         v: 100000
       };
       console.log(data);
       homeHabitIndex(data).then(res => {
-        console.log(res.data.habit);
-        if (res.code == 200) {
+        console.log(res.data);
+        if (res.code == 200 && res.data.habit) {
           this.clockInList = res.data.habit;
         }
       });
       homeHabitEndindex(data).then(res => {
-        console.log(res.data.habit);
-        if (res.code == 200) {
+        console.log(res);
+        if (res.code == 200 && res.data.habit) {
           this.clockInOverList = res.data.habit;
         }
       });
@@ -161,9 +161,12 @@ export default {
       });
     },
     // 跳转至打卡页面
-    linkToToClockIn() {
+    linkToToClockIn(item) {
       this.$router.push({
-        path: "/clockIn"
+        path: "/clockIn",
+        query: {
+          hi: item.habit_id
+        }
       });
     },
     // 打卡ItemBottomClick

@@ -3,25 +3,59 @@
     <van-nav-bar class="topNavBar" left-text="返回" title="打卡" left-arrow @click-left="onClickLeft" />
     <div class="topBlock"></div>
     <div class="clockInTop">
-      <p>每日阅读</p>
-      <p>剩余：{{"20"}}天 频次：每周一/二/三/四/五/六</p>
+      <p>{{clockInInfo.title}}</p>
+      <p>剩余：{{clockInInfo.remain_days}}天 频次：{{clockInInfo.sign_frequency}}</p>
     </div>
     <div class="clockInTopCon">
-      <p>坚持阅读养成好习惯-朗读音频打卡</p>
+      <p>{{clockInInfo.content}}</p>
       <p>
         详情
         <img src="~@/assets/imgs/home/habitClock/2爱向下.png" alt />
       </p>
     </div>
     <div class="clockInContent">
-      <textarea class="clockInContentText" placeholder="输入你想说的话..." type="text" />
-      <audio autoplay src></audio>
-      <div v-for="(item, i) in adiouList" :key="i" class="recordPlayList">
-        <img @click="recorderPlay(item, i)" src="~@/assets/imgs/home/habitClock/playB.png" alt />
+      <textarea
+        class="clockInContentText"
+        v-model="clockConText"
+        placeholder="输入你想说的话..."
+        type="text"
+      />
+
+      <div v-for="(item, i) in adiouList" :key="i+'audio'" class="recordPlayList">
+        <div class="deleAudioBtn" @click="deleAudioBtnClick(i)">×</div>
+        <audio ref="audioRoot" @timeupdate="audioTimeUpdate(i)" :src="item.file"></audio>
+        <img
+          v-if="item.status"
+          @click="recorderPlay(item, i)"
+          src="~@/assets/imgs/home/habitClock/playB.png"
+        />
+        <img
+          v-if="!item.status"
+          @click="recorderPause(item, i)"
+          src="~@/assets/imgs/home/habitClock/pauseB.png"
+        />
+        <van-slider
+          v-model="item.value"
+          :max="100"
+          :min="0"
+          bar-height="4px"
+          style="width:55vw;"
+          active-color="#99CCFF"
+          inactive-color="#E5E5E5"
+          @change="audioSliderChange"
+          @drag-start="audioDragS(i)"
+        >
+          <div slot="button" class="adiouButton"></div>
+        </van-slider>
+        <p>{{item.duration}}</p>
       </div>
+      <p
+        v-show="isRecord"
+        style="font-size: .8rem;color: #e60012;margin-bottom:.3rem !important;"
+      >可录音59秒</p>
       <div v-show="isRecord" class="recordList">
         <div class="recordListLeft">
-          <img src="~@/assets/imgs/home/habitClock/错误.png" alt />
+          <img @click="deleAudio" src="~@/assets/imgs/home/habitClock/错误.png" alt />
           <div class="shu"></div>
           <div class="redBall"></div>
           <p>正在录音 {{recordTime}}</p>
@@ -68,7 +102,7 @@
         </div>
       </div>
     </div>
-    <div class="upLoadBtn">确定发布</div>
+    <div class="upLoadBtn" @click="clovkInUpload">确定发布</div>
     <van-popup v-model="imgVideoPopupFlag" position="bottom" :style="{ height: '9rem' }">
       <div class="chooseImgOrAdiou" @click="chooseImgClick">
         添加照片
@@ -97,7 +131,7 @@
     </van-popup>
     <van-overlay :show="videoShow" @click="videoShow = false">
       <div class="wrapper">
-        <video ref="videoShow" autoplay :src="videoShowData"></video>
+        <video ref="videoShow" :src="videoShowData"></video>
       </div>
     </van-overlay>
   </div>
@@ -107,9 +141,14 @@ import { ImagePreview } from "vant";
 import wx from "weixin-js-sdk";
 import axios from "axios";
 import Recorder from "js-audio-recorder";
+import { homeHabitClockDetail, homeHabitSubmitClock } from "@/api/api";
+import qs from "qs";
+import { signFun } from "../../../utils/sign";
 export default {
   data() {
     return {
+      hi: "",
+      clockInInfo: {},
       accessToken: "",
       noncestr: "",
       signature: "",
@@ -119,21 +158,62 @@ export default {
       imgVideoPopupFlag: false,
       isRecord: false,
       isOverRecord: false,
+      clockConText: "",
       recordTime: "00:00",
-      adiouList: [],
+      adiouList: [
+        // {
+        //   value: 0,
+        //   file: "http://wechat.test.sdxxtop.com/wechatMedia/1576553178.mp3",
+        //   duration: "00:42"
+        // }
+      ],
+      // audioIsPause: true,
+      audioTimer: null,
+      audioTime: 0,
       imgList: [],
       videoList: [],
+      currentAudioIndex: 0,
+      // 进度条
+      adiouValue: "",
       videoShow: false,
       videoShowData: ""
     };
   },
   created() {},
   mounted() {
+    this.queryHi();
+    this.queryInfo();
     this.queryAccessToken();
   },
   destroyed() {},
   computed: {},
   methods: {
+    // 获取习惯ID
+    queryHi() {
+      console.log(this.$route.query.hi);
+      this.hi = this.$route.query.hi;
+    },
+    queryInfo() {
+      // let data = {
+      //   ui: sessionStorage.getItem("ui"),
+      //   si: sessionStorage.getItem("si"),
+      //   hi: this.hi,
+      //   v: sessionStorage.getItem("v")
+      // };
+      let data = {
+        ui: 30001089,
+        si: 21004058,
+        hi: this.hi,
+        v: sessionStorage.getItem("v")
+      };
+      homeHabitClockDetail(data).then(res => {
+        console.log(res.data.statis);
+        if (res.code == 200) {
+          this.clockInInfo = res.data.statis.habit_info;
+          console.log(this.clockInInfo);
+        }
+      });
+    },
     // 请求wx accessToken
     queryAccessToken() {
       let url = location.href.split("#")[0];
@@ -196,7 +276,7 @@ export default {
             "downloadImage"
           ],
           success(res) {
-            alert(res);
+            // alert(res);
           }
         });
       });
@@ -204,40 +284,110 @@ export default {
         // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
       });
     },
-    // 录音
+    // 录音------------------------------------------
     recorderStart() {
       this.isRecord = true;
       wx.startRecord();
+      this.audioTimer = null;
+      this.audioTime = 0;
+      this.audioTimer = setInterval(() => {
+        this.audioTime += 1;
+        if (this.audioTime < 60) {
+          this.recordTime =
+            "00:" +
+            (this.audioTime < 10 ? "0" + this.audioTime : this.audioTime);
+        } else {
+          this.audioTime = 0;
+          window.clearInterval(this.audioTimer);
+          this.recorderStop();
+        }
+      }, 1000);
     },
     recorderStop() {
+      this.audioTime = 0;
+      window.clearInterval(this.audioTimer);
       this.isRecord = false;
       let that = this;
       wx.stopRecord({
         success(res) {
           that.recordID = res.localId;
-          that.adiouList.push(res.localId);
           wx.uploadVoice({
             localId: that.recordID, // 需要上传的音频的本地ID，由stopRecord接口获得
             isShowProgressTips: 1, // 默认为1，显示进度提示
             success: function(res) {
               that.serverId = res.serverId; // 返回音频的服务器端ID
               axios
-                .post("http://wechat.sdxxtop.com/parent/wechat/getVoiceUrl", {
-                  media_id: that.serverId
+                .post("http://wechat.sdxxtop.com/parent/wechat/getMediaUrl", {
+                  mediaId: that.serverId,
+                  mediaType: 1
                 })
                 .then(res => {
-                  console.log(res);
+                  if (res.data.code == 200) {
+                    console.log(res.data.data.fileUrl);
+                    let tempObj = {
+                      value: 0,
+                      file: res.data.data.fileUrl,
+                      duration: that.recordTime,
+                      status: true
+                    };
+                    that.adiouList.push(tempObj);
+                    that.recordTime = "00:00";
+                  }
                 });
             }
           });
         }
       });
     },
+    deleAudio() {
+      this.isRecord = false;
+      this.recordTime = "00:00";
+    },
+    // 已完成录音播放
     recorderPlay(item, i) {
-      let that = this;
-      wx.playVoice({
-        localId: item // 需要播放的音频的本地ID，由stopRecord接口获得
-      });
+      console.log(item);
+      this.adiouList[i].status = false;
+      this.currentAudioIndex = i;
+      this.$refs.audioRoot[i].play();
+    },
+    // 已完成录音暂停
+    recorderPause(item, i) {
+      console.log(item);
+      this.adiouList[i].status = true;
+      this.currentAudioIndex = i;
+      this.$refs.audioRoot[i].pause();
+    },
+    // 已完成录音删除
+    deleAudioBtnClick(i) {
+      this.adiouList.splice(i, 1);
+    },
+    // 音频时间更新事件
+    audioTimeUpdate(i) {
+      let durationTime = this.$refs.audioRoot[i].duration;
+      let currentTime = this.$refs.audioRoot[i].currentTime;
+
+      if (currentTime < durationTime) {
+        this.adiouList[i].value = (currentTime / durationTime) * 100;
+      } else {
+        this.adiouList[i].value = 0;
+        this.$refs.audioRoot[i].currentTime = 0;
+        this.adiouList[i].status = true;
+        this.$refs.audioRoot[i].pause();
+      }
+    },
+    // 进度条拖动事件
+    audioDragS(i) {
+      this.$refs.audioRoot[i].pause();
+    },
+    // audioDragE() {},
+    // 进度条change
+    audioSliderChange(val) {
+      // console.log(val);
+      // console.log(this.currentAudioIndex);
+      this.adiouList[this.currentAudioIndex].status = false;
+      this.$refs.audioRoot[this.currentAudioIndex].currentTime =
+        (val / 100) * this.$refs.audioRoot[this.currentAudioIndex].duration;
+      this.$refs.audioRoot[this.currentAudioIndex].play();
     },
     // 添加照片 拍照 录像弹窗---------------------------------
     imgVideoPopup() {
@@ -331,6 +481,59 @@ export default {
           console.log(this.$refs.videoListRoot);
         }
       }
+    },
+    // 发布打卡
+    clovkInUpload() {
+      console.log("发布打卡");
+      let voice_url = this.adiouList
+        .map(e => {
+          return e.file;
+        })
+        .join(",");
+      // let tempData = {
+      //   ui: sessionStorage.getItem("ui"),
+      //   si: sessionStorage.getItem("si"),
+      //   hi: this.hi,
+      //   ct: this.clockConText,
+      //   voice_url,
+      //   v: sessionStorage.getItem("v")
+      // };
+      let tempData = {
+        ui: 30001089,
+        si: 21004058,
+        hi: this.hi,
+        ct: this.clockConText,
+        voice_url,
+        v: sessionStorage.getItem("v")
+      };
+      console.log(tempData);
+      let sn = signFun(tempData, "9E1613256C1F4815219A633762B53704");
+
+      let fd = new FormData();
+      this.imgList.map(e => {
+        fd.append("img[]", e.file);
+      });
+      this.videoList.map(e => {
+        fd.append("video[]", e.file);
+      });
+      fd.append("data", sn);
+
+      let config = {
+        headers: { "Content-Type": "multipart/form-data" }
+      };
+
+      axios
+        .post(
+          "http://app.sdxxtop.com/parent/habit/wechatSubmitClock",
+          fd,
+          config
+        )
+        .then(res => {
+          console.log("查得紧卡萨丁很快就爱神的箭卡接口的黄金卡")
+          console.log(res);
+          if (res.code == 200) {
+          }
+        });
     },
     // 返回上一级
     onClickLeft() {
@@ -426,17 +629,48 @@ p {
   height: 3rem;
   margin-bottom: 1rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: left;
   align-items: center;
   border-radius: 0.2rem;
   padding-left: 1rem;
   box-sizing: border-box;
   background-color: #f7fbff;
+  position: relative;
 }
 .recordPlayList > img {
   width: 1.8rem;
   height: 1.8rem;
+  margin-right: 1rem;
 }
+.adiouButton {
+  width: 1rem;
+  height: 1rem;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0 0 5px #9b9b9b;
+  border-radius: 50%;
+}
+.recordPlayList > p {
+  font-size: 0.8rem;
+  color: #99ccff;
+  margin-left: 1rem !important;
+}
+.deleAudioBtn {
+  width: 1rem;
+  height: 1rem;
+  font-size: 0.5rem;
+  line-height: 1.1rem;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  color: white;
+  background-color: #e60012;
+  position: absolute;
+  top: -0.2rem;
+  right: -0.2rem;
+}
+/* ------------------ */
 .recordList {
   width: 100%;
   height: 3rem;

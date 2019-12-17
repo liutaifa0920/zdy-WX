@@ -68,16 +68,11 @@ export default {
     },
     // 获取排行数据
     queryRankingList() {
-      // let data = {
-      //   ui: sessionStorage.getItem("ui"),
-      //   si: sessionStorage.getItem("si"),
-      //   v: sessionStorage.getItem("v")
-      // };
       let data = {
-        ui: 30001120,
-        si: 20004910,
+        ui: 30001089,
+        si: 21004058,
         hi: this.hi,
-        v: 100000
+        v: sessionStorage.getItem("v")
       };
       homeHabitRankingList(data).then(res => {
         console.log(res.data.ranking);

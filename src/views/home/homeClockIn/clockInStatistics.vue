@@ -226,15 +226,14 @@ export default {
       //   si: sessionStorage.getItem("si"),
       //   hi: this.hi,
       //   dt: this.dt,
-      //   nu: ,
       //   v: sessionStorage.getItem("v")
       // };
       let data = {
-        ui: 30001120,
-        si: 20004910,
-        hi: 12,
+        ui: 30001089,
+        si: 21004058,
+        hi: this.hi,
         dt: this.dt,
-        v: 100000
+        v: sessionStorage.getItem("v")
       };
       homeHabitClockStatistics(data).then(res => {
         console.log(res.data.statis);
@@ -258,7 +257,10 @@ export default {
     // 去打卡
     toClockIn() {
       this.$router.push({
-        path: "/clockIn"
+        path: "/clockIn",
+        query: {
+          hi: this.hi
+        }
       });
     },
     // linkTo 班级打卡统计

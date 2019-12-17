@@ -93,16 +93,16 @@ export default {
     },
     // 请求页面数据
     queryInfo() {
-      // let data = {
-      //   dt: this.dt,
-      //   hi: this.hi,
-      //   v: sessionStorage.getItem("v")
-      // };
       let data = {
         dt: this.dt,
-        hi: 12,
-        v: 100000
+        hi: this.hi,
+        v: sessionStorage.getItem("v")
       };
+      // let data = {
+      //   dt: this.dt,
+      //   hi: 12,
+      //   v: 100000
+      // };
       homeHabitClassClockStatics(data).then(res => {
         console.log(res.data);
         if (res.code == 200) {
