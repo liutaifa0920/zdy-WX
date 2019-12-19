@@ -2,7 +2,7 @@
   <div class="rankingList">
     <van-nav-bar
       class="topNavBar"
-      title="打卡排行榜"
+      :title="title"
       left-text="返回"
       left-arrow
       @click-left="onClickLeft"
@@ -11,10 +11,15 @@
     <div class="rankingListBox">
       <div class="topBlock"></div>
       <div class="rankingListBoxTop">
-        <img :src="studentInfo.img" alt />
+        <img v-if="rankingList[0].img != ''" :src="rankingList[0].img" alt />
+        <div
+          v-if="rankingList[0].img == ''"
+          class="rankingListBoxTopIcon"
+          :src="rankingList[0].img"
+        >{{rankingList[0].name.substr(rankingList[0].name.length-2)}}</div>
         <div class="rankingListBoxTopTil">
-          <p>{{studentInfo.name}} 排名第一</p>
-          <span>我已坚持{{studentInfo.rank_num}}天</span>
+          <p>{{rankingList[0].name}} 排名第一</p>
+          <span>我已坚持{{rankingList[0].ranking}}天</span>
         </div>
       </div>
       <div class="rankingListBoxBot">
@@ -52,8 +57,15 @@ export default {
   data() {
     return {
       hi: "",
+      title: "",
       studentInfo: {},
-      rankingList: []
+      rankingList: [
+        {
+          img: "",
+          name: "",
+          rank_num: ""
+        }
+      ]
     };
   },
   mounted() {
@@ -62,8 +74,9 @@ export default {
   methods: {
     // 获取习惯ID
     queryHi() {
-      console.log(this.$route.query.hi);
+      console.log(this.$route.query);
       this.hi = this.$route.query.hi;
+      this.title = this.$route.query.title;
       this.queryRankingList();
     },
     // 获取排行数据
@@ -127,6 +140,18 @@ p {
   position: relative;
   top: 1.5rem;
   z-index: 2;
+}
+.rankingListBoxTopIcon {
+  margin: 0 auto;
+  line-height: 4.5rem;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  position: relative;
+  top: 1.5rem;
+  z-index: 2;
+  color: white;
+  background-color: #027ffb;
 }
 .rankingListBoxTopTil {
   width: 17.3rem;

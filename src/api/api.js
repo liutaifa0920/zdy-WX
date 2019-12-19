@@ -70,6 +70,30 @@ export function homeHabitClockDetail(data) {
     data
   });
 }
+// 删除打卡
+export function homeHabitDelClock(data) {
+  return request({
+    url: "/parent/habit/delClock",
+    method: "post",
+    data
+  });
+}
+// 点赞
+export function homeHabitIsLike(data) {
+  return request({
+    url: "/parent/habit/isLike",
+    method: "post",
+    data
+  });
+}
+// 历史打卡详情
+export function homeHabitMyClockDetail(data) {
+  return request({
+    url: "/parent/habit/myClockDetail",
+    method: "post",
+    data
+  });
+}
 // 排行榜
 export function homeHabitRankingList(data) {
   return request({

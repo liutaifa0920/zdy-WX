@@ -20,7 +20,7 @@
         placeholder="输入你想说的话..."
         type="text"
       />
-
+      <!-- 已完成的录音 -->
       <div v-for="(item, i) in adiouList" :key="i+'audio'" class="recordPlayList">
         <div class="deleAudioBtn" @click="deleAudioBtnClick(i)">×</div>
         <audio ref="audioRoot" @timeupdate="audioTimeUpdate(i)" :src="item.file"></audio>
@@ -49,6 +49,7 @@
         </van-slider>
         <p>{{item.duration}}</p>
       </div>
+      <!-- 正在录音 -->
       <p
         v-show="isRecord"
         style="font-size: .8rem;color: #e60012;margin-bottom:.3rem !important;"
@@ -87,7 +88,7 @@
         <div
           class="imgVideoListItem"
           style="height: 1px;padding: 0; margin: 0;"
-          v-for="(item , i) in 3"
+          v-for="(item, i) in 3"
           :key="i"
         ></div>
       </div>
@@ -134,16 +135,25 @@
         <video ref="videoShow" :src="videoShowData"></video>
       </div>
     </van-overlay>
+    <van-overlay :show="uploadShow">
+      <div class="uploadWrapper">
+        <div>
+          <div style="margin-bottom: 1rem;display: flex;justify-content: center;">
+            <van-loading color="#38b48b" />
+          </div>
+          <div style="color: #38b48b;font-size: .9rem;">发布中</div>
+        </div>
+      </div>
+    </van-overlay>
   </div>
 </template>
 <script>
 import { ImagePreview } from "vant";
 import wx from "weixin-js-sdk";
 import axios from "axios";
-import Recorder from "js-audio-recorder";
-import { homeHabitClockDetail, homeHabitSubmitClock } from "@/api/api";
-import qs from "qs";
+import { homeHabitClockDetail } from "@/api/api";
 import { signFun } from "../../../utils/sign";
+import { Toast } from "vant";
 export default {
   data() {
     return {
@@ -176,7 +186,8 @@ export default {
       // 进度条
       adiouValue: "",
       videoShow: false,
-      videoShowData: ""
+      videoShowData: "",
+      uploadShow: false
     };
   },
   created() {},
@@ -234,7 +245,6 @@ export default {
     },
     // 初始化录音
     initRecorder() {
-      let timestamp = new Date().getTime();
       wx.config({
         debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
         appId: "wx108e8df5b6b8ace0", // 必填，企业号的唯一标识，此处填写企业号corpid
@@ -276,11 +286,12 @@ export default {
             "downloadImage"
           ],
           success(res) {
-            // alert(res);
+            alert(res);
+            alert("可以开始录音");
           }
         });
       });
-      wx.error(function(res) {
+      wx.error(function() {
         // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
       });
     },
@@ -485,7 +496,8 @@ export default {
     // 发布打卡
     clovkInUpload() {
       console.log("发布打卡");
-      let voice_url = this.adiouList
+      this.uploadShow = true;
+      let vu = this.adiouList
         .map(e => {
           return e.file;
         })
@@ -495,7 +507,7 @@ export default {
       //   si: sessionStorage.getItem("si"),
       //   hi: this.hi,
       //   ct: this.clockConText,
-      //   voice_url,
+      //   vu,
       //   v: sessionStorage.getItem("v")
       // };
       let tempData = {
@@ -503,12 +515,12 @@ export default {
         si: 21004058,
         hi: this.hi,
         ct: this.clockConText,
-        voice_url,
+        vu,
         v: sessionStorage.getItem("v")
       };
-      console.log(tempData);
       let sn = signFun(tempData, "9E1613256C1F4815219A633762B53704");
 
+      console.log(sn);
       let fd = new FormData();
       this.imgList.map(e => {
         fd.append("img[]", e.file);
@@ -529,9 +541,13 @@ export default {
           config
         )
         .then(res => {
-          console.log("查得紧卡萨丁很快就爱神的箭卡接口的黄金卡")
           console.log(res);
-          if (res.code == 200) {
+          if (res.data.code == 200) {
+            this.uploadShow = false;
+            this.$router.go(-1);
+          } else {
+            Toast(res.data.msg);
+            this.uploadShow = false;
           }
         });
     },
@@ -555,6 +571,10 @@ p {
 .wrapper > video {
   width: 100vw;
   height: 100vh;
+}
+.clockIn {
+  background-color: white;
+  position: relative;
 }
 
 /* top */
@@ -817,5 +837,15 @@ p {
   height: 3rem;
   padding: 0;
   opacity: 0;
+}
+
+.van-overlay {
+  background-color: white !important;
+}
+.uploadWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 </style>

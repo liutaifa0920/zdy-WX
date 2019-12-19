@@ -36,9 +36,13 @@
       </el-calendar>
     </div>
     <div class="clockIn">
-      <div class="clockInItem is-green" v-if="true" @click="toClockIn">去打卡</div>
+      <div
+        class="clockInItem is-green"
+        v-if="statisticsInfo.is_clock_today == 0"
+        @click="toClockIn"
+      >去打卡</div>
       <div class="clockInItem is-gary" v-if="false">未打卡</div>
-      <div class="clockInItem is-gary" v-if="false">已打卡</div>
+      <div class="clockInItem is-gary" v-if="statisticsInfo.is_clock_today == 1">已打卡</div>
     </div>
     <div class="garyBlock"></div>
     <div v-if="statisticsInfo.clock_log_data.length == 0" class="noContent">没有打卡动态哦~</div>
@@ -59,8 +63,12 @@
       :key="i"
     >
       <div class="clockInfoListItem">
-        <div @click="linkToHistory" class="clockInfoListItemLeft">
-          <img :src="item.img" alt />
+        <div @click="linkToHistory(item)" class="clockInfoListItemLeft">
+          <img v-if="item.img != ''" :src="item.img" alt />
+          <div
+            class="clockInfoListItemLeftIcon"
+            v-if="item.img == ''"
+          >{{item.name.substr(item.name.length - 2)}}</div>
           <div class="clockInfoListItemTopRight">
             <p>{{item.name + item.relation}}</p>
             <p>{{item.clock_date}} 已坚持{{item.clock_num}}天</p>
@@ -69,7 +77,7 @@
         <img src="~@/assets/imgs/home/habitClock/更多.png" alt />
       </div>
       <div class="clockInfoListItemCon">
-        <p @click="linkToHistory">{{item.content}}</p>
+        <p @click="linkToHistory(item)">{{item.content}}</p>
         <div>录音</div>
         <div>图片/视频</div>
       </div>
@@ -77,11 +85,13 @@
       <div class="clockInfoListItemBtn">
         <div class="clockInfoListItemIsGood">
           <img
+            :style="item.like_data.like_num == 0 ? 'margin: 0px !important':''"
             v-if="item.like_data.is_like == 0"
             src="~@/assets/imgs/home/habitClock/no_good.png"
             alt="未点赞"
           />
           <img
+            :style="item.like_data.like_num == 0 ? 'margin: 0px !important':''"
             v-if="item.like_data.is_like == 1"
             src="~@/assets/imgs/home/habitClock/is_good.png"
             alt="已点赞"
@@ -94,12 +104,12 @@
       <!-- 回复区 -->
       <div class="clockInfoListItemReport">
         <!-- 点赞区 -->
-        <div class="clockInfoListItemReportTop">
+        <div v-show="item.like_data.like_user != ''" class="clockInfoListItemReportTop">
           <img src="~@/assets/imgs/home/habitClock/no_good.png" alt="点赞" />
           <p>{{item.like_data.like_user}}</p>
         </div>
         <!-- 评论内容 -->
-        <div class="clockInfoListItemReportBot">
+        <div v-show="item.comment_data.length != 0" class="clockInfoListItemReportBot">
           <div class="clockInfoListItemReportBotLeft">
             <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
           </div>
@@ -107,7 +117,6 @@
             <p v-for="(items ,index) in item.comment_data" :key="index">
               <span v-if="items.to_user.userid == 0" class="isName">{{items.commnet_user.name}}:</span>
               <span v-if="items.to_user.userid == 0" class="isContent">{{items.content}}</span>
-
               <span v-if="items.to_user.userid != 0" class="isName">{{items.commnet_user.name}}</span>
               <span v-if="items.to_user.userid != 0" style="padding-right: .2rem;">回复</span>
               <span v-if="items.to_user.userid != 0" class="isName">{{items.to_user.name}}:</span>
@@ -129,16 +138,15 @@ export default {
       statisticsInfo: {
         clock_log_data: [
           {
-            img:
-              "http://xuxingtest.oss-cn-hangzhou.aliyuncs.com/face/20190624110133361657.png",
-            name: "诸葛亮",
-            relation: "爸爸",
-            clock_date: "2019-12-09",
+            img: "",
+            name: "",
+            relation: "",
+            clock_date: "",
             clock_num: 3,
             img_path: "",
             video_path: "",
             voice_path: "",
-            content: " dsjfk h hsdjk hjskd hfjkhs kj",
+            content: "",
             like_data: {
               is_like: 0,
               like_num: 0,
@@ -147,43 +155,15 @@ export default {
             comment_data: [
               {
                 comment_id: 1, //评论id
-                content: "放大范德萨", //评论内容
+                content: "", //评论内容
                 commnet_user: {
                   //评论人Info
-                  userid: 30001120,
-                  student_id: 20004910,
-                  name: "诸葛亮爸爸"
+                  userid: "",
+                  student_id: "",
+                  name: ""
                 },
                 to_user: {
                   //被回复人
-                  userid: 0,
-                  receiver_student_id: 0,
-                  name: ""
-                }
-              },
-              {
-                comment_id: 3,
-                content: "我的评论哈哈哈哈哈哈哈哈",
-                commnet_user: {
-                  userid: 30001120,
-                  student_id: 20004910,
-                  name: "诸葛亮爸爸"
-                },
-                to_user: {
-                  userid: 30001120,
-                  receiver_student_id: 20004910,
-                  name: "诸葛亮爸爸"
-                }
-              },
-              {
-                comment_id: 4,
-                content: "我的评论哈哈哈哈哈哈哈哈",
-                commnet_user: {
-                  userid: 30001120,
-                  student_id: 20004910,
-                  name: "诸葛亮爸爸"
-                },
-                to_user: {
                   userid: 0,
                   receiver_student_id: 0,
                   name: ""
@@ -249,9 +229,13 @@ export default {
       this.queryInfo();
     },
     // 跳转历史打卡页面
-    linkToHistory() {
+    linkToHistory(item) {
       this.$router.push({
-        path: "/historyClockIn"
+        path: "/historyClockIn",
+        query: {
+          hi: this.hi,
+          name: item.name
+        }
       });
     },
     // 去打卡
@@ -464,6 +448,17 @@ p {
   border-radius: 50%;
   margin-right: 0.8rem;
 }
+.clockInfoListItemLeftIcon {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  margin-right: 0.8rem;
+  color: white;
+  font-size: 0.9rem;
+  text-align: center;
+  line-height: 3.2rem;
+  background-color: #38b48b;
+}
 .clockInfoListItemTopRight {
   height: 3.2rem;
 }
@@ -557,8 +552,8 @@ p {
   height: 1rem;
   margin-right: 1rem;
 }
-.clockInfoListItemReportBotRig {
-}
+/* .clockInfoListItemReportBotRig {
+} */
 
 .clockInfoListItemReportBotRig > p {
   font-size: 0.9rem;

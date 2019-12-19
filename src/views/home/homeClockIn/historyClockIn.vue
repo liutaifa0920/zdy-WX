@@ -10,51 +10,65 @@
     <div class="topBlock"></div>
     <div class="historyMain">
       <div class="historyTit">
-        <span>每日阅读</span>
+        <span>{{clockInInfo.habit_info.title}}</span>
         <div class="historyTitRight">
           <span>打卡设置</span>
           <img src="~@/assets/imgs/home/habitClock/向下.png" alt />
         </div>
       </div>
-      <p class="historyTimeName">{{"2019-11-11 16:30"}}</p>
-      <p class="historyTimeName">{{"二年级十一班"+" "+"张三老师"}}</p>
+      <p class="historyTimeName">{{clockInInfo.habit_info.add_time}}</p>
+      <p
+        class="historyTimeName"
+      >{{clockInInfo.habit_info.class_name+" "+ clockInInfo.habit_info.teacher_name+"老师"}}</p>
       <p class="historyInfo">
-        <span>剩余：{{"20天"}}</span>
-        <span>频次：{{"每周一/二/三/四/五/六"}}</span>
+        <span>剩余：{{clockInInfo.habit_info.remain_days}}天</span>
+        <span>频次：{{clockInInfo.habit_info.sign_frequency}}</span>
       </p>
     </div>
     <div class="historyCon">
-      <p>坚持阅读养成好习惯-朗读音频打卡</p>
+      <p>{{clockInInfo.habit_info.content}}</p>
       <p>
         详情
         <img src="~@/assets/imgs/home/habitClock/2爱向下.png" alt />
       </p>
     </div>
     <!-- List -->
-    <div class="historyListTit">{{"李四"}}的历史打卡日记</div>
+    <div class="historyListTit">{{clockInName}}的历史打卡日记</div>
     <!-- 单条动态 -->
-    <div class="historyList" v-for="(item, i) in 5" :key="i">
+    <div class="historyList" v-for="(item, i) in clockInInfo.clock_log_data" :key="i">
       <div class="historyListItem">
         <div class="historyListItemLeft">
-          <img src="~@/assets/imgs/home/habitClock/bg.png" alt />
+          <img v-if="item.img != ''" :src="item.img" alt />
+          <div
+            class="clockInfoListItemLeftIcon"
+            v-if="item.img == ''"
+          >{{item.name.substr(item.name.length - 2)}}</div>
           <div class="historyListItemTopRight">
-            <p>{{"李四爸爸"}}</p>
-            <p>{{"2019-11-16 18:24"}} 已坚持{{"1"}}天</p>
+            <p>{{item.name + item.relation}}</p>
+            <p>{{item.clock_date}} 已坚持{{item.clock_num}}天</p>
           </div>
         </div>
         <img src="~@/assets/imgs/home/habitClock/更多.png" alt />
       </div>
       <div class="historyListItemCon">
-        <p>{{"知点云是由山东旭兴网络科技有限公司专为K12公办学校研发的数字孪生教育SaaS软件。"}}</p>
+        <p>{{item.content}}</p>
         <div>录音</div>
         <div>图片/视频</div>
       </div>
       <!-- 按钮行 -->
       <div class="historyListItemBtn">
         <div class="historyListItemIsGood">
-          <img v-if="true" src="~@/assets/imgs/home/habitClock/no_good.png" alt="未点赞" />
-          <img v-if="false" src="~@/assets/imgs/home/habitClock/is_good.png" alt="已点赞" />
-          <p>{{5}}</p>
+          <img
+            v-if="item.like_data.is_like == 0"
+            src="~@/assets/imgs/home/habitClock/no_good.png"
+            alt="未点赞"
+          />
+          <img
+            v-if="item.like_data.is_like == 1"
+            src="~@/assets/imgs/home/habitClock/is_good.png"
+            alt="已点赞"
+          />
+          <p>{{item.like_data.like_num == 0 ? '':item.like_data.like_num}}</p>
         </div>
         <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
         <img src="~@/assets/imgs/home/habitClock/is_fenxiang.png" alt="分享" />
@@ -62,19 +76,23 @@
       <!-- 回复区 -->
       <div class="historyListItemReport">
         <!-- 点赞区 -->
-        <div class="historyListItemReportTop">
+        <div v-show="item.like_data.like_user != ''" class="historyListItemReportTop">
           <img src="~@/assets/imgs/home/habitClock/no_good.png" alt="点赞" />
-          <p>{{"王五老师"}}</p>
+          <p>{{item.like_data.like_user}}</p>
         </div>
         <!-- 评论内容 -->
-        <div class="historyListItemReportBot">
+        <div v-show="item.comment_data.length != 0" class="historyListItemReportBot">
           <div class="historyListItemReportBotLeft">
             <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
           </div>
           <div class="historyListItemReportBotRig">
-            <p v-for="(item ,i) in 3" :key="i">
-              <span>{{"王五老师"}}:</span>
-              <span>棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒棒</span>
+            <p v-for="(items ,index) in item.comment_data" :key="index">
+              <span v-if="items.to_user.userid == 0" class="isName">{{items.commnet_user.name}}:</span>
+              <span v-if="items.to_user.userid == 0" class="isContent">{{items.content}}</span>
+              <span v-if="items.to_user.userid != 0" class="isName">{{items.commnet_user.name}}</span>
+              <span v-if="items.to_user.userid != 0" style="padding-right: .2rem;">回复</span>
+              <span v-if="items.to_user.userid != 0" class="isName">{{items.to_user.name}}:</span>
+              <span v-if="items.to_user.userid != 0" class="isContent">{{items.content}}</span>
             </p>
           </div>
         </div>
@@ -84,12 +102,58 @@
   </div>
 </template>
 <script>
+import { homeHabitMyClockDetail } from "@/api/api";
 export default {
   data() {
-    return {};
+    return {
+      hi: "",
+      clockInName: "",
+      lookUi: "",
+      lookSi: "",
+      clockInInfo: {
+        habit_info: {
+          title: ""
+        }
+      }
+    };
   },
-  mounted() {},
+  mounted() {
+    this.queryParam();
+    this.queryInfo();
+  },
   methods: {
+    // 获取习惯ID
+    queryParam() {
+      console.log(this.$route.query);
+      this.hi = this.$route.query.hi;
+      this.clockInName = this.$route.query.name;
+      this.lookUi = this.$route.query.ui;
+      this.lookSi = this.$route.query.si;
+    },
+    queryInfo() {
+      // let data = {
+      //   ui: this.lookUi,
+      //   si: this.lookSi,
+      //   lui: sessionStorage.getItem("ui"),
+      //   lsi: sessionStorage.getItem("si"),
+      //   hi: this.hi,
+      //   v: sessionStorage.getItem("v")
+      // };
+      let data = {
+        ui: this.lookUi,
+        si: this.lookSi,
+        lui: 30001089,
+        lsi: 21004058,
+        hi: this.hi,
+        v: sessionStorage.getItem("v")
+      };
+      homeHabitMyClockDetail(data).then(res => {
+        if (res.code == 200) {
+          this.clockInInfo = res.data.statis;
+          console.log(this.clockInInfo);
+        }
+      });
+    },
     // 返回上一级
     onClickLeft() {
       this.$router.go(-1);
@@ -274,6 +338,17 @@ p {
   border-radius: 50%;
   margin-right: 0.8rem;
 }
+.clockInfoListItemLeftIcon {
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: 50%;
+  margin-right: 0.8rem;
+  color: white;
+  font-size: 0.9rem;
+  text-align: center;
+  line-height: 3.2rem;
+  background-color: #38b48b;
+}
 .historyListItemTopRight {
   height: 3.2rem;
 }
@@ -375,12 +450,12 @@ p {
   line-height: 0.9rem;
   margin-bottom: 0.3rem !important;
 }
-.historyListItemReportBotRig > p > span:nth-child(1) {
+.isName {
   color: #38b48b;
   padding-right: 0.3rem;
   line-height: 1rem;
 }
-.historyListItemReportBotRig > p > span:nth-child(2) {
+.isContent {
   color: #313131;
   line-height: 1rem;
 }
