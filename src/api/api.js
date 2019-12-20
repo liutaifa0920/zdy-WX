@@ -86,6 +86,26 @@ export function homeHabitIsLike(data) {
     data
   });
 }
+// 回复评论
+export function homeHabitAddComment(data) {
+  return request({
+    url: "/parent/habit/addComment",
+    method: "post",
+    data
+  });
+}
+
+// 删除评论
+
+// 判断日期是否打卡
+export function homeHabitWeekClock(data) {
+  return request({
+    url: "/parent/habit/weekClock",
+    method: "post",
+    data
+  });
+}
+
 // 历史打卡详情
 export function homeHabitMyClockDetail(data) {
   return request({

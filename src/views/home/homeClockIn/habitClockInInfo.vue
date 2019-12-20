@@ -90,26 +90,55 @@
           <p>{{items.duration}}</p>
         </div>
         <!-- 图片 / 视频 -->
-        <div>图片/视频</div>
+        <div class="IVList">
+          <div
+            v-show="itemIV != ''"
+            class="IVListItem"
+            v-for="(itemIV, index) in item.img_path.split(',')"
+            :key="index + 'img'"
+            @click="IVListImgCLick(i, index)"
+          >
+            <img :src="itemIV" alt />
+          </div>
+          <div
+            v-show="itemIV != ''"
+            class="IVListItem"
+            v-for="(itemIV, index) in item.video_path.split(',')"
+            :key="index + 'video'"
+            @click="IVListVideoCLick(i, index)"
+          >
+            <video :src="itemIV"></video>
+          </div>
+          <div
+            class="IVListItem"
+            style="margin-bottom: 0;height: 0px;"
+            v-for="(itemIV, index) in 3"
+            :key="index + 'block'"
+          ></div>
+        </div>
       </div>
       <!-- 按钮行 -->
       <div class="clockInfoListItemBtn">
         <div class="clockInfoListItemIsGood">
           <img
             v-if="item.like_data.is_like == 0"
-            @click="isLikeClick(1, item)"
+            @click="isLikeClick(1, item, i)"
             src="~@/assets/imgs/home/habitClock/no_good.png"
             alt="未点赞"
           />
           <img
             v-if="item.like_data.is_like == 1"
-            @click="isLikeClick(0, item)"
+            @click="isLikeClick(0, item, i)"
             src="~@/assets/imgs/home/habitClock/is_good.png"
             alt="已点赞"
           />
           <p>{{item.like_data.like_num == 0 ? '':item.like_data.like_num}}</p>
         </div>
-        <img @click="itemReportClick" src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
+        <img
+          @click="itemReportClick(1, item)"
+          src="~@/assets/imgs/home/habitClock/is_report.png"
+          alt="评论"
+        />
         <img src="~@/assets/imgs/home/habitClock/is_fenxiang.png" alt="分享" />
       </div>
       <!-- 回复区 -->
@@ -130,12 +159,36 @@
           </div>
           <div class="clockInfoListItemReportBotRig">
             <p v-for="(items ,index) in item.comment_data" :key="index">
-              <span v-if="items.to_user.userid == 0" class="isName">{{items.commnet_user.name}}:</span>
-              <span v-if="items.to_user.userid == 0" class="isContent">{{items.content}}</span>
-              <span v-if="items.to_user.userid != 0" class="isName">{{items.commnet_user.name}}</span>
-              <span v-if="items.to_user.userid != 0" style="padding-right: .2rem;">回复</span>
-              <span v-if="items.to_user.userid != 0" class="isName">{{items.to_user.name}}:</span>
-              <span v-if="items.to_user.userid != 0" class="isContent">{{items.content}}</span>
+              <span
+                v-if="items.to_user.userid == 0"
+                @click="itemReportClick(2, item, items.commnet_user)"
+                class="isName"
+              >{{items.commnet_user.name}}:</span>
+              <span
+                v-if="items.to_user.userid == 0"
+                @click="itemReportClick(2, item, items.commnet_user)"
+                class="isContent"
+              >{{items.content}}</span>
+              <span
+                v-if="items.to_user.userid != 0"
+                @click="itemReportClick(2, item, items.commnet_user)"
+                class="isName"
+              >{{items.commnet_user.name}}</span>
+              <span
+                v-if="items.to_user.userid != 0"
+                @click="itemReportClick(2, item, items.commnet_user)"
+                style="padding-right: .2rem;"
+              >回复</span>
+              <span
+                v-if="items.to_user.userid != 0"
+                @click="itemReportClick(2, item, items.commnet_user)"
+                class="isName"
+              >{{items.to_user.name}}:</span>
+              <span
+                v-if="items.to_user.userid != 0"
+                @click="itemReportClick(2, item, items.commnet_user)"
+                class="isContent"
+              >{{items.content}}</span>
             </p>
           </div>
         </div>
@@ -143,7 +196,7 @@
     </div>
     <div class="bottomBlock"></div>
     <div class="bottomBlock"></div>
-    <div v-show="!isReporting" class="clockBottomNav">
+    <div v-if="!isReporting" class="clockBottomNav">
       <div class="clockBottomNavItem" @click="routeToRankingList">
         <img src="~@/assets/imgs/home/habitClock/ranking.png" alt />
         <p>排行榜</p>
@@ -154,19 +207,33 @@
       </div>
       <div class="clockBottomNavBtn" @click="linkToClockIn">打卡</div>
     </div>
-    <div v-show="isReporting" class="itemReportBottomBox">
-      <input class="itemReportInput" ref="reportInput" type="text" v-model="itemReport" />
-      <div class="itemReportOKBtn">评论</div>
+    <div v-if="isReporting" class="itemReportBottomBox">
+      <input
+        class="itemReportInput"
+        ref="reportInput"
+        type="text"
+        @blur="reportInputBlur"
+        v-model="itemReport"
+      />
+      <div class="itemReportOKBtn" @click="setReport">评论</div>
     </div>
+
+    <!-- 视频弹窗 -->
+    <van-overlay :show="videoShow" @click="videoShow = false">
+      <div class="wrapper">
+        <video autoplay ref="videoShow" :src="videoShowData"></video>
+      </div>
+    </van-overlay>
   </div>
 </template>
 <script>
 import {
   homeHabitClockDetail,
   homeHabitDelClock,
-  homeHabitIsLike
+  homeHabitIsLike,
+  homeHabitAddComment
 } from "@/api/api";
-import { Toast } from "vant";
+import { Toast, ImagePreview } from "vant";
 export default {
   data() {
     return {
@@ -190,7 +257,13 @@ export default {
         }
       ],
       indexArr: [],
-      currentPlayIndex: 0
+      currentPlayIndex: 0,
+      videoShow: false,
+      videoShowData: "",
+      replyType: 0,
+      replyClockID: 0,
+      replyRci: 0,
+      replyRsi: 0
     };
   },
   mounted() {
@@ -254,12 +327,16 @@ export default {
                   duration: "",
                   status: true
                 };
-                // console.log(tempObj);
+                console.log(tempObj);
                 return tempObj;
               });
+            } else {
+              e.voice_path = [];
             }
           });
+          console.log(this.clockInInfo);
           this.$nextTick(() => {
+            this.indexArr = [];
             if (this.$refs.audioRoot) {
               this.clockInInfo.clock_log_data.map((e, i) => {
                 e.voice_path.map((item, index) => {
@@ -270,9 +347,10 @@ export default {
                   this.indexArr.push(obj);
                 });
               });
+              console.log(this.indexArr);
               this.$refs.audioRoot.map((e, i) => {
                 this.$refs.audioRoot[i].oncanplay = () => {
-                  let time = Math.round(e.duration);
+                  let time = Math.floor(e.duration);
                   let m =
                     Math.floor(time / 60) >= 10
                       ? Math.floor(time / 60)
@@ -281,6 +359,7 @@ export default {
                     Math.floor(time % 60) >= 10
                       ? Math.floor(time % 60)
                       : "0" + Math.floor(time % 60);
+                  console.log(m + ":" + s);
                   this.clockInInfo.clock_log_data[
                     this.indexArr[i].B
                   ].voice_path[this.indexArr[i].S].duration = m + ":" + s;
@@ -418,14 +497,33 @@ export default {
         this.$refs.audioRoot[this.currentPlayIndex].pause();
       }
     },
+    // 图片预览
+    IVListImgCLick(B, S) {
+      let arr = this.clockInInfo.clock_log_data[B].img_path.split(",");
+      ImagePreview({
+        images: arr,
+        startPosition: S
+      });
+    },
+    // 视频预览
+    IVListVideoCLick(B, S) {
+      this.videoShow = true;
+      this.videoShowData = this.clockInInfo.clock_log_data[B].video_path.split(
+        ","
+      )[S];
+      console.log(this.videoShowData);
+      this.$refs.videoShow.currentTime = 0;
+    },
     // 点赞
-    isLikeClick(t, item) {
+    isLikeClick(t, item, i) {
       console.log(t);
       console.log(item);
       // let data = {
       //   ui: sessionStorage.getItem("ui"),
       //   si: sessionStorage.getItem("si"),
       //   hi: this.hi,
+      //   coi: item.clock_id,
+      //   il: t,
       //   v: sessionStorage.getItem("v")
       // };
       let data = {
@@ -439,30 +537,122 @@ export default {
       homeHabitIsLike(data).then(res => {
         console.log(res);
         if (res.code == 200) {
+          this.clockInInfo.clock_log_data.map(e => {
+            e.voice_path = e.voice_path.map(() => {
+              return {};
+            });
+          });
           this.queryInfo();
+          // this.clockInInfo.clock_log_data[i].like_data.is_like = t;
+          // if (t == 1) {
+          //   this.clockInInfo.clock_log_data[i].like_data.like_num++;
+          // } else {
+          //   this.clockInInfo.clock_log_data[i].like_data.like_num--;
+          // }
         } else {
           Toast(res.msg);
         }
       });
     },
     // 评论click
-    itemReportClick() {
+    itemReportClick(t, Bitem, Sitem) {
       this.isReporting = true;
       this.$nextTick(() => {
+        this.replyType = t;
+        if (this.replyType == 1) {
+          this.replyClockID = Bitem.clock_id;
+          this.replyRci = Bitem.userid;
+          this.replyRsi = Bitem.student_id;
+        } else {
+          this.replyClockID = Bitem.clock_id;
+          this.replyRci = Sitem.userid;
+          this.replyRsi = Sitem.student_id;
+        }
+        // console.log(Bitem);
+        // console.log(Sitem);
         this.$refs.reportInput.focus();
       });
-      window.addEventListener("click", this.reportListenClick);
     },
-    reportListenClick(e) {
-      console.log(e.target.className);
+    // 回复input失去焦点
+    reportInputBlur() {
+      window.addEventListener("click", this.replyListen);
+    },
+    // 评论框点击监听
+    replyListen(e) {
       if (
-        e.target.className != "itemReportBottomBox" &&
+        e.target.className != "itemReportOKBtn" &&
         e.target.className != "itemReportInput" &&
-        e.target.className != "itemReportOKBtn"
+        e.target.className != "itemReportBottomBox"
       ) {
         this.isReporting = false;
-        window.removeEventListener("click", this.reportListenClick);
       }
+      window.removeEventListener("click", this.replyListen);
+    },
+    // 发送评论按钮
+    setReport() {
+      let data = {};
+      if (this.itemReport == "") {
+        Toast("评论不能为空");
+        return;
+      }
+      if (this.replyType == 1) {
+        //   data = {
+        //   ui: sessionStorage.getItem("ui"),
+        //   si: sessionStorage.getItem("si"),
+        //   rci: this.replyRci,
+        //   rsi: this.replyRsi,
+        //   hi: this.hi,
+        //   coi: this.replyClockID,
+        //   ct: this.itemReport,
+        //   v: sessionStorage.getItem("v")
+        // };
+        data = {
+          ui: 30001089,
+          si: 21004058,
+          rci: 0,
+          rsi: 0,
+          hi: this.hi,
+          coi: this.replyClockID,
+          ct: this.itemReport,
+          v: sessionStorage.getItem("v")
+        };
+      } else {
+        //   data = {
+        //   ui: sessionStorage.getItem("ui"),
+        //   si: sessionStorage.getItem("si"),
+        //   rci: this.replyRci,
+        //   rsi: this.replyRsi,
+        //   hi: this.hi,
+        //   coi: this.replyClockID,
+        //   ct: this.itemReport,
+        //   v: sessionStorage.getItem("v")
+        // };
+        data = {
+          ui: 30001089,
+          si: 21004058,
+          rci: this.replyRci,
+          rsi: this.replyRsi,
+          hi: this.hi,
+          coi: this.replyClockID,
+          ct: this.itemReport,
+          v: sessionStorage.getItem("v")
+        };
+      }
+      homeHabitAddComment(data).then(res => {
+        console.log(res);
+        if (res.code == 200) {
+          this.itemReport = "";
+          this.isReporting = false;
+          this.clockInInfo.clock_log_data.map(e => {
+            e.voice_path = e.voice_path.map(() => {
+              return {};
+            });
+          });
+          this.queryInfo();
+        } else {
+          Toast(res.msg);
+        }
+      });
     },
     // 跳转排行榜
     routeToRankingList() {
@@ -712,7 +902,7 @@ p {
   text-align: center;
 }
 
-/* audioList */
+/* ------------------------------------------- audioList */
 
 .recordPlayList {
   width: 100%;
@@ -744,7 +934,41 @@ p {
   color: #99ccff;
   margin-left: 1rem !important;
 }
-/* ---------------- */
+/* ------------------------------------------- IVList */
+.IVList {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.IVListItem {
+  width: 4.5rem;
+  height: 4.5rem;
+  background-color: #eeeeee;
+  margin-bottom: 1rem;
+}
+.IVListItem > img {
+  width: 4.5rem;
+  height: 4.5rem;
+  background-color: #eeeeee;
+}
+.IVListItem > video {
+  width: 4.5rem;
+  height: 4.5rem;
+  background-color: #eeeeee;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.wrapper > video {
+  width: 100vw;
+  height: 100vh;
+}
+/* ----------------------------------------------------------------------------------- */
 .clockInfoListItemTopRight {
   height: 3.2rem;
 }
@@ -759,6 +983,11 @@ p {
 .clockInfoListItemCon {
   padding-left: 4rem;
   font-size: 0.9rem;
+}
+.clockInfoListItemCon > p {
+  font-size: 0.9rem;
+  text-align: left;
+  margin-bottom: 1rem !important;
 }
 .clockInfoListItemBtn {
   width: 100%;
@@ -867,6 +1096,7 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  z-index: 100;
 }
 .itemReportBottomBox > input {
   width: calc(100% - 6rem);
