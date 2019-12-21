@@ -205,18 +205,18 @@ export default {
       this.hi = this.$route.query.hi;
     },
     queryInfo() {
-      // let data = {
-      //   ui: sessionStorage.getItem("ui"),
-      //   si: sessionStorage.getItem("si"),
-      //   hi: this.hi,
-      //   v: sessionStorage.getItem("v")
-      // };
       let data = {
-        ui: 30001089,
-        si: 21004058,
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
         hi: this.hi,
         v: sessionStorage.getItem("v")
       };
+      // let data = {
+      //   ui: 30001089,
+      //   si: 21004058,
+      //   hi: this.hi,
+      //   v: sessionStorage.getItem("v")
+      // };
       homeHabitClockDetail(data).then(res => {
         console.log(res.data.statis);
         if (res.code == 200) {
@@ -502,22 +502,22 @@ export default {
           return e.file;
         })
         .join(",");
-      // let tempData = {
-      //   ui: sessionStorage.getItem("ui"),
-      //   si: sessionStorage.getItem("si"),
-      //   hi: this.hi,
-      //   ct: this.clockConText,
-      //   vu,
-      //   v: sessionStorage.getItem("v")
-      // };
       let tempData = {
-        ui: 30001089,
-        si: 21004058,
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
         hi: this.hi,
         ct: this.clockConText,
         vu,
         v: sessionStorage.getItem("v")
       };
+      // let tempData = {
+      //   ui: 30001089,
+      //   si: 21004058,
+      //   hi: this.hi,
+      //   ct: this.clockConText,
+      //   vu,
+      //   v: sessionStorage.getItem("v")
+      // };
       let sn = signFun(tempData, "9E1613256C1F4815219A633762B53704");
 
       console.log(sn);

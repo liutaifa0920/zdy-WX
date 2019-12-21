@@ -298,18 +298,18 @@ export default {
       this.hi = this.$route.query.hi;
     },
     queryInfo() {
-      // let data = {
-      //   ui: sessionStorage.getItem("ui"),
-      //   si: sessionStorage.getItem("si"),
-      //   hi: this.hi,
-      //   v: sessionStorage.getItem("v")
-      // };
       let data = {
-        ui: 30001089,
-        si: 21004058,
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
         hi: this.hi,
         v: sessionStorage.getItem("v")
       };
+      // let data = {
+      //   ui: 30001089,
+      //   si: 21004058,
+      //   hi: this.hi,
+      //   v: sessionStorage.getItem("v")
+      // };
       homeHabitClockDetail(data).then(res => {
         if (res.code == 200) {
           console.log(res.data.statis);
@@ -518,22 +518,22 @@ export default {
     isLikeClick(t, item, i) {
       console.log(t);
       console.log(item);
-      // let data = {
-      //   ui: sessionStorage.getItem("ui"),
-      //   si: sessionStorage.getItem("si"),
-      //   hi: this.hi,
-      //   coi: item.clock_id,
-      //   il: t,
-      //   v: sessionStorage.getItem("v")
-      // };
       let data = {
-        ui: 30001089,
-        si: 21004058,
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
         hi: this.hi,
         coi: item.clock_id,
         il: t,
         v: sessionStorage.getItem("v")
       };
+      // let data = {
+      //   ui: 30001089,
+      //   si: 21004058,
+      //   hi: this.hi,
+      //   coi: item.clock_id,
+      //   il: t,
+      //   v: sessionStorage.getItem("v")
+      // };
       homeHabitIsLike(data).then(res => {
         console.log(res);
         if (res.code == 200) {
@@ -556,22 +556,28 @@ export default {
     },
     // 评论click
     itemReportClick(t, Bitem, Sitem) {
-      this.isReporting = true;
-      this.$nextTick(() => {
-        this.replyType = t;
-        if (this.replyType == 1) {
-          this.replyClockID = Bitem.clock_id;
-          this.replyRci = Bitem.userid;
-          this.replyRsi = Bitem.student_id;
-        } else {
-          this.replyClockID = Bitem.clock_id;
-          this.replyRci = Sitem.userid;
-          this.replyRsi = Sitem.student_id;
-        }
-        // console.log(Bitem);
-        // console.log(Sitem);
-        this.$refs.reportInput.focus();
-      });
+      this.replyType = t;
+      if (this.replyType == 1) {
+        this.replyClockID = Bitem.clock_id;
+        this.replyRci = Bitem.userid;
+        this.replyRsi = Bitem.student_id;
+      } else {
+        this.replyClockID = Bitem.clock_id;
+        this.replyRci = Sitem.userid;
+        this.replyRsi = Sitem.student_id;
+      }
+      if (this.replyRsi != sessionStorage.getItem("si") * 1) {
+        this.isReporting = true;
+        this.$nextTick(() => {
+          // console.log(Bitem);
+          // console.log(Sitem);
+          console.log(this.replyRci);
+          console.log(this.replyRsi);
+          console.log(sessionStorage.getItem("ui"));
+          console.log(sessionStorage.getItem("si"));
+          this.$refs.reportInput.focus();
+        });
+      }
     },
     // 回复input失去焦点
     reportInputBlur() {
@@ -596,40 +602,9 @@ export default {
         return;
       }
       if (this.replyType == 1) {
-        //   data = {
-        //   ui: sessionStorage.getItem("ui"),
-        //   si: sessionStorage.getItem("si"),
-        //   rci: this.replyRci,
-        //   rsi: this.replyRsi,
-        //   hi: this.hi,
-        //   coi: this.replyClockID,
-        //   ct: this.itemReport,
-        //   v: sessionStorage.getItem("v")
-        // };
         data = {
-          ui: 30001089,
-          si: 21004058,
-          rci: 0,
-          rsi: 0,
-          hi: this.hi,
-          coi: this.replyClockID,
-          ct: this.itemReport,
-          v: sessionStorage.getItem("v")
-        };
-      } else {
-        //   data = {
-        //   ui: sessionStorage.getItem("ui"),
-        //   si: sessionStorage.getItem("si"),
-        //   rci: this.replyRci,
-        //   rsi: this.replyRsi,
-        //   hi: this.hi,
-        //   coi: this.replyClockID,
-        //   ct: this.itemReport,
-        //   v: sessionStorage.getItem("v")
-        // };
-        data = {
-          ui: 30001089,
-          si: 21004058,
+          ui: sessionStorage.getItem("ui"),
+          si: sessionStorage.getItem("si"),
           rci: this.replyRci,
           rsi: this.replyRsi,
           hi: this.hi,
@@ -637,6 +612,37 @@ export default {
           ct: this.itemReport,
           v: sessionStorage.getItem("v")
         };
+        // data = {
+        //   ui: 30001089,
+        //   si: 21004058,
+        //   rci: 0,
+        //   rsi: 0,
+        //   hi: this.hi,
+        //   coi: this.replyClockID,
+        //   ct: this.itemReport,
+        //   v: sessionStorage.getItem("v")
+        // };
+      } else {
+        data = {
+          ui: sessionStorage.getItem("ui"),
+          si: sessionStorage.getItem("si"),
+          rci: this.replyRci,
+          rsi: this.replyRsi,
+          hi: this.hi,
+          coi: this.replyClockID,
+          ct: this.itemReport,
+          v: sessionStorage.getItem("v")
+        };
+        // data = {
+        //   ui: 30001089,
+        //   si: 21004058,
+        //   rci: this.replyRci,
+        //   rsi: this.replyRsi,
+        //   hi: this.hi,
+        //   coi: this.replyClockID,
+        //   ct: this.itemReport,
+        //   v: sessionStorage.getItem("v")
+        // };
       }
       homeHabitAddComment(data).then(res => {
         console.log(res);

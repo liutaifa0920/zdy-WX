@@ -126,16 +126,16 @@ export default {
   methods: {
     // 获取进行中已结束列表信息
     queryListInfo() {
-      // let data = {
-      //   ui: sessionStorage.getItem("ui"),
-      //   si: sessionStorage.getItem("si"),
-      //   v: sessionStorage.getItem("v")
-      // };
       let data = {
-        ui: 30001089,
-        si: 21004058,
-        v: 100000
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
+        v: sessionStorage.getItem("v")
       };
+      // let data = {
+      //   ui: 30001089,
+      //   si: 21004058,
+      //   v: 100000
+      // };
       console.log(data);
       homeHabitIndex(data).then(res => {
         console.log(res.data);

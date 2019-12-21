@@ -46,19 +46,47 @@
       <div
         class="topCalendarItem"
         @click="clickDate(item.date, i)"
-        :class="calendarListClickDate == item.date ? 'calendarIsClick' : ''"
-        :style="(new Date().getTime() + 28800000) > new Date(item.date).getTime() && (new Date().getTime() + 28800000) < (new Date(item.date).getTime() + 86400000) ? 'background-color: #38b48b50;': ''"
+        :class="(calendarListClickDate == item.date) && (new Date(dt).getTime()+28800000 > calendarStartDate) && (new Date(dt).getTime()+28800000 < calendarEndDate) ? 'calendarIsClick' : ''"
+        :style="(new Date(dt).getTime() + 28800000) > new Date(item.date).getTime() && (new Date(dt).getTime() + 28800000) < (new Date(item.date).getTime() + 86400000) && ((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ? 'background-color: #38b48b50;': ''"
         v-for="(item, i) in calendarList"
         :key="i"
       >
-        <p class="calendarweekName">{{item.weekName}}</p>
-        <p class="calendarDate">{{item.date.split('-').slice(1).join('/')}}</p>
-        <div v-if="item.clockInType == 1" class="calendarType">
+        <p
+          :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
+          class="calendarweekName"
+        >{{item.weekName}}</p>
+        <p
+          :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
+          class="calendarDate"
+        >{{item.date.split('-').slice(1).join('/')}}</p>
+        <div
+          :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
+          v-if="item.clockInType == 1"
+          class="calendarType"
+        >
           <img src="~@/assets/imgs/home/habitClock/statisticsTop.png" />
         </div>
-        <div v-if="item.clockInType == 2" class="calendarType">--</div>
-        <div v-if="item.clockInType == 3" class="calendarType">--</div>
-        <div v-if="item.clockInType == 4" class="calendarType">--</div>
+        <div
+          :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
+          v-if="item.clockInType == 2"
+          class="calendarType"
+        >
+          <div style="height: 1px; width: 1rem;background-color: #aaaaaa;margin: 1rem auto 0;"></div>
+        </div>
+        <div
+          :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
+          v-if="item.clockInType == 3"
+          class="calendarType"
+        >
+          <div style="height: 1px; width: 1rem;background-color: #aaaaaa;margin: 1rem auto 0;"></div>
+        </div>
+        <div
+          :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
+          v-if="item.clockInType == 4"
+          class="calendarType"
+        >
+          <div style="height: 1px; width: 1rem;background-color: #aaaaaa;margin: 1rem auto 0;"></div>
+        </div>
       </div>
     </div>
     <!-- ------------------------------------------------------------------- -->
@@ -291,6 +319,8 @@ export default {
       endDateResult: "",
       touchStartX: "",
       touchEndX: "",
+      calendarStartDate: "",
+      calendarEndDate: "",
       // --------------------------------
       hi: "",
       dt: "",
@@ -399,20 +429,20 @@ export default {
     },
     // 请求页面数据
     queryInfo() {
-      // let data = {
-      //   ui: sessionStorage.getItem("ui"),
-      //   si: sessionStorage.getItem("si"),
-      //   hi: this.hi,
-      //   dt: this.dt,
-      //   v: sessionStorage.getItem("v")
-      // };
       let data = {
-        ui: 30001089,
-        si: 21004058,
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
         hi: this.hi,
         dt: this.dt,
         v: sessionStorage.getItem("v")
       };
+      // let data = {
+      //   ui: 30001089,
+      //   si: 21004058,
+      //   hi: this.hi,
+      //   dt: this.dt,
+      //   v: sessionStorage.getItem("v")
+      // };
       homeHabitClockStatistics(data).then(res => {
         if (res.code == 200) {
           console.log(res.data.statis);
@@ -477,10 +507,11 @@ export default {
     },
     // 日期点击
     clickDate(date, i) {
-      let newDate = new Date();
-      console.log(newDate);
-      if (newDate.getTime() + 86400000 - 28800000 >= new Date(date).getTime()) {
-        this.dt = date;
+      this.dt = date;
+      if (
+        new Date(this.dt).getTime() + 28800000 > this.calendarStartDate &&
+        new Date(this.dt).getTime() + 28800000 < this.calendarEndDate
+      ) {
         this.calendarListClickDate = date;
         this.queryInfo();
       }
@@ -631,22 +662,22 @@ export default {
     isLikeClick(t, item, i) {
       console.log(t);
       console.log(item);
-      // let data = {
-      //   ui: sessionStorage.getItem("ui"),
-      //   si: sessionStorage.getItem("si"),
-      //   hi: this.hi,
-      //   coi: item.clock_id,
-      //   il: t,
-      //   v: sessionStorage.getItem("v")
-      // };
       let data = {
-        ui: 30001089,
-        si: 21004058,
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
         hi: this.hi,
         coi: item.clock_id,
         il: t,
         v: sessionStorage.getItem("v")
       };
+      // let data = {
+      //   ui: 30001089,
+      //   si: 21004058,
+      //   hi: this.hi,
+      //   coi: item.clock_id,
+      //   il: t,
+      //   v: sessionStorage.getItem("v")
+      // };
       homeHabitIsLike(data).then(res => {
         console.log(res);
         if (res.code == 200) {
@@ -669,22 +700,28 @@ export default {
     },
     // 评论click
     itemReportClick(t, Bitem, Sitem) {
-      this.isReporting = true;
-      this.$nextTick(() => {
-        this.replyType = t;
-        if (this.replyType == 1) {
-          this.replyClockID = Bitem.clock_id;
-          this.replyRci = Bitem.userid;
-          this.replyRsi = Bitem.student_id;
-        } else {
-          this.replyClockID = Bitem.clock_id;
-          this.replyRci = Sitem.userid;
-          this.replyRsi = Sitem.student_id;
-        }
-        // console.log(Bitem);
-        // console.log(Sitem);
-        this.$refs.reportInput.focus();
-      });
+      this.replyType = t;
+      if (this.replyType == 1) {
+        this.replyClockID = Bitem.clock_id;
+        this.replyRci = Bitem.userid;
+        this.replyRsi = Bitem.student_id;
+      } else {
+        this.replyClockID = Bitem.clock_id;
+        this.replyRci = Sitem.userid;
+        this.replyRsi = Sitem.student_id;
+      }
+      if (this.replyRsi != sessionStorage.getItem("si") * 1) {
+        this.isReporting = true;
+        this.$nextTick(() => {
+          // console.log(Bitem);
+          // console.log(Sitem);
+          console.log(this.replyRci);
+          console.log(this.replyRsi);
+          console.log(sessionStorage.getItem("ui"));
+          console.log(sessionStorage.getItem("si"));
+          this.$refs.reportInput.focus();
+        });
+      }
     },
     // 回复input失去焦点
     reportInputBlur() {
@@ -709,40 +746,9 @@ export default {
         return;
       }
       if (this.replyType == 1) {
-        //   data = {
-        //   ui: sessionStorage.getItem("ui"),
-        //   si: sessionStorage.getItem("si"),
-        //   rci: this.replyRci,
-        //   rsi: this.replyRsi,
-        //   hi: this.hi,
-        //   coi: this.replyClockID,
-        //   ct: this.itemReport,
-        //   v: sessionStorage.getItem("v")
-        // };
         data = {
-          ui: 30001089,
-          si: 21004058,
-          rci: 0,
-          rsi: 0,
-          hi: this.hi,
-          coi: this.replyClockID,
-          ct: this.itemReport,
-          v: sessionStorage.getItem("v")
-        };
-      } else {
-        //   data = {
-        //   ui: sessionStorage.getItem("ui"),
-        //   si: sessionStorage.getItem("si"),
-        //   rci: this.replyRci,
-        //   rsi: this.replyRsi,
-        //   hi: this.hi,
-        //   coi: this.replyClockID,
-        //   ct: this.itemReport,
-        //   v: sessionStorage.getItem("v")
-        // };
-        data = {
-          ui: 30001089,
-          si: 21004058,
+          ui: sessionStorage.getItem("ui"),
+          si: sessionStorage.getItem("si"),
           rci: this.replyRci,
           rsi: this.replyRsi,
           hi: this.hi,
@@ -750,6 +756,37 @@ export default {
           ct: this.itemReport,
           v: sessionStorage.getItem("v")
         };
+        // data = {
+        //   ui: 30001089,
+        //   si: 21004058,
+        //   rci: 0,
+        //   rsi: 0,
+        //   hi: this.hi,
+        //   coi: this.replyClockID,
+        //   ct: this.itemReport,
+        //   v: sessionStorage.getItem("v")
+        // };
+      } else {
+        data = {
+          ui: sessionStorage.getItem("ui"),
+          si: sessionStorage.getItem("si"),
+          rci: this.replyRci,
+          rsi: this.replyRsi,
+          hi: this.hi,
+          coi: this.replyClockID,
+          ct: this.itemReport,
+          v: sessionStorage.getItem("v")
+        };
+        // data = {
+        //   ui: 30001089,
+        //   si: 21004058,
+        //   rci: this.replyRci,
+        //   rsi: this.replyRsi,
+        //   hi: this.hi,
+        //   coi: this.replyClockID,
+        //   ct: this.itemReport,
+        //   v: sessionStorage.getItem("v")
+        // };
       }
       homeHabitAddComment(data).then(res => {
         console.log(res);
@@ -856,12 +893,12 @@ export default {
       for (let i = 0; i < 7; i++) {
         if (i == 0) {
           tempCalendarList.setTime(this.startDate.getTime());
-          console.log(tempCalendarList);
+          // console.log(tempCalendarList);
         } else {
           tempCalendarList.setTime(tempCalendarList.getTime() + 1 * 86400000);
-          console.log(tempCalendarList);
+          // console.log(tempCalendarList);
         }
-        console.log(tempCalendarList);
+        // console.log(tempCalendarList);
         let tempObj = {
           date:
             tempCalendarList.getFullYear() +
@@ -875,23 +912,27 @@ export default {
         this.calendarList.push(tempObj);
       }
       // console.log(this.calendarList);
-      // let data = {
-      //   hi: this.hi,
-      //   si: sessionStorage.getItem("si"),
-      //   sd: this.startDateResult,
-      //   ed: this.endDateResult,
-      //   v: sessionStorage.getItem("v")
-      // };
       let data = {
         hi: this.hi,
-        si: 21004058,
+        si: sessionStorage.getItem("si"),
         sd: this.startDateResult,
         ed: this.endDateResult,
         v: sessionStorage.getItem("v")
       };
+      // let data = {
+      //   hi: this.hi,
+      //   si: 21004058,
+      //   sd: this.startDateResult,
+      //   ed: this.endDateResult,
+      //   v: sessionStorage.getItem("v")
+      // };
       homeHabitWeekClock(data).then(res => {
         console.log(res.data);
         if (res.code == 200) {
+          this.calendarStartDate = new Date(res.data.start_date).getTime();
+          this.calendarEndDate = new Date(res.data.end_date).getTime();
+          console.log(res.data.start_date);
+          console.log(res.data.end_date);
           this.calendarList.map((e, i) => {
             if (res.data.clock_date.clock.indexOf(e.date) != -1) {
               e.clockInType = 1;
@@ -984,6 +1025,12 @@ p {
 }
 .calendarIsClick {
   background-color: #38b48b20;
+}
+.calendarIsNo {
+  color: #ececec !important;
+}
+.calendarIsNo > div {
+  background-color: #ececec !important;
 }
 /* top */
 .clockInStatistics {

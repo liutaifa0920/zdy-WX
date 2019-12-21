@@ -82,11 +82,17 @@ export default {
     // 获取排行数据
     queryRankingList() {
       let data = {
-        ui: 30001089,
-        si: 21004058,
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
         hi: this.hi,
         v: sessionStorage.getItem("v")
       };
+      // let data = {
+      //   ui: 30001089,
+      //   si: 21004058,
+      //   hi: this.hi,
+      //   v: sessionStorage.getItem("v")
+      // };
       homeHabitRankingList(data).then(res => {
         console.log(res.data.ranking);
         if (res.code == 200) {
