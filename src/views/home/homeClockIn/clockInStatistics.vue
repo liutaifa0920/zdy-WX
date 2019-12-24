@@ -52,15 +52,15 @@
         :key="i"
       >
         <p
-          :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
+          :class="((new Date(item.date).getTime() >= calendarStartDate) && (new Date(item.date).getTime() < calendarEndDate)) ?'':'calendarIsNo'"
           class="calendarweekName"
         >{{item.weekName}}</p>
         <p
-          :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
+          :class="((new Date(item.date).getTime() >= calendarStartDate) && (new Date(item.date).getTime() < calendarEndDate)) ?'':'calendarIsNo'"
           class="calendarDate"
         >{{item.date.split('-').slice(1).join('/')}}</p>
         <div
-          :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
+          :class="((new Date(item.date).getTime() >= calendarStartDate) && (new Date(item.date).getTime() < calendarEndDate)) ?'':'calendarIsNo'"
           v-if="item.clockInType == 1"
           class="calendarType"
         >
@@ -71,21 +71,28 @@
           v-if="item.clockInType == 2"
           class="calendarType"
         >
-          <div style="height: 1px; width: 1rem;background-color: #aaaaaa;margin: 1rem auto 0;"></div>
+          <div
+            style="height: 1px; width: .6rem;background-color: #aaaaaa;margin: .5rem auto .2rem;"
+          ></div>
         </div>
         <div
           :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
           v-if="item.clockInType == 3"
           class="calendarType"
         >
-          <div style="height: 1px; width: 1rem;background-color: #aaaaaa;margin: 1rem auto 0;"></div>
+          <div
+            style="height: 1px; width: .6rem;background-color: #aaaaaa;margin: .5rem auto .2rem;"
+          ></div>
+          <p style="font-size: .5rem;color: red;">无需打卡</p>
         </div>
         <div
           :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
           v-if="item.clockInType == 4"
           class="calendarType"
         >
-          <div style="height: 1px; width: 1rem;background-color: #aaaaaa;margin: 1rem auto 0;"></div>
+          <div
+            style="height: 1px; width: .6rem;background-color: #aaaaaa;margin: .5rem auto .2rem;"
+          ></div>
         </div>
       </div>
     </div>
@@ -93,11 +100,12 @@
     <div class="clockIn">
       <div
         class="clockInItem is-green"
-        v-if="clockInInfo.is_clock_today == 0"
+        v-if="clockInInfo.is_clock_today == 0 && !noClockInBtn"
         @click="toClockIn"
       >去打卡</div>
       <!-- <div class="clockInItem is-gary" v-if="clockInInfo.is_clock_today == 0">未打卡</div> -->
       <div class="clockInItem is-gary" v-if="clockInInfo.is_clock_today == 1">已打卡</div>
+      <div class="clockInItem is-gary" v-if="noClockInBtn && clockInInfo.is_clock_today == 0">未打卡</div>
     </div>
     <div class="garyBlock"></div>
     <div v-if="clockInInfo.clock_log_data.length == 0" class="noContent">没有打卡动态哦~</div>
@@ -180,6 +188,11 @@
             @click="IVListVideoCLick(i, index)"
           >
             <video :src="itemIV"></video>
+            <img
+              style="position: absolute;top: 0;right: 0;left: 0;bottom: 0;margin: auto;width: 2rem;height:2rem;background-color: transparent;"
+              src="~@/assets/imgs/home/habitClock/item播放.png"
+              alt
+            />
           </div>
           <div
             v-show="itemIV != ''"
@@ -220,7 +233,7 @@
           src="~@/assets/imgs/home/habitClock/is_report.png"
           alt="评论"
         />
-        <img src="~@/assets/imgs/home/habitClock/is_fenxiang.png" alt="分享" />
+        <!-- <img src="~@/assets/imgs/home/habitClock/is_fenxiang.png" alt="分享" /> -->
       </div>
       <!-- 回复区 -->
       <div class="clockInfoListItemReport">
@@ -384,7 +397,9 @@ export default {
       replyType: 0,
       replyClockID: 0,
       replyRci: 0,
-      replyRsi: 0
+      replyRsi: 0,
+      isGooding: true,
+      noClockInBtn: false
     };
   },
   mounted() {
@@ -467,7 +482,7 @@ export default {
               e.voice_path = [];
             }
           });
-          // console.log(this.clockInInfo);
+          console.log(this.clockInInfo);
           this.$nextTick(() => {
             this.indexArr = [];
             if (this.$refs.audioRoot) {
@@ -502,6 +517,7 @@ export default {
           });
           // console.log(this.clockInInfo);
           // ----------------------------------------
+          this.isGooding = true;
         }
       });
     },
@@ -513,6 +529,11 @@ export default {
         new Date(this.dt).getTime() + 28800000 < this.calendarEndDate
       ) {
         this.calendarListClickDate = date;
+        if (new Date(date).getTime() < new Date().getTime()) {
+          this.noClockInBtn = true;
+        } else {
+          this.noClockInBtn = false;
+        }
         this.queryInfo();
       }
     },
@@ -662,41 +683,44 @@ export default {
     isLikeClick(t, item, i) {
       console.log(t);
       console.log(item);
-      let data = {
-        ui: sessionStorage.getItem("ui"),
-        si: sessionStorage.getItem("si"),
-        hi: this.hi,
-        coi: item.clock_id,
-        il: t,
-        v: sessionStorage.getItem("v")
-      };
-      // let data = {
-      //   ui: 30001089,
-      //   si: 21004058,
-      //   hi: this.hi,
-      //   coi: item.clock_id,
-      //   il: t,
-      //   v: sessionStorage.getItem("v")
-      // };
-      homeHabitIsLike(data).then(res => {
-        console.log(res);
-        if (res.code == 200) {
-          this.clockInInfo.clock_log_data.map(e => {
-            e.voice_path = e.voice_path.map(() => {
-              return {};
+      if (this.isGooding) {
+        this.isGooding = false;
+        let data = {
+          ui: sessionStorage.getItem("ui"),
+          si: sessionStorage.getItem("si"),
+          hi: this.hi,
+          coi: item.clock_id,
+          il: t,
+          v: sessionStorage.getItem("v")
+        };
+        // let data = {
+        //   ui: 30001089,
+        //   si: 21004058,
+        //   hi: this.hi,
+        //   coi: item.clock_id,
+        //   il: t,
+        //   v: sessionStorage.getItem("v")
+        // };
+        homeHabitIsLike(data).then(res => {
+          console.log(res);
+          if (res.code == 200) {
+            this.clockInInfo.clock_log_data.map(e => {
+              e.voice_path = e.voice_path.map(() => {
+                return {};
+              });
             });
-          });
-          this.queryInfo();
-          // this.clockInInfo.clock_log_data[i].like_data.is_like = t;
-          // if (t == 1) {
-          //   this.clockInInfo.clock_log_data[i].like_data.like_num++;
-          // } else {
-          //   this.clockInInfo.clock_log_data[i].like_data.like_num--;
-          // }
-        } else {
-          Toast(res.msg);
-        }
-      });
+            this.queryInfo();
+            // this.clockInInfo.clock_log_data[i].like_data.is_like = t;
+            // if (t == 1) {
+            //   this.clockInInfo.clock_log_data[i].like_data.like_num++;
+            // } else {
+            //   this.clockInInfo.clock_log_data[i].like_data.like_num--;
+            // }
+          } else {
+            Toast(res.msg);
+          }
+        });
+      }
     },
     // 评论click
     itemReportClick(t, Bitem, Sitem) {
@@ -929,8 +953,14 @@ export default {
       homeHabitWeekClock(data).then(res => {
         console.log(res.data);
         if (res.code == 200) {
-          this.calendarStartDate = new Date(res.data.start_date).getTime();
-          this.calendarEndDate = new Date(res.data.end_date).getTime();
+          this.calendarStartDate = new Date(
+            res.data.start_date.split(" ")[0]
+          ).getTime();
+          this.calendarEndDate = new Date(
+            res.data.end_date.split(" ")[0]
+          ).getTime();
+          console.log(this.calendarStartDate);
+          console.log(this.calendarEndDate);
           console.log(res.data.start_date);
           console.log(res.data.end_date);
           this.calendarList.map((e, i) => {
@@ -1241,6 +1271,7 @@ p {
   height: 4.5rem;
   background-color: #eeeeee;
   margin-bottom: 1rem;
+  position: relative;
 }
 .IVListItem > img {
   width: 4.5rem;

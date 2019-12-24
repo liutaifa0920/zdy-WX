@@ -79,7 +79,10 @@
                 <span>{{item.title}}</span>
                 <span class="habitClockItemConT2" style="background-color: #E0E0E0;">已结束</span>
               </div>
-              <p @click="clockItemClick(item)" class="habitClockItemConCP1">已进行{{item.last_days}}天，剩余{{item.remain_days}}天</p>
+              <p
+                @click="clockItemClick(item)"
+                class="habitClockItemConCP1"
+              >已进行{{item.last_days}}天，剩余{{item.remain_days}}天</p>
               <p @click="clockItemClick(item)" class="habitClockItemConCP2"></p>
               <div class="habitClockItemConB">
                 <p @click="linkToClockItem(1,item)">

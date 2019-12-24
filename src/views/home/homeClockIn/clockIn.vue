@@ -6,12 +6,16 @@
       <p>{{clockInInfo.title}}</p>
       <p>剩余：{{clockInInfo.remain_days}}天 频次：{{clockInInfo.sign_frequency}}</p>
     </div>
-    <div class="clockInTopCon">
-      <p>{{clockInInfo.content}}</p>
-      <p>
+    <div class="clockInTopCon" :style="contentIsOpen?'height: 8rem !important':''">
+      <p>{{contentIsOpen ? clockInInfo.content : clockInInfo.content.substr(0,10)}}</p>
+      <div v-show="!contentIsOpen" @click="contentIsOpen = true">
         详情
         <img src="~@/assets/imgs/home/habitClock/2爱向下.png" alt />
-      </p>
+      </div>
+      <div v-show="contentIsOpen" @click="contentIsOpen = false">
+        详情
+        <img src="~@/assets/imgs/home/habitClock/2爱向上.png" alt />
+      </div>
     </div>
     <div class="clockInContent">
       <textarea
@@ -62,12 +66,12 @@
           <p>正在录音 {{recordTime}}</p>
         </div>
         <div class="recordListRight">
-          <img
+          <!-- <img
             v-show="!isOverRecord"
             @click="recorderStop"
             src="~@/assets/imgs/home/habitClock/play_stop.png"
             alt
-          />
+          />-->
           <p @click="recorderStop">完成</p>
         </div>
       </div>
@@ -158,7 +162,11 @@ export default {
   data() {
     return {
       hi: "",
-      clockInInfo: {},
+      clockInInfo: {
+        title: "",
+        content: ""
+      },
+      contentIsOpen: false,
       accessToken: "",
       noncestr: "",
       signature: "",
@@ -286,8 +294,8 @@ export default {
             "downloadImage"
           ],
           success(res) {
-            alert(res);
-            alert("可以开始录音");
+            // alert(res);
+            // alert("可以开始录音");
           }
         });
       });
@@ -297,22 +305,27 @@ export default {
     },
     // 录音------------------------------------------
     recorderStart() {
-      this.isRecord = true;
-      wx.startRecord();
-      this.audioTimer = null;
-      this.audioTime = 0;
-      this.audioTimer = setInterval(() => {
-        this.audioTime += 1;
-        if (this.audioTime < 60) {
-          this.recordTime =
-            "00:" +
-            (this.audioTime < 10 ? "0" + this.audioTime : this.audioTime);
-        } else {
-          this.audioTime = 0;
-          window.clearInterval(this.audioTimer);
-          this.recorderStop();
-        }
-      }, 1000);
+      console.log(this.adiouList.length);
+      if (this.adiouList.length <= 2) {
+        this.isRecord = true;
+        wx.startRecord();
+        this.audioTimer = null;
+        this.audioTime = 0;
+        this.audioTimer = setInterval(() => {
+          this.audioTime += 1;
+          if (this.audioTime < 60) {
+            this.recordTime =
+              "00:" +
+              (this.audioTime < 10 ? "0" + this.audioTime : this.audioTime);
+          } else {
+            this.audioTime = 0;
+            window.clearInterval(this.audioTimer);
+            this.recorderStop();
+          }
+        }, 1000);
+      } else {
+        Toast("最多可上传3个音频文件");
+      }
     },
     recorderStop() {
       this.audioTime = 0;
@@ -421,14 +434,73 @@ export default {
       let that = this;
       let freader = new FileReader();
       console.log(e.target.files[0]);
+      this.blobToBase64(e.target.files[0]);
       freader.readAsDataURL(e.target.files[0]);
       freader.onload = function(event) {
-        let tempObj = {
-          data: event.target.result,
-          file: e.target.files[0]
-        };
-        that.imgList.push(tempObj);
-        console.log(that.$refs.chooseImg);
+        console.log(that.imgList.length + that.videoList.length);
+        if (that.imgList.length + that.videoList.length <= 8) {
+          let tempObj = {
+            data: event.target.result,
+            file: e.target.files[0]
+          };
+          that.imgList.push(tempObj);
+          console.log(that.$refs.chooseImg);
+        } else {
+          Toast("最多可上传9个图片或视频文件");
+        }
+      };
+    },
+    blobToBase64(blob) {
+      const self = this; // 绑定this
+      const reader = new FileReader(); //实例化一个reader文件
+      reader.readAsDataURL(blob); // 添加二进制文件
+      reader.onload = function(event) {
+        const base64 = event.target.result; // 获取到它的base64文件
+        const scale = 0.3; // 设置缩放比例 （0-1）
+        self.compressImg(base64, scale); // 调用压缩方法
+      };
+    },
+    /**
+     * 压缩图片方法
+     * @param base64  ----baser64文件
+     * @param scale ----压缩比例 画面质量0-9，数字越小文件越小画质越差
+     * @param callback ---回调函数
+     */
+    compressImg(base64, scale) {
+      console.log(`执行缩放程序，scale=${scale}`);
+
+      // 处理缩放，转换格式
+      // 下面的注释就不写了，就是new 一个图片，用canvas来压缩
+      const img = new Image();
+      img.src = base64;
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.setAttribute("width", this.width);
+        canvas.setAttribute("height", this.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // 转成base64 文件
+        let base64 = canvas.toDataURL("image/jpeg");
+        // 根据自己需求填写大小 我的目标是小于3兆
+        while (base64.length > 1024 * 1024 * 0.4) {
+          scale -= 0.01;
+          base64 = canvas.toDataURL("image/jpeg", scale);
+        }
+        // baser64 TO blob 这一块如果不懂可以自行百度，我就不加注释了
+        const arr = base64.split(",");
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bytes = atob(arr[1]);
+        const bytesLength = bytes.length;
+        const u8arr = new Uint8Array(bytesLength);
+        for (let i = 0; i < bytes.length; i++) {
+          u8arr[i] = bytes.charCodeAt(i);
+        }
+        const blob = new Blob([u8arr], { type: mime });
+        // 回调函数 根据需求返回二进制数据或者base64数据，我的项目都给返回了
+        console.log(blob);
+        console.log(base64);
+        return blob, base64;
       };
     },
     // 选择拍摄照片
@@ -438,11 +510,16 @@ export default {
       console.log(e.target.files[0]);
       freader.readAsDataURL(e.target.files[0]);
       freader.onload = function(event) {
-        let tempObj = {
-          data: event.target.result,
-          file: e.target.files[0]
-        };
-        that.imgList.push(tempObj);
+        console.log(that.imgList.length + that.videoList.length);
+        if (that.imgList.length + that.videoList.length <= 8) {
+          let tempObj = {
+            data: event.target.result,
+            file: e.target.files[0]
+          };
+          that.imgList.push(tempObj);
+        } else {
+          Toast("最多可上传9个图片或视频文件");
+        }
       };
     },
     // 选择拍摄视频
@@ -452,11 +529,15 @@ export default {
       console.log(e.target.files[0]);
       freader.readAsDataURL(e.target.files[0]);
       freader.onload = function(event) {
-        let tempObj = {
-          data: event.target.result,
-          file: e.target.files[0]
-        };
-        that.videoList.push(tempObj);
+        if (that.imgList.length + that.videoList.length <= 8) {
+          let tempObj = {
+            data: event.target.result,
+            file: e.target.files[0]
+          };
+          that.videoList.push(tempObj);
+        } else {
+          Toast("最多可上传9个图片或视频文件");
+        }
       };
     },
     // 图片预览
@@ -608,20 +689,31 @@ p {
 .clockInTopCon {
   border-top: 1px solid #d3d3d398;
   border-bottom: 1px solid #d3d3d39a;
-  box-sizing: border-box;
+  width: 100vw;
+  height: 3rem;
+  line-height: 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   padding: 0 0.8rem;
-  height: 2.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  box-sizing: border-box;
+  position: relative;
+}
+.clockInTopCon > p:nth-child(1) {
+  font-size: 1rem;
+}
+.clockInTopCon > div {
   font-size: 0.9rem;
-}
-.clockInTopCon > p:nth-child(2) {
+  height: 3rem;
+  color: #38b48b;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: absolute;
+  bottom: 0rem;
+  right: 0.8rem;
 }
-.clockInTopCon > p:nth-child(2) > img {
+.clockInTopCon img {
   width: 0.8rem;
   height: 0.8rem;
   margin-left: 0.4rem;

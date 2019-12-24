@@ -8,215 +8,240 @@
       @click-left="onClickLeft"
     />
     <div class="topBlock"></div>
-    <div class="clockInfoMain">
-      <div class="clockInfoTit">
-        <span>{{clockInInfo.habit_info.title}}</span>
-        <div class="clockInfoTitRight">
+
+    <van-pull-refresh v-model="isLoadingUpload" @refresh="onRefresh">
+      <div class="clockInfoMain">
+        <div class="clockInfoTit">
+          <span>{{clockInInfo.habit_info.title}}</span>
+          <!-- <div class="clockInfoTitRight">
           <span>打卡设置</span>
           <img src="~@/assets/imgs/home/habitClock/向下.png" alt />
+          </div>-->
+        </div>
+        <p class="clockInfoTimeName">{{clockInInfo.habit_info.add_time}}</p>
+        <p
+          class="clockInfoTimeName"
+        >{{clockInInfo.habit_info.class_name+" "+ clockInInfo.habit_info.teacher_name+"老师"}}</p>
+        <p class="clockInfoInfo">
+          <span>剩余：{{clockInInfo.habit_info.remain_days}}天</span>
+          <span>频次：{{clockInInfo.habit_info.sign_frequency}}</span>
+        </p>
+      </div>
+      <div class="clockInfoCon" :style="contentIsOpen?'height: 8rem !important':''">
+        <p>{{contentIsOpen ? clockInInfo.habit_info.content : clockInInfo.habit_info.content.substr(0,10)}}</p>
+        <div v-show="!contentIsOpen" @click="contentIsOpen = true">
+          详情
+          <img src="~@/assets/imgs/home/habitClock/2爱向下.png" alt />
+        </div>
+        <div v-show="contentIsOpen" @click="contentIsOpen = false">
+          详情
+          <img src="~@/assets/imgs/home/habitClock/2爱向上.png" alt />
         </div>
       </div>
-      <p class="clockInfoTimeName">{{clockInInfo.habit_info.add_time}}</p>
-      <p
-        class="clockInfoTimeName"
-      >{{clockInInfo.habit_info.class_name+" "+ clockInInfo.habit_info.teacher_name+"老师"}}</p>
-      <p class="clockInfoInfo">
-        <span>剩余：{{clockInInfo.habit_info.remain_days}}天</span>
-        <span>频次：{{clockInInfo.habit_info.sign_frequency}}</span>
-      </p>
-    </div>
-    <div class="clockInfoCon">
-      <p>{{clockInInfo.habit_info.content}}</p>
-      <p>
-        详情
-        <img src="~@/assets/imgs/home/habitClock/2爱向下.png" alt />
-      </p>
-    </div>
-    <!-- List -->
-    <div class="clockInfoListTit">班级打卡动态</div>
-    <!-- 单条动态 -->
-    <div class="clockInfoList" v-for="(item, i) in clockInInfo.clock_log_data" :key="i">
-      <div class="clockInfoListItem">
-        <div @click="linkToHistory(item)" class="clockInfoListItemLeft">
-          <img v-if="item.img != ''" :src="item.img" alt />
-          <div
-            class="clockInfoListItemLeftIcon"
-            v-if="item.img == ''"
-          >{{item.name.substr(item.name.length - 2)}}</div>
-          <div class="clockInfoListItemTopRight">
-            <p>{{item.name + item.relation}}</p>
-            <p>{{item.clock_date}} 已坚持{{item.clock_num}}天</p>
+      <!-- List -->
+      <div class="clockInfoListTit">班级打卡动态</div>
+      <!-- 单条动态 -->
+      <div class="clockInfoList" v-for="(item, i) in clockInInfo.clock_log_data" :key="i">
+        <div class="clockInfoListItem">
+          <div @click="linkToHistory(item)" class="clockInfoListItemLeft">
+            <img v-if="item.img != ''" :src="item.img" alt />
+            <div
+              class="clockInfoListItemLeftIcon"
+              v-if="item.img == ''"
+            >{{item.name.substr(item.name.length - 2)}}</div>
+            <div class="clockInfoListItemTopRight">
+              <p>{{item.name + item.relation}}</p>
+              <p>{{item.clock_date}} 已坚持{{item.clock_num}}天</p>
+            </div>
+          </div>
+          <img
+            class="deleClickImg"
+            @click="moreDeleClockInBox(i)"
+            src="~@/assets/imgs/home/habitClock/更多.png"
+            alt
+          />
+          <div v-show="item.deleBoxFlag" class="moreDeleClockInBtn">
+            <p class="deleClickName" @click="moreDeleClockInBtn(item)">删除</p>
           </div>
         </div>
-        <img
-          class="deleClickImg"
-          @click="moreDeleClockInBox(i)"
-          src="~@/assets/imgs/home/habitClock/更多.png"
-          alt
-        />
-        <div v-show="item.deleBoxFlag" class="moreDeleClockInBtn">
-          <p class="deleClickName" @click="moreDeleClockInBtn(item)">删除</p>
-        </div>
-      </div>
-      <div class="clockInfoListItemCon">
-        <!-- 内容 -->
-        <p @click="linkToHistory(item)">{{item.content}}</p>
-        <!-- 录音 -->
-        <div v-for="(items, index) in item.voice_path" :key="index+'audio'" class="recordPlayList">
-          <audio ref="audioRoot" @timeupdate="audioTimeUpdate(i, index)" :src="items.file"></audio>
-          <img
-            v-if="items.status"
-            @click="recorderPlay(items, i, index)"
-            src="~@/assets/imgs/home/habitClock/playB.png"
-          />
-          <img
-            v-if="!items.status"
-            @click="recorderPause(items, i, index)"
-            src="~@/assets/imgs/home/habitClock/pauseB.png"
-          />
-          <van-slider
-            v-model="items.value"
-            :max="100"
-            :min="0"
-            bar-height="4px"
-            style="width:55%;"
-            active-color="#99CCFF"
-            inactive-color="#E5E5E5"
-            @change="audioSliderChange(items.value, i, index)"
-            @drag-start="audioDragS(i, index)"
-          >
-            <div slot="button" class="adiouButton" @click="audioSliderBtnClick(i, index)"></div>
-          </van-slider>
-          <p>{{items.duration}}</p>
-        </div>
-        <!-- 图片 / 视频 -->
-        <div class="IVList">
+        <div class="clockInfoListItemCon">
+          <!-- 内容 -->
+          <p @click="linkToHistory(item)">{{item.content}}</p>
+          <!-- 录音 -->
           <div
-            v-show="itemIV != ''"
-            class="IVListItem"
-            v-for="(itemIV, index) in item.img_path.split(',')"
-            :key="index + 'img'"
-            @click="IVListImgCLick(i, index)"
+            v-for="(items, index) in item.voice_path"
+            :key="index+'audio'"
+            class="recordPlayList"
           >
-            <img :src="itemIV" alt />
+            <audio ref="audioRoot" @timeupdate="audioTimeUpdate(i, index)" :src="items.file"></audio>
+            <img
+              v-if="items.status"
+              @click="recorderPlay(items, i, index)"
+              src="~@/assets/imgs/home/habitClock/playB.png"
+            />
+            <img
+              v-if="!items.status"
+              @click="recorderPause(items, i, index)"
+              src="~@/assets/imgs/home/habitClock/pauseB.png"
+            />
+            <van-slider
+              v-model="items.value"
+              :max="100"
+              :min="0"
+              bar-height="4px"
+              style="width:55%;"
+              active-color="#99CCFF"
+              inactive-color="#E5E5E5"
+              @change="audioSliderChange(items.value, i, index)"
+              @drag-start="audioDragS(i, index)"
+            >
+              <div slot="button" class="adiouButton" @click="audioSliderBtnClick(i, index)"></div>
+            </van-slider>
+            <p>{{items.duration}}</p>
           </div>
-          <div
-            v-show="itemIV != ''"
-            class="IVListItem"
-            v-for="(itemIV, index) in item.video_path.split(',')"
-            :key="index + 'video'"
-            @click="IVListVideoCLick(i, index)"
-          >
-            <video :src="itemIV"></video>
+          <!-- 图片 / 视频 -->
+          <div class="IVList">
+            <div
+              v-show="itemIV != ''"
+              class="IVListItem"
+              v-for="(itemIV, index) in item.video_path.split(',')"
+              :key="index + 'video'"
+              @click="IVListVideoCLick(i, index)"
+            >
+              <video :src="itemIV"></video>
+              <img
+                style="position: absolute;top: 0;right: 0;left: 0;bottom: 0;margin: auto;width: 2rem;height:2rem;background-color: transparent;"
+                src="~@/assets/imgs/home/habitClock/item播放.png"
+                alt
+              />
+            </div>
+            <div
+              v-show="itemIV != ''"
+              class="IVListItem"
+              v-for="(itemIV, index) in item.img_path.split(',')"
+              :key="index + 'img'"
+              @click="IVListImgCLick(i, index)"
+            >
+              <img :src="itemIV" alt />
+            </div>
+            <div
+              class="IVListItem"
+              style="margin-bottom: 0;height: 0px;"
+              v-for="(itemIV, index) in 3"
+              :key="index + 'block'"
+            ></div>
           </div>
+        </div>
+        <!-- 按钮行 -->
+        <div class="clockInfoListItemBtn">
+          <div class="clockInfoListItemIsGood">
+            <img
+              v-if="item.like_data.is_like == 0"
+              @click="isLikeClick(1, item, i)"
+              src="~@/assets/imgs/home/habitClock/no_good.png"
+              alt="未点赞"
+            />
+            <img
+              v-if="item.like_data.is_like == 1"
+              @click="isLikeClick(0, item, i)"
+              src="~@/assets/imgs/home/habitClock/is_good.png"
+              alt="已点赞"
+            />
+            <p>{{item.like_data.like_num == 0 ? '':item.like_data.like_num}}</p>
+          </div>
+          <img
+            @click="itemReportClick(1, item)"
+            src="~@/assets/imgs/home/habitClock/is_report.png"
+            alt="评论"
+          />
+          <!-- <img src="~@/assets/imgs/home/habitClock/is_fenxiang.png" alt="分享" /> -->
+        </div>
+        <!-- 回复区 -->
+        <div class="clockInfoListItemReport">
+          <!-- 点赞区 -->
           <div
-            class="IVListItem"
-            style="margin-bottom: 0;height: 0px;"
-            v-for="(itemIV, index) in 3"
-            :key="index + 'block'"
-          ></div>
+            v-show="item.like_data.like_user != ''"
+            class="clockInfoListItemReportTop"
+            :style="item.comment_data.length == 0 ? 'border: 0px !important;': ''"
+          >
+            <img src="~@/assets/imgs/home/habitClock/no_good.png" alt="点赞" />
+            <p>{{item.like_data.like_user}}</p>
+          </div>
+          <!-- 评论内容 -->
+          <div v-show="item.comment_data.length != 0" class="clockInfoListItemReportBot">
+            <div class="clockInfoListItemReportBotLeft">
+              <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
+            </div>
+            <div class="clockInfoListItemReportBotRig">
+              <p v-for="(items ,index) in item.comment_data" :key="index">
+                <span
+                  v-if="items.to_user.userid == 0"
+                  @click="itemReportClick(2, item, items.commnet_user)"
+                  class="isName"
+                >{{items.commnet_user.name}}:</span>
+                <span
+                  v-if="items.to_user.userid == 0"
+                  @click="itemReportClick(2, item, items.commnet_user)"
+                  class="isContent"
+                >{{items.content}}</span>
+                <span
+                  v-if="items.to_user.userid != 0"
+                  @click="itemReportClick(2, item, items.commnet_user)"
+                  class="isName"
+                >{{items.commnet_user.name}}</span>
+                <span
+                  v-if="items.to_user.userid != 0"
+                  @click="itemReportClick(2, item, items.commnet_user)"
+                  style="padding-right: .2rem;"
+                >回复</span>
+                <span
+                  v-if="items.to_user.userid != 0"
+                  @click="itemReportClick(2, item, items.commnet_user)"
+                  class="isName"
+                >{{items.to_user.name}}:</span>
+                <span
+                  v-if="items.to_user.userid != 0"
+                  @click="itemReportClick(2, item, items.commnet_user)"
+                  class="isContent"
+                >{{items.content}}</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-      <!-- 按钮行 -->
-      <div class="clockInfoListItemBtn">
-        <div class="clockInfoListItemIsGood">
-          <img
-            v-if="item.like_data.is_like == 0"
-            @click="isLikeClick(1, item, i)"
-            src="~@/assets/imgs/home/habitClock/no_good.png"
-            alt="未点赞"
-          />
-          <img
-            v-if="item.like_data.is_like == 1"
-            @click="isLikeClick(0, item, i)"
-            src="~@/assets/imgs/home/habitClock/is_good.png"
-            alt="已点赞"
-          />
-          <p>{{item.like_data.like_num == 0 ? '':item.like_data.like_num}}</p>
+      <div class="bottomBlock"></div>
+      <div class="bottomBlock"></div>
+      <div v-if="!isReporting" class="clockBottomNav">
+        <div class="clockBottomNavItem" @click="routeToRankingList">
+          <img src="~@/assets/imgs/home/habitClock/ranking.png" alt />
+          <p>排行榜</p>
         </div>
-        <img
-          @click="itemReportClick(1, item)"
-          src="~@/assets/imgs/home/habitClock/is_report.png"
-          alt="评论"
-        />
-        <img src="~@/assets/imgs/home/habitClock/is_fenxiang.png" alt="分享" />
-      </div>
-      <!-- 回复区 -->
-      <div class="clockInfoListItemReport">
-        <!-- 点赞区 -->
+        <div class="clockBottomNavItem" @click="routeToClockInStatistics">
+          <img src="~@/assets/imgs/home/habitClock/statistics.png" alt />
+          <p>打卡统计</p>
+        </div>
         <div
-          v-show="item.like_data.like_user != ''"
-          class="clockInfoListItemReportTop"
-          :style="item.comment_data.length == 0 ? 'border: 0px !important;': ''"
-        >
-          <img src="~@/assets/imgs/home/habitClock/no_good.png" alt="点赞" />
-          <p>{{item.like_data.like_user}}</p>
-        </div>
-        <!-- 评论内容 -->
-        <div v-show="item.comment_data.length != 0" class="clockInfoListItemReportBot">
-          <div class="clockInfoListItemReportBotLeft">
-            <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
-          </div>
-          <div class="clockInfoListItemReportBotRig">
-            <p v-for="(items ,index) in item.comment_data" :key="index">
-              <span
-                v-if="items.to_user.userid == 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isName"
-              >{{items.commnet_user.name}}:</span>
-              <span
-                v-if="items.to_user.userid == 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isContent"
-              >{{items.content}}</span>
-              <span
-                v-if="items.to_user.userid != 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isName"
-              >{{items.commnet_user.name}}</span>
-              <span
-                v-if="items.to_user.userid != 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                style="padding-right: .2rem;"
-              >回复</span>
-              <span
-                v-if="items.to_user.userid != 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isName"
-              >{{items.to_user.name}}:</span>
-              <span
-                v-if="items.to_user.userid != 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isContent"
-              >{{items.content}}</span>
-            </p>
-          </div>
-        </div>
+          v-if="clockInInfo.is_clock_today != 1"
+          class="clockBottomNavBtn"
+          @click="linkToClockIn"
+        >打卡</div>
+        <div
+          v-if="clockInInfo.is_clock_today == 1"
+          class="clockBottomNavBtn"
+          :style="clockInInfo.is_clock_today == 1? 'background-color: #aaaaaa;' : ''"
+        >打卡</div>
       </div>
-    </div>
-    <div class="bottomBlock"></div>
-    <div class="bottomBlock"></div>
-    <div v-if="!isReporting" class="clockBottomNav">
-      <div class="clockBottomNavItem" @click="routeToRankingList">
-        <img src="~@/assets/imgs/home/habitClock/ranking.png" alt />
-        <p>排行榜</p>
+      <div v-if="isReporting" class="itemReportBottomBox">
+        <input
+          class="itemReportInput"
+          ref="reportInput"
+          type="text"
+          @blur="reportInputBlur"
+          v-model="itemReport"
+        />
+        <div class="itemReportOKBtn" @click="setReport">评论</div>
       </div>
-      <div class="clockBottomNavItem" @click="routeToClockInStatistics">
-        <img src="~@/assets/imgs/home/habitClock/statistics.png" alt />
-        <p>打卡统计</p>
-      </div>
-      <div class="clockBottomNavBtn" @click="linkToClockIn">打卡</div>
-    </div>
-    <div v-if="isReporting" class="itemReportBottomBox">
-      <input
-        class="itemReportInput"
-        ref="reportInput"
-        type="text"
-        @blur="reportInputBlur"
-        v-model="itemReport"
-      />
-      <div class="itemReportOKBtn" @click="setReport">评论</div>
-    </div>
+    </van-pull-refresh>
 
     <!-- 视频弹窗 -->
     <van-overlay :show="videoShow" @click="videoShow = false">
@@ -241,9 +266,11 @@ export default {
       clockInName: "",
       clockInInfo: {
         habit_info: {
-          title: ""
+          title: "",
+          content: ""
         }
       },
+      contentIsOpen: false,
       currentDeleClick: 0,
       itemReport: "",
       isReporting: false,
@@ -263,7 +290,9 @@ export default {
       replyType: 0,
       replyClockID: 0,
       replyRci: 0,
-      replyRsi: 0
+      replyRsi: 0,
+      isGooding: true,
+      isLoadingUpload: true
     };
   },
   mounted() {
@@ -275,6 +304,16 @@ export default {
     // window.removeEventListener("click", this.listenClick);
   },
   methods: {
+    onRefresh() {
+      this.clockInInfo.clock_log_data.map(e => {
+        e.voice_path = e.voice_path.map(() => {
+          return {};
+        });
+      });
+      this.queryInfo();
+    },
+    // 判断是否是分享进入
+
     // 全局监听
     listenClick(e) {
       console.log(e.target.className);
@@ -369,8 +408,10 @@ export default {
           });
           console.log(this.clockInInfo);
           // ----------------------------------------
+          this.isGooding = true;
         }
       });
+      this.isLoadingUpload = false;
     },
     // 跳转历史打卡页面
     linkToHistory(item) {
@@ -518,41 +559,44 @@ export default {
     isLikeClick(t, item, i) {
       console.log(t);
       console.log(item);
-      let data = {
-        ui: sessionStorage.getItem("ui"),
-        si: sessionStorage.getItem("si"),
-        hi: this.hi,
-        coi: item.clock_id,
-        il: t,
-        v: sessionStorage.getItem("v")
-      };
-      // let data = {
-      //   ui: 30001089,
-      //   si: 21004058,
-      //   hi: this.hi,
-      //   coi: item.clock_id,
-      //   il: t,
-      //   v: sessionStorage.getItem("v")
-      // };
-      homeHabitIsLike(data).then(res => {
-        console.log(res);
-        if (res.code == 200) {
-          this.clockInInfo.clock_log_data.map(e => {
-            e.voice_path = e.voice_path.map(() => {
-              return {};
+      if (this.isGooding) {
+        this.isGooding = false;
+        let data = {
+          ui: sessionStorage.getItem("ui"),
+          si: sessionStorage.getItem("si"),
+          hi: this.hi,
+          coi: item.clock_id,
+          il: t,
+          v: sessionStorage.getItem("v")
+        };
+        // let data = {
+        //   ui: 30001089,
+        //   si: 21004058,
+        //   hi: this.hi,
+        //   coi: item.clock_id,
+        //   il: t,
+        //   v: sessionStorage.getItem("v")
+        // };
+        homeHabitIsLike(data).then(res => {
+          console.log(res);
+          if (res.code == 200) {
+            this.clockInInfo.clock_log_data.map(e => {
+              e.voice_path = e.voice_path.map(() => {
+                return {};
+              });
             });
-          });
-          this.queryInfo();
-          // this.clockInInfo.clock_log_data[i].like_data.is_like = t;
-          // if (t == 1) {
-          //   this.clockInInfo.clock_log_data[i].like_data.like_num++;
-          // } else {
-          //   this.clockInInfo.clock_log_data[i].like_data.like_num--;
-          // }
-        } else {
-          Toast(res.msg);
-        }
-      });
+            this.queryInfo();
+            // this.clockInInfo.clock_log_data[i].like_data.is_like = t;
+            // if (t == 1) {
+            //   this.clockInInfo.clock_log_data[i].like_data.like_num++;
+            // } else {
+            //   this.clockInInfo.clock_log_data[i].like_data.like_num--;
+            // }
+          } else {
+            Toast(res.msg);
+          }
+        });
+      }
     },
     // 评论click
     itemReportClick(t, Bitem, Sitem) {
@@ -566,7 +610,10 @@ export default {
         this.replyRci = Sitem.userid;
         this.replyRsi = Sitem.student_id;
       }
-      if (this.replyRsi != sessionStorage.getItem("si") * 1) {
+      if (
+        this.replyRsi != sessionStorage.getItem("si") * 1 ||
+        this.replyType == 1
+      ) {
         this.isReporting = true;
         this.$nextTick(() => {
           // console.log(Bitem);
@@ -605,8 +652,8 @@ export default {
         data = {
           ui: sessionStorage.getItem("ui"),
           si: sessionStorage.getItem("si"),
-          rci: this.replyRci,
-          rsi: this.replyRsi,
+          rci: 0,
+          rsi: 0,
           hi: this.hi,
           coi: this.replyClockID,
           ct: this.itemReport,
@@ -767,20 +814,24 @@ p {
   line-height: 3rem;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 0 0.8rem;
   box-sizing: border-box;
+  position: relative;
 }
 .clockInfoCon > p:nth-child(1) {
   font-size: 1rem;
 }
-.clockInfoCon > p:nth-child(2) {
+.clockInfoCon > div {
   font-size: 0.9rem;
   height: 3rem;
   color: #38b48b;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: absolute;
+  bottom: 0rem;
+  right: 0.8rem;
 }
 .clockInfoCon img {
   width: 0.8rem;
@@ -952,6 +1003,7 @@ p {
   height: 4.5rem;
   background-color: #eeeeee;
   margin-bottom: 1rem;
+  position: relative;
 }
 .IVListItem > img {
   width: 4.5rem;

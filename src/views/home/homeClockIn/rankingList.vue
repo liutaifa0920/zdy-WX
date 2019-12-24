@@ -19,7 +19,7 @@
         >{{rankingList[0].name.substr(rankingList[0].name.length-2)}}</div>
         <div class="rankingListBoxTopTil">
           <p>{{rankingList[0].name}} 排名第一</p>
-          <span>我已坚持{{rankingList[0].ranking}}天</span>
+          <span>打卡已进行{{studentInfo}}天,我已坚持{{studentInfo.ranking}}天</span>
         </div>
       </div>
       <div class="rankingListBoxBot">
@@ -42,7 +42,7 @@
             <div
               v-if="item.img == ''"
               class="imgText"
-            >{{item.name.length > 2 ? item.name.subStr(item.name.length - 2) : item.name}}</div>
+            >{{item.name.length > 2 ? item.name.substr(item.name.length - 2) : item.name}}</div>
             <p>{{item.name}}</p>
           </div>
           <div class="rankingListBoxBotListRight">{{item.ranking}}天</div>
