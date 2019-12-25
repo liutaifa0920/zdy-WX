@@ -45,9 +45,13 @@
     >
       <div
         class="topCalendarItem"
-        @click="clickDate(item.date, i)"
-        :class="(calendarListClickDate == item.date) && (new Date(dt).getTime()+28800000 > calendarStartDate) && (new Date(dt).getTime()+28800000 < calendarEndDate) ? 'calendarIsClick' : ''"
-        :style="(new Date(dt).getTime() + 28800000) > new Date(item.date).getTime() && (new Date(dt).getTime() + 28800000) < (new Date(item.date).getTime() + 86400000) && ((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ? 'background-color: #38b48b50;': ''"
+        @click="clickDate(item.date, i, item)"
+        :class="(calendarListClickDate == item.date) && (new Date(dt).getTime() >= calendarStartDate) && (new Date(dt).getTime() < calendarEndDate) ? 'calendarIsClick' : ''"
+        :style="(new Date(dt).getTime()) >= new Date(item.date).getTime()
+         && 
+         (new Date(dt).getTime()) < (new Date(item.date).getTime() + 86400000)
+          && 
+          ((new Date(item.date).getTime() >= calendarStartDate) && (new Date(item.date).getTime() < calendarEndDate)) ? 'background-color: #38b48b50 !important;': ''"
         v-for="(item, i) in calendarList"
         :key="i"
       >
@@ -71,28 +75,21 @@
           v-if="item.clockInType == 2"
           class="calendarType"
         >
-          <div
-            style="height: 1px; width: .6rem;background-color: #aaaaaa;margin: .5rem auto .2rem;"
-          ></div>
+          <div style="height: 1px; width: .6rem;background-color: #aaaaaa;margin: 1rem auto 0;"></div>
         </div>
         <div
           :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
           v-if="item.clockInType == 3"
           class="calendarType"
         >
-          <div
-            style="height: 1px; width: .6rem;background-color: #aaaaaa;margin: .5rem auto .2rem;"
-          ></div>
-          <p style="font-size: .5rem;color: red;">无需打卡</p>
+          <div style="height: 1px; width: .6rem;background-color: #aaaaaa;margin: 1rem auto 0;"></div>
         </div>
         <div
           :class="((new Date(item.date).getTime()+28800000 > calendarStartDate) && (new Date(item.date).getTime()+28800000 < calendarEndDate)) ?'':'calendarIsNo'"
           v-if="item.clockInType == 4"
           class="calendarType"
         >
-          <div
-            style="height: 1px; width: .6rem;background-color: #aaaaaa;margin: .5rem auto .2rem;"
-          ></div>
+          <div style="height: 1px; width: .6rem;background-color: #aaaaaa;margin: 1rem auto 0;"></div>
         </div>
       </div>
     </div>
@@ -100,12 +97,13 @@
     <div class="clockIn">
       <div
         class="clockInItem is-green"
-        v-if="clockInInfo.is_clock_today == 0 && !noClockInBtn"
+        v-if="currentBtnType == 2 && !noClockInBtn"
         @click="toClockIn"
       >去打卡</div>
       <!-- <div class="clockInItem is-gary" v-if="clockInInfo.is_clock_today == 0">未打卡</div> -->
-      <div class="clockInItem is-gary" v-if="clockInInfo.is_clock_today == 1">已打卡</div>
-      <div class="clockInItem is-gary" v-if="noClockInBtn && clockInInfo.is_clock_today == 0">未打卡</div>
+      <div class="clockInItem is-gary" v-if="currentBtnType == 1">已打卡</div>
+      <div class="clockInItem is-gary" v-if="noClockInBtn && currentBtnType == 2">未打卡</div>
+      <p v-if="currentBtnType == 3" style="font-size: .9rem;color: #38b48b;">今日无需打卡</p>
     </div>
     <div class="garyBlock"></div>
     <div v-if="clockInInfo.clock_log_data.length == 0" class="noContent">没有打卡动态哦~</div>
@@ -176,7 +174,8 @@
           >
             <div slot="button" class="adiouButton" @click="audioSliderBtnClick(i, index)"></div>
           </van-slider>
-          <p>{{items.duration}}</p>
+
+          <p>{{ "0" + Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)/60)+ ":"+ (Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60) >= 10?Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60):("0"+Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60))) + "/" + items.duration}}</p>
         </div>
         <!-- 图片 / 视频 -->
         <div class="IVList">
@@ -252,37 +251,31 @@
             <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
           </div>
           <div class="clockInfoListItemReportBotRig">
-            <p v-for="(items ,index) in item.comment_data" :key="index">
+            <p
+              v-for="(items ,index) in item.comment_data"
+              :key="index"
+              @click="itemReportClick(2, item, items.commnet_user, i, index)"
+              @touchstart="copyReplyStart"
+              @touchend="copyReplyEnd(i, index)"
+            >
+              <span class="replyBlock"></span>
+              <span v-if="items.to_user.userid == 0" class="isName">{{items.commnet_user.name}}:</span>
+              <span v-if="items.to_user.userid == 0" class="isContent">{{items.content}}</span>
+              <span v-if="items.to_user.userid != 0" class="isName">{{items.commnet_user.name}}</span>
+              <span v-if="items.to_user.userid != 0" style="padding-right: .2rem;">回复</span>
+              <span v-if="items.to_user.userid != 0" class="isName">{{items.to_user.name}}:</span>
+              <span v-if="items.to_user.userid != 0" class="isContent">{{items.content}}</span>
               <span
-                v-if="items.to_user.userid == 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isName"
-              >{{items.commnet_user.name}}:</span>
+                @click="setDeleReply(item, items)"
+                class="deleReply"
+                v-show="items.deleReplyBox"
+              >删除</span>
               <span
-                v-if="items.to_user.userid == 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isContent"
-              >{{items.content}}</span>
-              <span
-                v-if="items.to_user.userid != 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isName"
-              >{{items.commnet_user.name}}</span>
-              <span
-                v-if="items.to_user.userid != 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                style="padding-right: .2rem;"
-              >回复</span>
-              <span
-                v-if="items.to_user.userid != 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isName"
-              >{{items.to_user.name}}:</span>
-              <span
-                v-if="items.to_user.userid != 0"
-                @click="itemReportClick(2, item, items.commnet_user)"
-                class="isContent"
-              >{{items.content}}</span>
+                @click="setCopyReply(index)"
+                :class="'CopyBtn'+ index + ' copybox'"
+                :data-clipboard-text="items.content"
+                v-show="items.copyReplyBox"
+              >复制</span>
             </p>
           </div>
         </div>
@@ -314,9 +307,11 @@ import {
   homeHabitDelClock,
   homeHabitIsLike,
   homeHabitAddComment,
+  homeHabitDelComment,
   homeHabitWeekClock
 } from "@/api/api";
 import { Toast, ImagePreview } from "vant";
+import Clipboard from "clipboard";
 export default {
   data() {
     return {
@@ -399,7 +394,12 @@ export default {
       replyRci: 0,
       replyRsi: 0,
       isGooding: true,
-      noClockInBtn: false
+      noClockInBtn: false,
+      currentBtnType: "",
+      // 删除自己评论
+      deleReplyBox: false,
+      touchingTimer: null,
+      touchingTime: 0
     };
   },
   mounted() {
@@ -513,29 +513,51 @@ export default {
                   ].voice_path[this.indexArr[i].S].duration = m + ":" + s;
                 };
               });
+              setTimeout(() => {
+                this.$refs.audioRoot.map((e, i) => {
+                  this.$refs.audioRoot[i].currentTime = 0;
+                });
+              }, 60);
             }
           });
           // console.log(this.clockInInfo);
           // ----------------------------------------
+          this.clockInInfo.clock_log_data.map((e, i) => {
+            if (e.comment_data.length != 0) {
+              e.comment_data.map((item, index) => {
+                item.deleReplyBox = false;
+                item.copyReplyBox = false;
+              });
+            }
+          });
+          console.log(this.clockInInfo);
           this.isGooding = true;
         }
       });
     },
     // 日期点击
-    clickDate(date, i) {
+    clickDate(date, i, item) {
       this.dt = date;
+      console.log(this.calendarStartDate);
+      console.log(new Date(this.dt).getTime());
+      console.log(this.calendarEndDate);
+
+      console.log(new Date(this.dt).getTime() >= this.calendarStartDate);
+      console.log(new Date(this.dt).getTime() < this.calendarEndDate);
       if (
-        new Date(this.dt).getTime() + 28800000 > this.calendarStartDate &&
-        new Date(this.dt).getTime() + 28800000 < this.calendarEndDate
+        new Date(this.dt).getTime() >= this.calendarStartDate &&
+        new Date(this.dt).getTime() < this.calendarEndDate
       ) {
         this.calendarListClickDate = date;
-        if (new Date(date).getTime() < new Date().getTime()) {
+        if (new Date(date).getTime() + 86400000 < new Date().getTime()) {
           this.noClockInBtn = true;
         } else {
           this.noClockInBtn = false;
         }
         this.queryInfo();
       }
+      console.log(item.clockInType);
+      this.currentBtnType = item.clockInType;
     },
     // 跳转历史打卡页面
     linkToHistory(item) {
@@ -634,7 +656,7 @@ export default {
       this.findCurrentPlay(B, S);
       this.$refs.audioRoot.map((e, i) => {
         this.$refs.audioRoot[i].pause();
-        this.$refs.audioRoot[i].currentTime = 0;
+        // this.$refs.audioRoot[i].currentTime = 0;
       });
       this.clockInInfo.clock_log_data.map((e, B) => {
         e.voice_path.map((item, S) => {
@@ -722,8 +744,28 @@ export default {
         });
       }
     },
+    // 评论tuoch
+    copyReplyStart() {
+      this.touchingTimer = setInterval(() => {
+        this.touchingTime++;
+      }, 500);
+    },
+    copyReplyEnd(B, S) {
+      clearInterval(this.touchingTimer);
+      if (this.touchingTime >= 1) {
+        this.clockInInfo.clock_log_data.map(e => {
+          e.comment_data.map(item => {
+            item.copyReplyBox = false;
+          });
+        });
+        this.clockInInfo.clock_log_data[B].comment_data[S].copyReplyBox = true;
+        this.$forceUpdate();
+        this.touchingTime = 0;
+        window.addEventListener("click", this.copyReplyBoxListen);
+      }
+    },
     // 评论click
-    itemReportClick(t, Bitem, Sitem) {
+    itemReportClick(t, Bitem, Sitem, B, S) {
       this.replyType = t;
       if (this.replyType == 1) {
         this.replyClockID = Bitem.clock_id;
@@ -737,15 +779,98 @@ export default {
       if (this.replyRsi != sessionStorage.getItem("si") * 1) {
         this.isReporting = true;
         this.$nextTick(() => {
-          // console.log(Bitem);
-          // console.log(Sitem);
-          console.log(this.replyRci);
-          console.log(this.replyRsi);
-          console.log(sessionStorage.getItem("ui"));
-          console.log(sessionStorage.getItem("si"));
+          // console.log(this.replyRci);
+          // console.log(this.replyRsi);
+          // console.log(sessionStorage.getItem("ui"));
+          // console.log(sessionStorage.getItem("si"));
           this.$refs.reportInput.focus();
         });
+      } else {
+        // console.log(Bitem);
+        // console.log(Sitem);
+        this.clockInInfo.clock_log_data.map(e => {
+          e.comment_data.map(item => {
+            item.deleReplyBox = false;
+          });
+        });
+        this.clockInInfo.clock_log_data[B].comment_data[S].deleReplyBox = true;
+        this.$forceUpdate();
+        window.addEventListener("click", this.deleReplyBoxListen);
       }
+    },
+    // 关闭删除click监听
+    deleReplyBoxListen(event) {
+      console.log(event.target.className);
+      if (
+        event.target.className != "replyBlock" &&
+        event.target.className != "deleReply"
+      ) {
+        this.clockInInfo.clock_log_data.map(e => {
+          e.comment_data.map(item => {
+            item.deleReplyBox = false;
+          });
+        });
+        this.$forceUpdate();
+        window.removeEventListener("click", this.deleReplyBoxListen);
+      }
+    },
+    // 关闭删除click监听
+    copyReplyBoxListen(event) {
+      console.log(event.target.className);
+      if (event.target.className.indexOf("CopyBtn") == -1) {
+        this.clockInInfo.clock_log_data.map(e => {
+          e.comment_data.map(item => {
+            item.copyReplyBox = false;
+          });
+        });
+        this.$forceUpdate();
+        window.removeEventListener("click", this.copyReplyBoxListen);
+      }
+    },
+    // 复制评论
+    setCopyReply(S) {
+      this.clockInInfo.clock_log_data.map(e => {
+        e.comment_data.map(item => {
+          item.deleReplyBox = false;
+          item.copyReplyBox = false;
+        });
+      });
+      this.$forceUpdate();
+      window.removeEventListener("click", this.copyReplyBoxListen);
+      let clipboard = new Clipboard(".CopyBtn" + S);
+      clipboard.on("success", e => {
+        Toast("复制成功");
+        clipboard.destroy();
+      });
+      clipboard.on("error", e => {
+        console.log("该浏览器不支持自动复制");
+        clipboard.destroy();
+      });
+    },
+    // 删除评论
+    setDeleReply(Bitem, Sitem) {
+      console.log(Bitem);
+      console.log(Sitem);
+      let data = {
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
+        cmi: Sitem.comment_id,
+        hi: this.hi,
+        coi: Bitem.clock_id,
+        v: sessionStorage.getItem("v")
+      };
+      homeHabitDelComment(data).then(res => {
+        console.log(res);
+        if (res.code == 200) {
+          this.clockInInfo.clock_log_data.map(e => {
+            e.voice_path = e.voice_path.map(() => {
+              return {};
+            });
+          });
+          this.queryInfo();
+          window.removeEventListener("click", this.deleReplyBoxListen);
+        }
+      });
     },
     // 回复input失去焦点
     reportInputBlur() {
@@ -856,7 +981,7 @@ export default {
       } else if (this.touchStartX - this.touchEndX < -100) {
         this.calendarNum--;
       }
-      console.log(this.calendarNum);
+      // console.log(this.calendarNum);
     },
     // 去打卡
     toClockIn() {
@@ -956,9 +1081,7 @@ export default {
           this.calendarStartDate = new Date(
             res.data.start_date.split(" ")[0]
           ).getTime();
-          this.calendarEndDate = new Date(
-            res.data.end_date.split(" ")[0]
-          ).getTime();
+          this.calendarEndDate = new Date(res.data.end_date).getTime();
           console.log(this.calendarStartDate);
           console.log(this.calendarEndDate);
           console.log(res.data.start_date);
@@ -974,6 +1097,17 @@ export default {
               e.clockInType = 4;
             }
           });
+          if (res.data.no_clock_date.indexOf(this.endDateResult) != -1) {
+            this.currentBtnType = 3;
+          } else if (
+            res.data.clock_date.clock.indexOf(this.endDateResult) != -1
+          ) {
+            this.currentBtnType = 1;
+          } else if (
+            res.data.clock_date.no_clock.indexOf(this.endDateResult) != -1
+          ) {
+            this.currentBtnType = 2;
+          }
           console.log(this.calendarList);
         }
       });
@@ -1399,6 +1533,59 @@ p {
   font-size: 0.9rem;
   line-height: 0.9rem;
   margin-bottom: 0.3rem !important;
+  position: relative;
+}
+.replyBlock {
+  background-color: rgba(255, 0, 0, 0);
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.deleReply::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -1rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: 0;
+  height: 0;
+  border-top: 0.5rem solid #313131;
+  border-bottom: 0.5rem solid transparent;
+  border-left: 0.5rem solid transparent;
+  border-right: 0.5rem solid transparent;
+}
+.copybox {
+  width: 3.8rem;
+  box-sizing: border-box;
+  background-color: #313131;
+  color: white;
+  padding: 0.6rem 1rem;
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  border-radius: 0.3rem;
+}
+.copybox::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -1rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: 0;
+  height: 0;
+  border-top: 0.5rem solid #313131;
+  border-bottom: 0.5rem solid transparent;
+  border-left: 0.5rem solid transparent;
+  border-right: 0.5rem solid transparent;
 }
 .isName {
   color: #38b48b;

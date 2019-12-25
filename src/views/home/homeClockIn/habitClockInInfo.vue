@@ -97,7 +97,7 @@
             >
               <div slot="button" class="adiouButton" @click="audioSliderBtnClick(i, index)"></div>
             </van-slider>
-            <p>{{items.duration}}</p>
+            <p>{{ "0" +Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)/60).toString() +":"+(Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60) >= 10?Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60):("0"+Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60))).toString() + "/" + items.duration}}</p>
           </div>
           <!-- 图片 / 视频 -->
           <div class="IVList">
@@ -173,37 +173,31 @@
               <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
             </div>
             <div class="clockInfoListItemReportBotRig">
-              <p v-for="(items ,index) in item.comment_data" :key="index">
+              <p
+                v-for="(items, index) in item.comment_data"
+                :key="index"
+                @click="itemReportClick(2, item, items.commnet_user, i, index)"
+                @touchstart="copyReplyStart"
+                @touchend="copyReplyEnd(i, index)"
+              >
+                <span class="replyBlock"></span>
+                <span v-if="items.to_user.userid == 0" class="isName">{{items.commnet_user.name}}:</span>
+                <span v-if="items.to_user.userid == 0" class="isContent">{{items.content}}</span>
+                <span v-if="items.to_user.userid != 0" class="isName">{{items.commnet_user.name}}</span>
+                <span v-if="items.to_user.userid != 0" style="padding-right: .2rem;">回复</span>
+                <span v-if="items.to_user.userid != 0" class="isName">{{items.to_user.name}}:</span>
+                <span v-if="items.to_user.userid != 0" class="isContent">{{items.content}}</span>
                 <span
-                  v-if="items.to_user.userid == 0"
-                  @click="itemReportClick(2, item, items.commnet_user)"
-                  class="isName"
-                >{{items.commnet_user.name}}:</span>
+                  @click="setDeleReply(item, items)"
+                  class="deleReply"
+                  v-show="items.deleReplyBox"
+                >删除</span>
                 <span
-                  v-if="items.to_user.userid == 0"
-                  @click="itemReportClick(2, item, items.commnet_user)"
-                  class="isContent"
-                >{{items.content}}</span>
-                <span
-                  v-if="items.to_user.userid != 0"
-                  @click="itemReportClick(2, item, items.commnet_user)"
-                  class="isName"
-                >{{items.commnet_user.name}}</span>
-                <span
-                  v-if="items.to_user.userid != 0"
-                  @click="itemReportClick(2, item, items.commnet_user)"
-                  style="padding-right: .2rem;"
-                >回复</span>
-                <span
-                  v-if="items.to_user.userid != 0"
-                  @click="itemReportClick(2, item, items.commnet_user)"
-                  class="isName"
-                >{{items.to_user.name}}:</span>
-                <span
-                  v-if="items.to_user.userid != 0"
-                  @click="itemReportClick(2, item, items.commnet_user)"
-                  class="isContent"
-                >{{items.content}}</span>
+                  @click="setCopyReply(index)"
+                  :class="'CopyBtn'+ index + ' copybox'"
+                  :data-clipboard-text="items.content"
+                  v-show="items.copyReplyBox"
+                >复制</span>
               </p>
             </div>
           </div>
@@ -221,14 +215,14 @@
           <p>打卡统计</p>
         </div>
         <div
-          v-if="clockInInfo.is_clock_today != 1"
+          v-if="(clockInInfo.is_clock_today != 1) || (clockInInfo.is_clock_today != 2)"
           class="clockBottomNavBtn"
           @click="linkToClockIn"
         >打卡</div>
         <div
-          v-if="clockInInfo.is_clock_today == 1"
+          v-if="(clockInInfo.is_clock_today == 1) || (clockInInfo.is_clock_today == 2)"
           class="clockBottomNavBtn"
-          :style="clockInInfo.is_clock_today == 1? 'background-color: #aaaaaa;' : ''"
+          :style="((clockInInfo.is_clock_today == 1) || (clockInInfo.is_clock_today == 2))? 'background-color: #aaaaaa;' : ''"
         >打卡</div>
       </div>
       <div v-if="isReporting" class="itemReportBottomBox">
@@ -256,9 +250,11 @@ import {
   homeHabitClockDetail,
   homeHabitDelClock,
   homeHabitIsLike,
-  homeHabitAddComment
+  homeHabitAddComment,
+  homeHabitDelComment
 } from "@/api/api";
 import { Toast, ImagePreview } from "vant";
+import Clipboard from "clipboard";
 export default {
   data() {
     return {
@@ -285,14 +281,20 @@ export default {
       ],
       indexArr: [],
       currentPlayIndex: 0,
+      // 视频预览
       videoShow: false,
       videoShowData: "",
       replyType: 0,
       replyClockID: 0,
       replyRci: 0,
       replyRsi: 0,
+      // 点赞状态
       isGooding: true,
-      isLoadingUpload: true
+      isLoadingUpload: true,
+      // 删除自己评论
+      deleReplyBox: false,
+      touchingTimer: null,
+      touchingTime: 0
     };
   },
   mounted() {
@@ -358,8 +360,19 @@ export default {
           this.clockInInfo = res.data.statis;
           // ------------------------------------------------------------------
           this.clockInInfo.clock_log_data.map(e => {
-            if (e.voice_path != "") {
+            if (e.voice_path != "" && !Array.isArray(e.voice_path)) {
               e.voice_path = e.voice_path.split(",").map(item => {
+                let tempObj = {
+                  value: 0,
+                  file: item,
+                  duration: "",
+                  status: true
+                };
+                console.log(tempObj);
+                return tempObj;
+              });
+            } else if (Array.isArray(e.voice_path)) {
+              e.voice_path = e.voice_path.map(item => {
                 let tempObj = {
                   value: 0,
                   file: item,
@@ -398,16 +411,29 @@ export default {
                     Math.floor(time % 60) >= 10
                       ? Math.floor(time % 60)
                       : "0" + Math.floor(time % 60);
-                  console.log(m + ":" + s);
                   this.clockInInfo.clock_log_data[
                     this.indexArr[i].B
                   ].voice_path[this.indexArr[i].S].duration = m + ":" + s;
+                  this.$forceUpdate();
                 };
+              });
+              setTimeout(() => {
+                this.$refs.audioRoot.map((e, i) => {
+                  this.$refs.audioRoot[i].currentTime = 0;
+                });
+              }, 60);
+            }
+          });
+          // ----------------------------------------
+          this.clockInInfo.clock_log_data.map((e, i) => {
+            if (e.comment_data.length != 0) {
+              e.comment_data.map((item, index) => {
+                item.deleReplyBox = false;
+                item.copyReplyBox = false;
               });
             }
           });
           console.log(this.clockInInfo);
-          // ----------------------------------------
           this.isGooding = true;
         }
       });
@@ -510,7 +536,7 @@ export default {
       this.findCurrentPlay(B, S);
       this.$refs.audioRoot.map((e, i) => {
         this.$refs.audioRoot[i].pause();
-        this.$refs.audioRoot[i].currentTime = 0;
+        // this.$refs.audioRoot[i].currentTime = 0;
       });
       this.clockInInfo.clock_log_data.map((e, B) => {
         e.voice_path.map((item, S) => {
@@ -582,9 +608,17 @@ export default {
           if (res.code == 200) {
             this.clockInInfo.clock_log_data.map(e => {
               e.voice_path = e.voice_path.map(() => {
-                return {};
+                let tempObj = {
+                  value: 0,
+                  file: item,
+                  duration: "",
+                  status: true
+                };
+                console.log(tempObj);
+                return tempObj;
               });
             });
+            this.$forceUpdate();
             this.queryInfo();
             // this.clockInInfo.clock_log_data[i].like_data.is_like = t;
             // if (t == 1) {
@@ -598,8 +632,28 @@ export default {
         });
       }
     },
+    // 评论tuoch
+    copyReplyStart() {
+      this.touchingTimer = setInterval(() => {
+        this.touchingTime++;
+      }, 500);
+    },
+    copyReplyEnd(B, S) {
+      clearInterval(this.touchingTimer);
+      if (this.touchingTime >= 1) {
+        this.clockInInfo.clock_log_data.map(e => {
+          e.comment_data.map(item => {
+            item.copyReplyBox = false;
+          });
+        });
+        this.clockInInfo.clock_log_data[B].comment_data[S].copyReplyBox = true;
+        this.$forceUpdate();
+        this.touchingTime = 0;
+        window.addEventListener("click", this.copyReplyBoxListen);
+      }
+    },
     // 评论click
-    itemReportClick(t, Bitem, Sitem) {
+    itemReportClick(t, Bitem, Sitem, B, S) {
       this.replyType = t;
       if (this.replyType == 1) {
         this.replyClockID = Bitem.clock_id;
@@ -616,15 +670,98 @@ export default {
       ) {
         this.isReporting = true;
         this.$nextTick(() => {
-          // console.log(Bitem);
-          // console.log(Sitem);
-          console.log(this.replyRci);
-          console.log(this.replyRsi);
-          console.log(sessionStorage.getItem("ui"));
-          console.log(sessionStorage.getItem("si"));
+          // console.log(this.replyRci);
+          // console.log(this.replyRsi);
+          // console.log(sessionStorage.getItem("ui"));
+          // console.log(sessionStorage.getItem("si"));
           this.$refs.reportInput.focus();
         });
+      } else {
+        // console.log(Bitem);
+        // console.log(Sitem);
+        this.clockInInfo.clock_log_data.map(e => {
+          e.comment_data.map(item => {
+            item.deleReplyBox = false;
+          });
+        });
+        this.clockInInfo.clock_log_data[B].comment_data[S].deleReplyBox = true;
+        this.$forceUpdate();
+        window.addEventListener("click", this.deleReplyBoxListen);
       }
+    },
+    // 关闭删除click监听
+    deleReplyBoxListen(event) {
+      console.log(event.target.className);
+      if (
+        event.target.className != "replyBlock" &&
+        event.target.className != "deleReply"
+      ) {
+        this.clockInInfo.clock_log_data.map(e => {
+          e.comment_data.map(item => {
+            item.deleReplyBox = false;
+          });
+        });
+        this.$forceUpdate();
+        window.removeEventListener("click", this.deleReplyBoxListen);
+      }
+    },
+    // 关闭删除click监听
+    copyReplyBoxListen(event) {
+      console.log(event.target.className);
+      if (event.target.className.indexOf("CopyBtn") == -1) {
+        this.clockInInfo.clock_log_data.map(e => {
+          e.comment_data.map(item => {
+            item.copyReplyBox = false;
+          });
+        });
+        this.$forceUpdate();
+        window.removeEventListener("click", this.copyReplyBoxListen);
+      }
+    },
+    // 复制评论
+    setCopyReply(S) {
+      this.clockInInfo.clock_log_data.map(e => {
+        e.comment_data.map(item => {
+          item.deleReplyBox = false;
+          item.copyReplyBox = false;
+        });
+      });
+      this.$forceUpdate();
+      window.removeEventListener("click", this.copyReplyBoxListen);
+      let clipboard = new Clipboard(".CopyBtn" + S);
+      clipboard.on("success", e => {
+        Toast("复制成功");
+        clipboard.destroy();
+      });
+      clipboard.on("error", e => {
+        console.log("该浏览器不支持自动复制");
+        clipboard.destroy();
+      });
+    },
+    // 删除评论
+    setDeleReply(Bitem, Sitem) {
+      console.log(Bitem);
+      console.log(Sitem);
+      let data = {
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
+        cmi: Sitem.comment_id,
+        hi: this.hi,
+        coi: Bitem.clock_id,
+        v: sessionStorage.getItem("v")
+      };
+      homeHabitDelComment(data).then(res => {
+        console.log(res);
+        if (res.code == 200) {
+          this.clockInInfo.clock_log_data.map(e => {
+            e.voice_path = e.voice_path.map(() => {
+              return {};
+            });
+          });
+          this.queryInfo();
+          window.removeEventListener("click", this.deleReplyBoxListen);
+        }
+      });
     },
     // 回复input失去焦点
     reportInputBlur() {
@@ -1128,9 +1265,76 @@ p {
 } */
 .clockInfoListItemReportBotRig > p {
   /* height: 0.9rem; */
+  width: 100%;
   font-size: 0.9rem;
   line-height: 0.9rem;
   margin-bottom: 0.3rem !important;
+  position: relative;
+}
+.replyBlock {
+  background-color: rgba(255, 0, 0, 0);
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.deleReply {
+  width: 3.8rem;
+  box-sizing: border-box;
+  background-color: #313131;
+  color: white;
+  padding: 0.6rem 1rem;
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  border-radius: 0.3rem;
+}
+.deleReply::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -1rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: 0;
+  height: 0;
+  border-top: 0.5rem solid #313131;
+  border-bottom: 0.5rem solid transparent;
+  border-left: 0.5rem solid transparent;
+  border-right: 0.5rem solid transparent;
+}
+.copybox {
+  width: 3.8rem;
+  box-sizing: border-box;
+  background-color: #313131;
+  color: white;
+  padding: 0.6rem 1rem;
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  border-radius: 0.3rem;
+}
+.copybox::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -1rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: 0;
+  height: 0;
+  border-top: 0.5rem solid #313131;
+  border-bottom: 0.5rem solid transparent;
+  border-left: 0.5rem solid transparent;
+  border-right: 0.5rem solid transparent;
 }
 .isName {
   color: #38b48b;
@@ -1173,5 +1377,33 @@ p {
   line-height: 2rem;
   border-radius: 0.2rem;
   font-size: 0.9rem;
+}
+.copybox {
+  width: 3.8rem;
+  box-sizing: border-box;
+  background-color: #313131;
+  color: white;
+  padding: 0.6rem 1rem;
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  border-radius: 0.3rem;
+}
+.copybox::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: -1rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  width: 0;
+  height: 0;
+  border-top: 0.5rem solid #313131;
+  border-bottom: 0.5rem solid transparent;
+  border-left: 0.5rem solid transparent;
+  border-right: 0.5rem solid transparent;
 }
 </style>

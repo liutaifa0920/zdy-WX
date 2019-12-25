@@ -46,12 +46,12 @@
           style="width:55vw;"
           active-color="#99CCFF"
           inactive-color="#E5E5E5"
-          @change="audioSliderChange"
+          @change="audioSliderChange(item.value, i)"
           @drag-start="audioDragS(i)"
         >
-          <div slot="button" class="adiouButton"></div>
+          <div slot="button" class="adiouButton" @click="audioSliderBtnClick(i)"></div>
         </van-slider>
-        <p>{{item.duration}}</p>
+        <p>{{ item.duration }}</p>
       </div>
       <!-- 正在录音 -->
       <p
@@ -83,11 +83,23 @@
             <img src="~@/assets/imgs/home/habitClock/item错误.png" @click="deleItemClick(2, i)" alt />
           </div>
         </div>
+
+        <!-- <img
+                style="position: absolute;top: 0;right: 0;left: 0;bottom: 0;margin: auto;width: 2rem;height:2rem;background-color: transparent;"
+                src="~@/assets/imgs/home/habitClock/item播放.png"
+                alt
+        />-->
         <div class="imgVideoListItem" v-for="(item, i) in videoList" :key="i+'video'">
           <video :src="item.data" @click="videoLook(i)"></video>
           <div class="imgVideoListItemDele">
             <img src="~@/assets/imgs/home/habitClock/item错误.png" @click="deleItemClick(3, i)" alt />
           </div>
+          <img
+            class="imgVideoListItemPlay"
+            style="position: absolute;top: 0;right: 0;left: 0;bottom: 0;margin: auto;width: 2rem;height:2rem;background-color: transparent;"
+            src="~@/assets/imgs/home/habitClock/item播放.png"
+            alt
+          />
         </div>
         <div
           class="imgVideoListItem"
@@ -352,7 +364,8 @@ export default {
                       value: 0,
                       file: res.data.data.fileUrl,
                       duration: that.recordTime,
-                      status: true
+                      status: true,
+                      currentTime: "00:00"
                     };
                     that.adiouList.push(tempObj);
                     that.recordTime = "00:00";
@@ -370,6 +383,12 @@ export default {
     // 已完成录音播放
     recorderPlay(item, i) {
       console.log(item);
+      this.adiouList.map((e, i) => {
+        this.adiouList[i] = true;
+      });
+      this.$refs.audioRoot.map((e, i) => {
+        this.$refs.audioRoot[i].pause();
+      });
       this.adiouList[i].status = false;
       this.currentAudioIndex = i;
       this.$refs.audioRoot[i].play();
@@ -381,37 +400,42 @@ export default {
       this.currentAudioIndex = i;
       this.$refs.audioRoot[i].pause();
     },
-    // 已完成录音删除
-    deleAudioBtnClick(i) {
-      this.adiouList.splice(i, 1);
-    },
-    // 音频时间更新事件
-    audioTimeUpdate(i) {
-      let durationTime = this.$refs.audioRoot[i].duration;
-      let currentTime = this.$refs.audioRoot[i].currentTime;
-
-      if (currentTime < durationTime) {
-        this.adiouList[i].value = (currentTime / durationTime) * 100;
-      } else {
-        this.adiouList[i].value = 0;
-        this.$refs.audioRoot[i].currentTime = 0;
-        this.adiouList[i].status = true;
-        this.$refs.audioRoot[i].pause();
-      }
-    },
     // 进度条拖动事件
     audioDragS(i) {
       this.$refs.audioRoot[i].pause();
     },
-    // audioDragE() {},
+    audioSliderBtnClick(i) {
+      this.currentAudioIndex = i;
+    },
     // 进度条change
     audioSliderChange(val) {
       // console.log(val);
-      // console.log(this.currentAudioIndex);
-      this.adiouList[this.currentAudioIndex].status = false;
+      this.adiouList.map((e, i) => {
+        this.adiouList[i] = true;
+      });
+      this.$refs.audioRoot.map((e, i) => {
+        this.$refs.audioRoot[i].pause();
+      });
+      let durationTime = this.$refs.audioRoot[this.currentAudioIndex].duration;
       this.$refs.audioRoot[this.currentAudioIndex].currentTime =
-        (val / 100) * this.$refs.audioRoot[this.currentAudioIndex].duration;
+        (val / 100) * durationTime;
       this.$refs.audioRoot[this.currentAudioIndex].play();
+      this.adiouList[this.currentAudioIndex].status = false;
+    },
+    // 音频时间更新事件
+    audioTimeUpdate(i) {
+      let currentTime = this.$refs.audioRoot[i].currentTime;
+      let durationTime = this.$refs.audioRoot[i].duration;
+      this.adiouList[i].value = (currentTime / durationTime) * 100;
+      if (currentTime == durationTime) {
+        this.adiouList[i].status = true;
+        this.adiouList[i].value = 0;
+        this.$refs.audioRoot[i].pause();
+      }
+    },
+    // 已完成录音删除
+    deleAudioBtnClick(i) {
+      this.adiouList.splice(i, 1);
     },
     // 添加照片 拍照 录像弹窗---------------------------------
     imgVideoPopup() {
@@ -431,44 +455,27 @@ export default {
     },
     // 选择已有照片
     changeImg(e) {
-      let that = this;
-      let freader = new FileReader();
       console.log(e.target.files[0]);
-      this.blobToBase64(e.target.files[0]);
-      freader.readAsDataURL(e.target.files[0]);
-      freader.onload = function(event) {
-        console.log(that.imgList.length + that.videoList.length);
-        if (that.imgList.length + that.videoList.length <= 8) {
-          let tempObj = {
-            data: event.target.result,
-            file: e.target.files[0]
-          };
-          that.imgList.push(tempObj);
-          console.log(that.$refs.chooseImg);
-        } else {
-          Toast("最多可上传9个图片或视频文件");
-        }
-      };
+      this.blobToBase64(e.target.files[0], e.target.files[0].name);
     },
-    blobToBase64(blob) {
+    // 选择拍摄照片
+    changeSetImg(e) {
+      console.log(e.target.files[0]);
+      this.blobToBase64(e.target.files[0], e.target.files[0].name);
+    },
+    blobToBase64(blob, name) {
       const self = this; // 绑定this
       const reader = new FileReader(); //实例化一个reader文件
       reader.readAsDataURL(blob); // 添加二进制文件
       reader.onload = function(event) {
         const base64 = event.target.result; // 获取到它的base64文件
-        const scale = 0.3; // 设置缩放比例 （0-1）
-        self.compressImg(base64, scale); // 调用压缩方法
+        const scale = 0.1; // 设置缩放比例 （0-1）
+        return self.compressImg(base64, scale, name); // 调用压缩方法
       };
     },
-    /**
-     * 压缩图片方法
-     * @param base64  ----baser64文件
-     * @param scale ----压缩比例 画面质量0-9，数字越小文件越小画质越差
-     * @param callback ---回调函数
-     */
-    compressImg(base64, scale) {
+    compressImg(base64, scale, name) {
       console.log(`执行缩放程序，scale=${scale}`);
-
+      let that = this;
       // 处理缩放，转换格式
       // 下面的注释就不写了，就是new 一个图片，用canvas来压缩
       const img = new Image();
@@ -488,33 +495,43 @@ export default {
           base64 = canvas.toDataURL("image/jpeg", scale);
         }
         // baser64 TO blob 这一块如果不懂可以自行百度，我就不加注释了
-        const arr = base64.split(",");
-        const mime = arr[0].match(/:(.*?);/)[1];
-        const bytes = atob(arr[1]);
-        const bytesLength = bytes.length;
-        const u8arr = new Uint8Array(bytesLength);
-        for (let i = 0; i < bytes.length; i++) {
-          u8arr[i] = bytes.charCodeAt(i);
-        }
-        const blob = new Blob([u8arr], { type: mime });
+        // const arr = base64.split(",");
+        // const mime = arr[0].match(/:(.*?);/)[1];
+        // const bytes = atob(arr[1]);
+        // const bytesLength = bytes.length;
+        // const u8arr = new Uint8Array(bytesLength);
+        // for (let i = 0; i < bytes.length; i++) {
+        //   u8arr[i] = bytes.charCodeAt(i);
+        // }
+        // const blob = new Blob([u8arr], { type: mime });
         // 回调函数 根据需求返回二进制数据或者base64数据，我的项目都给返回了
-        console.log(blob);
-        console.log(base64);
-        return blob, base64;
+        // console.log(blob);
+        // console.log(base64);
+        that.dataURLtoFile(base64, name);
+        // return base64;
       };
     },
-    // 选择拍摄照片
-    changeSetImg(e) {
+    dataURLtoFile(dataurl, filename) {
       let that = this;
+      //将base64转换为文件
+      var arr = dataurl.split(","),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      console.log(new File([u8arr], filename, { type: mime }));
+      // return new File([u8arr], filename, { type: mime });
       let freader = new FileReader();
-      console.log(e.target.files[0]);
-      freader.readAsDataURL(e.target.files[0]);
+      freader.readAsDataURL(new File([u8arr], filename, { type: mime }));
       freader.onload = function(event) {
         console.log(that.imgList.length + that.videoList.length);
         if (that.imgList.length + that.videoList.length <= 8) {
           let tempObj = {
             data: event.target.result,
-            file: e.target.files[0]
+            file: new File([u8arr], filename, { type: mime })
           };
           that.imgList.push(tempObj);
         } else {
@@ -860,6 +877,18 @@ p {
   width: 6rem;
   height: 6rem;
   background-color: #eeeeee88;
+}
+.imgVideoListItemPlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 2rem;
+  height: 2rem;
+  margin: auto;
+  background-color: transparent;
+  z-index: 1;
 }
 .imgVideoListItemDele {
   position: absolute;

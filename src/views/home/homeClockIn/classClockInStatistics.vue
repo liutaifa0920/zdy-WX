@@ -9,6 +9,7 @@
     />
     <div class="topBlock"></div>
     <div
+      v-show="isCopyFlag"
       class="CopyBtn"
       @click="copyClick"
       :data-clipboard-text="currentType == 1 ? noCopyClock : copyClock"
@@ -16,28 +17,28 @@
     <van-tabs v-model="currentType" animated swipeable>
       <van-tab :name="1" :title="'未打卡' + listInfo.no_clock_num + '人'">
         <div class="itemContentBox">
-          <div class="itemContent">
+          <div v-show="listInfo.no_clock.length != 0" class="itemContent">
             <p>{{"以下学生未完成" + listInfo.date.substr(0, 4) + "年" + listInfo.date.substr(5, 2) + "月" + listInfo.date.substr(8) + "日" + "“" + listInfo.title + "”打卡:"}}</p>
             <p
               v-show="listInfo.no_clock.length > 0"
               v-for="(item, i) in listInfo.no_clock"
               :key="i"
             >{{(i + 1) + "." + item.name}}</p>
-            <p v-show="listInfo.no_clock.length == 0">无人未打卡</p>
           </div>
+          <p class="noClockText" v-show="listInfo.no_clock.length == 0">今日没有打卡动态哦~</p>
         </div>
       </van-tab>
       <van-tab :name="2" :title="'已打卡' + listInfo.clock_num + '人'">
         <div class="itemContentBox">
-          <div class="itemContent">
+          <div v-show="listInfo.clock.length != 0" class="itemContent">
             <p>{{"以下学生已完成" + listInfo.date.substr(0, 4) + "年" + listInfo.date.substr(5, 2) + "月" + listInfo.date.substr(8) + "日" + "“" + listInfo.title + "”打卡:"}}</p>
             <p
               v-show="listInfo.clock.length > 0"
               v-for="(item, i) in listInfo.clock"
               :key="i"
             >{{(i + 1) + "." + item.name}}</p>
-            <p v-show="listInfo.clock.length == 0">无人已打卡</p>
           </div>
+          <p class="noClockText" v-show="listInfo.clock.length == 0">今日没有打卡动态哦~</p>
         </div>
       </van-tab>
     </van-tabs>
@@ -77,7 +78,8 @@ export default {
         ]
       },
       copyClock: null,
-      noCopyClock: null
+      noCopyClock: null,
+      isCopyFlag: true
     };
   },
   mounted() {
@@ -142,6 +144,13 @@ export default {
 
           console.log(this.copyClock);
           console.log(this.noCopyClock);
+          if (this.currentType == 1 && this.listInfo.no_clock.length == 0) {
+            this.isCopyFlag = false;
+          } else if (this.currentType == 2 && this.listInfo.clock.length == 0) {
+            this.isCopyFlag = false;
+          } else {
+            this.isCopyFlag = true;
+          }
         }
       });
     },
@@ -160,6 +169,17 @@ export default {
     // 返回上一级
     onClickLeft() {
       this.$router.go(-1);
+    }
+  },
+  watch: {
+    currentType() {
+      if (this.currentType == 1 && this.listInfo.no_clock.length == 0) {
+        this.isCopyFlag = false;
+      } else if (this.currentType == 2 && this.listInfo.clock.length == 0) {
+        this.isCopyFlag = false;
+      } else {
+        this.isCopyFlag = true;
+      }
     }
   }
 };
@@ -231,5 +251,14 @@ p {
 .itemContentBox {
   width: 100%;
   height: calc(100vh - 7.5rem);
+}
+.noClockText {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  padding-top: 30vh;
+  box-sizing: border-box;
+  font-size: 0.9rem;
+  color: #aaaaaa;
 }
 </style>

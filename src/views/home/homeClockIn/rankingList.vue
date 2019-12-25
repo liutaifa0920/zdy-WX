@@ -19,7 +19,7 @@
         >{{rankingList[0].name.substr(rankingList[0].name.length-2)}}</div>
         <div class="rankingListBoxTopTil">
           <p>{{rankingList[0].name}} 排名第一</p>
-          <span>打卡已进行{{studentInfo}}天,我已坚持{{studentInfo.ranking}}天</span>
+          <span>打卡已进行{{lastDays}}天,我已坚持{{studentInfo.clock_days}}天</span>
         </div>
       </div>
       <div class="rankingListBoxBot">
@@ -65,7 +65,8 @@ export default {
           name: "",
           rank_num: ""
         }
-      ]
+      ],
+      lastDays: ""
     };
   },
   mounted() {
@@ -97,6 +98,7 @@ export default {
         console.log(res.data.ranking);
         if (res.code == 200) {
           this.studentInfo = res.data.ranking.student_info;
+          this.lastDays = res.data.ranking.ranking_list.last_days
           this.rankingList = res.data.ranking.ranking_list.list;
         }
       });
@@ -181,7 +183,7 @@ p {
   right: 0;
   margin: auto;
   background-color: #0051a280;
-  width: 9rem;
+  width: 13rem;
   height: 1.5rem;
   display: flex;
   align-items: center;

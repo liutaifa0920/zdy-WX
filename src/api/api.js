@@ -94,8 +94,14 @@ export function homeHabitAddComment(data) {
     data
   });
 }
-
 // 删除评论
+export function homeHabitDelComment(data) {
+  return request({
+    url: "/parent/habit/delComment",
+    method: "post",
+    data
+  });
+}
 
 // 判断日期是否打卡
 export function homeHabitWeekClock(data) {
