@@ -8,7 +8,7 @@
       @click-left="onClickLeft"
     />
     <div class="topBlock"></div>
-    <van-tabs v-model="tabAction" swipeable animated>
+    <van-tabs @change="tabsChange" v-model="tabAction" swipeable animated>
       <van-tab
         v-for="(item, i) in tabTitleList"
         :key="i + 'a'"
@@ -82,7 +82,7 @@
               <p
                 @click="clockItemClick(item)"
                 class="habitClockItemConCP1"
-              >已进行{{item.last_days}}天，剩余{{item.remain_days}}天</p>
+              >已进行{{item.last_days}}天，以坚持打卡{{item.remain_days}}天</p>
               <p @click="clockItemClick(item)" class="habitClockItemConCP2"></p>
               <div class="habitClockItemConB">
                 <p @click="linkToClockItem(1,item)">
@@ -124,6 +124,9 @@ export default {
     };
   },
   mounted() {
+    if (sessionStorage.getItem("habitClockInType")) {
+      this.tabAction = sessionStorage.getItem("habitClockInType") * 1;
+    }
     this.queryListInfo();
   },
   methods: {
@@ -153,8 +156,13 @@ export default {
         }
       });
     },
+    // tabsChange
+    tabsChange(name) {
+      sessionStorage.setItem("habitClockInType", name);
+    },
     // 打卡itemClick
     clockItemClick(item) {
+      sessionStorage.setItem("habitClockInType", this.tabAction);
       console.log(item);
       this.$router.push({
         path: "/habitClockInInfo",
@@ -165,6 +173,7 @@ export default {
     },
     // 跳转至打卡页面
     linkToToClockIn(item) {
+      sessionStorage.setItem("habitClockInType", this.tabAction);
       this.$router.push({
         path: "/clockIn",
         query: {
@@ -175,6 +184,7 @@ export default {
     // 打卡ItemBottomClick
     linkToClockItem(t, item) {
       if (t == 1) {
+        sessionStorage.setItem("habitClockInType", this.tabAction);
         // 排行榜
         this.$router.push({
           path: "/rankingList",
@@ -183,6 +193,7 @@ export default {
           }
         });
       } else if (t == 2) {
+        sessionStorage.setItem("habitClockInType", this.tabAction);
         // 打卡统计
         this.$router.push({
           path: "/clockInStatistics",

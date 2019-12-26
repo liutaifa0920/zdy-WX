@@ -55,6 +55,7 @@
             </div>
           </div>
           <img
+            v-show="si == item.student_id"
             class="deleClickImg"
             @click="moreDeleClockInBox(i)"
             src="~@/assets/imgs/home/habitClock/更多.png"
@@ -222,6 +223,16 @@
         <video autoplay ref="videoShow" :src="videoShowData"></video>
       </div>
     </van-overlay>
+    <van-overlay :show="uploadShow">
+      <div class="uploadWrapper">
+        <div>
+          <div style="margin-bottom: 1rem;display: flex;justify-content: center;">
+            <van-loading color="#38b48b" />
+          </div>
+          <div style="color: #38b48b;font-size: .9rem;">加载中</div>
+        </div>
+      </div>
+    </van-overlay>
   </div>
 </template>
 <script>
@@ -237,6 +248,7 @@ import Clipboard from "clipboard";
 export default {
   data() {
     return {
+      si: "",
       hi: "",
       clockInName: "",
       lookUi: "",
@@ -273,10 +285,12 @@ export default {
       // 删除自己评论
       deleReplyBox: false,
       touchingTimer: null,
-      touchingTime: 0
+      touchingTime: 0,
+      uploadShow: false
     };
   },
   mounted() {
+    this.si = sessionStorage.getItem("si");
     this.queryParam();
     this.queryInfo();
   },
@@ -315,11 +329,11 @@ export default {
       this.lookSi = this.$route.query.si;
     },
     queryInfo() {
+      this.uploadShow = true;
       let data = {
-        ui: this.lookUi,
-        si: this.lookSi,
-        lui: sessionStorage.getItem("ui"),
-        lsi: sessionStorage.getItem("si"),
+        ui: sessionStorage.getItem("ui"),
+        si: sessionStorage.getItem("si"),
+        lsi: this.lookSi,
         hi: this.hi,
         v: sessionStorage.getItem("v")
       };
@@ -405,6 +419,7 @@ export default {
           });
           console.log(this.clockInInfo);
           this.isGooding = true;
+          this.uploadShow = false;
         }
       });
       this.isLoadingUpload = false;
@@ -558,7 +573,14 @@ export default {
           if (res.code == 200) {
             this.clockInInfo.clock_log_data.map(e => {
               e.voice_path = e.voice_path.map(() => {
-                return {};
+                let tempObj = {
+                  value: 0,
+                  file: "",
+                  duration: "",
+                  status: true
+                };
+                console.log(tempObj);
+                return tempObj;
               });
             });
             this.queryInfo();
@@ -597,6 +619,7 @@ export default {
     // 评论click
     itemReportClick(t, Bitem, Sitem, B, S) {
       this.replyType = t;
+      console.log(t);
       if (this.replyType == 1) {
         this.replyClockID = Bitem.clock_id;
         this.replyRci = Bitem.userid;
@@ -697,7 +720,14 @@ export default {
         if (res.code == 200) {
           this.clockInInfo.clock_log_data.map(e => {
             e.voice_path = e.voice_path.map(() => {
-              return {};
+              let tempObj = {
+                value: 0,
+                file: "",
+                duration: "",
+                status: true
+              };
+              console.log(tempObj);
+              return tempObj;
             });
           });
           this.queryInfo();
@@ -731,8 +761,8 @@ export default {
         data = {
           ui: sessionStorage.getItem("ui"),
           si: sessionStorage.getItem("si"),
-          rci: this.replyRci,
-          rsi: this.replyRsi,
+          rci: 0,
+          rsi: 0,
           hi: this.hi,
           coi: this.replyClockID,
           ct: this.itemReport,
@@ -777,7 +807,14 @@ export default {
           this.isReporting = false;
           this.clockInInfo.clock_log_data.map(e => {
             e.voice_path = e.voice_path.map(() => {
-              return {};
+              let tempObj = {
+                value: 0,
+                file: "",
+                duration: "",
+                status: true
+              };
+              console.log(tempObj);
+              return tempObj;
             });
           });
           this.queryInfo();
@@ -1285,5 +1322,15 @@ p {
   line-height: 2rem;
   border-radius: 0.2rem;
   font-size: 0.9rem;
+}
+.van-overlay {
+  background-color: white !important;
+  z-index: 100;
+}
+.uploadWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 </style>

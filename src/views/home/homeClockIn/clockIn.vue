@@ -120,7 +120,7 @@
       </div>
     </div>
     <div class="upLoadBtn" @click="clovkInUpload">确定发布</div>
-    <van-popup v-model="imgVideoPopupFlag" position="bottom" :style="{ height: '9rem' }">
+    <van-popup v-model="imgVideoPopupFlag" position="bottom" :style="{ height: '12rem' }">
       <div class="chooseImgOrAdiou" @click="chooseImgClick">
         添加照片
         <input @change="changeImg" ref="chooseImg" type="file" accept="image/*" />
@@ -135,11 +135,15 @@
           capture="camera"
         />
       </div>
+      <div class="chooseImgOrAdiou" @click="chooseSetAdiouClick">
+        添加视频
+        <input @change="changeVideo" ref="chooseVideo" type="file" accept="video/*" />
+      </div>
       <div class="chooseImgOrAdiou" @click="chooseAdiouClick">
         拍摄视频
         <input
-          @change="changeVideo"
-          ref="chooseVideo"
+          @change="changeSetVideo"
+          ref="chooseSetVideo"
           type="file"
           accept="video/*"
           capture="camera"
@@ -384,7 +388,7 @@ export default {
     recorderPlay(item, i) {
       console.log(item);
       this.adiouList.map((e, i) => {
-        this.adiouList[i] = true;
+        this.adiouList[i].status = true;
       });
       this.$refs.audioRoot.map((e, i) => {
         this.$refs.audioRoot[i].pause();
@@ -402,25 +406,27 @@ export default {
     },
     // 进度条拖动事件
     audioDragS(i) {
-      this.$refs.audioRoot[i].pause();
+      this.$refs.audioRoot.map((e, index) => {
+        this.$refs.audioRoot[index].pause();
+      });
+      // this.$refs.audioRoot[i].pause();
     },
     audioSliderBtnClick(i) {
       this.currentAudioIndex = i;
     },
     // 进度条change
-    audioSliderChange(val) {
-      // console.log(val);
+    audioSliderChange(val, index) {
+      console.log(val);
       this.adiouList.map((e, i) => {
-        this.adiouList[i] = true;
+        this.adiouList[i].status = true;
       });
       this.$refs.audioRoot.map((e, i) => {
         this.$refs.audioRoot[i].pause();
       });
-      let durationTime = this.$refs.audioRoot[this.currentAudioIndex].duration;
-      this.$refs.audioRoot[this.currentAudioIndex].currentTime =
-        (val / 100) * durationTime;
-      this.$refs.audioRoot[this.currentAudioIndex].play();
-      this.adiouList[this.currentAudioIndex].status = false;
+      let durationTime = this.$refs.audioRoot[index].duration;
+      this.$refs.audioRoot[index].currentTime = (val / 100) * durationTime;
+      this.$refs.audioRoot[index].play();
+      this.adiouList[index].status = false;
     },
     // 音频时间更新事件
     audioTimeUpdate(i) {
@@ -449,6 +455,10 @@ export default {
     chooseSetImgClick() {
       this.imgVideoPopupFlag = false;
     },
+    // 选择视频
+    chooseSetAdiouClick() {
+      this.imgVideoPopupFlag = false;
+    },
     // 拍摄视频
     chooseAdiouClick() {
       this.imgVideoPopupFlag = false;
@@ -469,7 +479,7 @@ export default {
       reader.readAsDataURL(blob); // 添加二进制文件
       reader.onload = function(event) {
         const base64 = event.target.result; // 获取到它的base64文件
-        const scale = 0.1; // 设置缩放比例 （0-1）
+        const scale = 0.3; // 设置缩放比例 （0-1）
         return self.compressImg(base64, scale, name); // 调用压缩方法
       };
     },
@@ -557,6 +567,24 @@ export default {
         }
       };
     },
+    // 选择拍摄视频
+    changeSetVideo(e) {
+      let that = this;
+      let freader = new FileReader();
+      console.log(e.target.files[0]);
+      freader.readAsDataURL(e.target.files[0]);
+      freader.onload = function(event) {
+        if (that.imgList.length + that.videoList.length <= 8) {
+          let tempObj = {
+            data: event.target.result,
+            file: e.target.files[0]
+          };
+          that.videoList.push(tempObj);
+        } else {
+          Toast("最多可上传9个图片或视频文件");
+        }
+      };
+    },
     // 图片预览
     imgLook(i) {
       let arr = this.imgList.map(e => {
@@ -593,6 +621,8 @@ export default {
     },
     // 发布打卡
     clovkInUpload() {
+      this.clockConText = this.clockConText.trim();
+      // if (this.clockConText != "") {
       console.log("发布打卡");
       this.uploadShow = true;
       let vu = this.adiouList
@@ -648,6 +678,9 @@ export default {
             this.uploadShow = false;
           }
         });
+      // } else {
+      //   Toast("打卡内容不能为空")
+      // }
     },
     // 返回上一级
     onClickLeft() {

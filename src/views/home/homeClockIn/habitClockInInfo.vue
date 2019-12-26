@@ -55,6 +55,7 @@
             </div>
           </div>
           <img
+            v-show="si == item.student_id"
             class="deleClickImg"
             @click="moreDeleClockInBox(i)"
             src="~@/assets/imgs/home/habitClock/更多.png"
@@ -243,6 +244,17 @@
         <video autoplay ref="videoShow" :src="videoShowData"></video>
       </div>
     </van-overlay>
+
+    <van-overlay :show="uploadShow">
+      <div class="uploadWrapper">
+        <div>
+          <div style="margin-bottom: 1rem;display: flex;justify-content: center;">
+            <van-loading color="#38b48b" />
+          </div>
+          <div style="color: #38b48b;font-size: .9rem;">加载中</div>
+        </div>
+      </div>
+    </van-overlay>
   </div>
 </template>
 <script>
@@ -258,6 +270,8 @@ import Clipboard from "clipboard";
 export default {
   data() {
     return {
+      params: null,
+      si: "",
       hi: "",
       clockInName: "",
       clockInInfo: {
@@ -294,12 +308,14 @@ export default {
       // 删除自己评论
       deleReplyBox: false,
       touchingTimer: null,
-      touchingTime: 0
+      touchingTime: 0,
+      uploadShow: false
     };
   },
   mounted() {
+    this.si = sessionStorage.getItem("si");
     this.queryHi();
-    this.queryInfo();
+    // this.queryInfo();
     // window.addEventListener("click", this.listenClick);
   },
   destroyed() {
@@ -335,16 +351,45 @@ export default {
     },
     // 获取习惯ID
     queryHi() {
-      console.log(this.$route.query.hi);
-      this.hi = this.$route.query.hi;
+      if (this.$route.query.hi) {
+        this.hi = this.$route.query.hi;
+      }
+      this.queryInfo();
     },
     queryInfo() {
-      let data = {
-        ui: sessionStorage.getItem("ui"),
-        si: sessionStorage.getItem("si"),
-        hi: this.hi,
-        v: sessionStorage.getItem("v")
-      };
+      this.uploadShow = true;
+      let data = {};
+      if (window.location.href.indexOf("param") != -1) {
+        console.log(window.location.href.split("?")[1]);
+        this.params = window.location.href.split("?")[1];
+        this.params = this.params
+          .replace("#/habitClockInInfo", "")
+          .split("=")[1];
+        this.params = JSON.parse(window.atob(decodeURIComponent(this.params)));
+        sessionStorage.setItem("ui", this.params.ui);
+        sessionStorage.setItem("si", this.params.si);
+        this.hi = this.params.hi;
+        sessionStorage.setItem("v", "10108");
+        data = {
+          ui: this.params.ui,
+          si: this.params.si,
+          hi: this.hi,
+          v: sessionStorage.getItem("v")
+        };
+        console.log(1111111111111111111111111);
+        console.log(data);
+        console.log(1111111111111111111111111);
+      } else {
+        data = {
+          ui: sessionStorage.getItem("ui"),
+          si: sessionStorage.getItem("si"),
+          hi: this.hi,
+          v: sessionStorage.getItem("v")
+        };
+        console.log("12121312313212313");
+        console.log(data);
+        console.log("12132132132132132");
+      }
       // let data = {
       //   ui: 30001089,
       //   si: 21004058,
@@ -434,8 +479,9 @@ export default {
             }
           });
           console.log(this.clockInInfo);
-          this.isGooding = true;
         }
+        this.isGooding = true;
+        this.uploadShow = false;
       });
       this.isLoadingUpload = false;
     },
@@ -610,7 +656,7 @@ export default {
               e.voice_path = e.voice_path.map(() => {
                 let tempObj = {
                   value: 0,
-                  file: item,
+                  file: "",
                   duration: "",
                   status: true
                 };
@@ -655,6 +701,7 @@ export default {
     // 评论click
     itemReportClick(t, Bitem, Sitem, B, S) {
       this.replyType = t;
+      console.log(t)
       if (this.replyType == 1) {
         this.replyClockID = Bitem.clock_id;
         this.replyRci = Bitem.userid;
@@ -755,7 +802,14 @@ export default {
         if (res.code == 200) {
           this.clockInInfo.clock_log_data.map(e => {
             e.voice_path = e.voice_path.map(() => {
-              return {};
+              let tempObj = {
+                value: 0,
+                file: "",
+                duration: "",
+                status: true
+              };
+              console.log(tempObj);
+              return tempObj;
             });
           });
           this.queryInfo();
@@ -835,7 +889,14 @@ export default {
           this.isReporting = false;
           this.clockInInfo.clock_log_data.map(e => {
             e.voice_path = e.voice_path.map(() => {
-              return {};
+              let tempObj = {
+                value: 0,
+                file: "",
+                duration: "",
+                status: true
+              };
+              console.log(tempObj);
+              return tempObj;
             });
           });
           this.queryInfo();
@@ -1405,5 +1466,15 @@ p {
   border-bottom: 0.5rem solid transparent;
   border-left: 0.5rem solid transparent;
   border-right: 0.5rem solid transparent;
+}
+
+.van-overlay {
+  background-color: white !important;
+}
+.uploadWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 </style>

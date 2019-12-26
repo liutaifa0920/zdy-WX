@@ -136,6 +136,7 @@
           </div>
         </div>
         <img
+          v-show="si == item.student_id"
           class="deleClickImg"
           @click="moreDeleClockInBox(i)"
           src="~@/assets/imgs/home/habitClock/更多.png"
@@ -299,6 +300,16 @@
         <video autoplay ref="videoShow" :src="videoShowData"></video>
       </div>
     </van-overlay>
+    <van-overlay :show="uploadShow">
+      <div class="uploadWrapper">
+        <div>
+          <div style="margin-bottom: 1rem;display: flex;justify-content: center;">
+            <van-loading color="#38b48b" />
+          </div>
+          <div style="color: #38b48b;font-size: .9rem;">加载中</div>
+        </div>
+      </div>
+    </van-overlay>
   </div>
 </template>
 <script>
@@ -330,6 +341,7 @@ export default {
       calendarStartDate: "",
       calendarEndDate: "",
       // --------------------------------
+      si: "",
       hi: "",
       dt: "",
       clockInInfo: {
@@ -399,10 +411,12 @@ export default {
       // 删除自己评论
       deleReplyBox: false,
       touchingTimer: null,
-      touchingTime: 0
+      touchingTime: 0,
+      uploadShow: false
     };
   },
   mounted() {
+    this.si = sessionStorage.getItem("si");
     this.queryHi();
   },
   methods: {
@@ -444,6 +458,7 @@ export default {
     },
     // 请求页面数据
     queryInfo() {
+      this.uploadShow = true;
       let data = {
         ui: sessionStorage.getItem("ui"),
         si: sessionStorage.getItem("si"),
@@ -532,18 +547,19 @@ export default {
           });
           console.log(this.clockInInfo);
           this.isGooding = true;
+          this.uploadShow = false;
         }
       });
     },
     // 日期点击
     clickDate(date, i, item) {
       this.dt = date;
-      console.log(this.calendarStartDate);
-      console.log(new Date(this.dt).getTime());
-      console.log(this.calendarEndDate);
+      // console.log(this.calendarStartDate);
+      // console.log(new Date(this.dt).getTime());
+      // console.log(this.calendarEndDate);
 
-      console.log(new Date(this.dt).getTime() >= this.calendarStartDate);
-      console.log(new Date(this.dt).getTime() < this.calendarEndDate);
+      // console.log(new Date(this.dt).getTime() >= this.calendarStartDate);
+      // console.log(new Date(this.dt).getTime() < this.calendarEndDate);
       if (
         new Date(this.dt).getTime() >= this.calendarStartDate &&
         new Date(this.dt).getTime() < this.calendarEndDate
@@ -728,7 +744,14 @@ export default {
           if (res.code == 200) {
             this.clockInInfo.clock_log_data.map(e => {
               e.voice_path = e.voice_path.map(() => {
-                return {};
+                let tempObj = {
+                  value: 0,
+                  file: "",
+                  duration: "",
+                  status: true
+                };
+                console.log(tempObj);
+                return tempObj;
               });
             });
             this.queryInfo();
@@ -776,7 +799,10 @@ export default {
         this.replyRci = Sitem.userid;
         this.replyRsi = Sitem.student_id;
       }
-      if (this.replyRsi != sessionStorage.getItem("si") * 1) {
+      if (
+        this.replyRsi != sessionStorage.getItem("si") * 1 ||
+        this.replyType == 1
+      ) {
         this.isReporting = true;
         this.$nextTick(() => {
           // console.log(this.replyRci);
@@ -864,7 +890,14 @@ export default {
         if (res.code == 200) {
           this.clockInInfo.clock_log_data.map(e => {
             e.voice_path = e.voice_path.map(() => {
-              return {};
+              let tempObj = {
+                value: 0,
+                file: "",
+                duration: "",
+                status: true
+              };
+              console.log(tempObj);
+              return tempObj;
             });
           });
           this.queryInfo();
@@ -898,8 +931,8 @@ export default {
         data = {
           ui: sessionStorage.getItem("ui"),
           si: sessionStorage.getItem("si"),
-          rci: this.replyRci,
-          rsi: this.replyRsi,
+          rci: 0,
+          rsi: 0,
           hi: this.hi,
           coi: this.replyClockID,
           ct: this.itemReport,
@@ -944,7 +977,14 @@ export default {
           this.isReporting = false;
           this.clockInInfo.clock_log_data.map(e => {
             e.voice_path = e.voice_path.map(() => {
-              return {};
+              let tempObj = {
+                value: 0,
+                file: "",
+                duration: "",
+                status: true
+              };
+              console.log(tempObj);
+              return tempObj;
             });
           });
           this.queryInfo();
@@ -1002,13 +1042,7 @@ export default {
         }
       });
     },
-    // 返回上一级
-    onClickLeft() {
-      this.$router.go(-1);
-    }
-  },
-  watch: {
-    calendarNum() {
+    queryAllInfo() {
       if (this.calendarNum < this.calendarNumBefore) {
         this.startDate.setTime(this.startDate.getTime() - 7 * 86400000);
         this.endDate.setTime(this.endDate.getTime() - 7 * 86400000);
@@ -1108,9 +1142,18 @@ export default {
           ) {
             this.currentBtnType = 2;
           }
-          console.log(this.calendarList);
+          console.log(this.currentBtnType);
         }
       });
+    },
+    // 返回上一级
+    onClickLeft() {
+      this.$router.go(-1);
+    }
+  },
+  watch: {
+    calendarNum() {
+      this.queryAllInfo();
     }
   }
 };
@@ -1627,5 +1670,14 @@ p {
   line-height: 2rem;
   border-radius: 0.2rem;
   font-size: 0.9rem;
+}
+.van-overlay {
+  background-color: white !important;
+}
+.uploadWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 </style>
