@@ -271,7 +271,8 @@ export default {
     initRecorder() {
       wx.config({
         debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
-        appId: "wx108e8df5b6b8ace0", // 必填，企业号的唯一标识，此处填写企业号corpid
+        // 当前 正式AppID
+        appId: "wx8d459009d526912d", // 必填，企业号的唯一标识，此处填写企业号corpid
         timestamp: this.timestamp, // 必填，生成签名的时间戳
         nonceStr: this.noncestr, // 必填，生成签名的随机串
         signature: this.signature, // 必填，签名，见附录1
@@ -316,14 +317,16 @@ export default {
         });
       });
       wx.error(function() {
+        console.log("config信息验证失败");
         // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
       });
     },
     // 录音------------------------------------------
     recorderStart() {
-      console.log(this.adiouList.length);
+      // console.log(this.adiouList.length);
       if (this.adiouList.length <= 2) {
         this.isRecord = true;
+        console.log("开始录音");
         wx.startRecord();
         this.audioTimer = null;
         this.audioTime = 0;
@@ -348,14 +351,17 @@ export default {
       window.clearInterval(this.audioTimer);
       this.isRecord = false;
       let that = this;
+      console.log("结束录音");
       wx.stopRecord({
         success(res) {
           that.recordID = res.localId;
+          console.log("获取本地音频localID: " + that.recordID);
           wx.uploadVoice({
             localId: that.recordID, // 需要上传的音频的本地ID，由stopRecord接口获得
             isShowProgressTips: 1, // 默认为1，显示进度提示
             success: function(res) {
               that.serverId = res.serverId; // 返回音频的服务器端ID
+              console.log("获取音频ServerID: " + that.serverId);
               axios
                 .post("http://wechat.sdxxtop.com/parent/wechat/getMediaUrl", {
                   mediaId: that.serverId,
@@ -363,6 +369,7 @@ export default {
                 })
                 .then(res => {
                   if (res.data.code == 200) {
+                    console.log("获取音频对应Url: " + res.data.data.fileUrl);
                     console.log(res.data.data.fileUrl);
                     let tempObj = {
                       value: 0,
@@ -499,7 +506,7 @@ export default {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         // 转成base64 文件
         let base64 = canvas.toDataURL("image/jpeg");
-        // 根据自己需求填写大小 我的目标是小于3兆
+        // 根据自己需求填写大小
         while (base64.length > 1024 * 1024 * 0.4) {
           scale -= 0.01;
           base64 = canvas.toDataURL("image/jpeg", scale);
