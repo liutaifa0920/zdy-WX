@@ -152,6 +152,23 @@ export function homeHabitSubmitClock(data) {
     data
   });
 }
+// ---------------- 作业 ----------------
+// 作业列表
+export function homeWorkReadTaskList(data) {
+  return request({
+    url: "/parent/student/readTaskList",
+    method: "post",
+    data
+  });
+}
+// 作业完成 / 未完成
+export function homeWorkRemarkFinish(data) {
+  return request({
+    url: "/parent/student/remarkFinish",
+    method: "post",
+    data
+  });
+}
 
 
 // ---------------------- User --------------------------- //

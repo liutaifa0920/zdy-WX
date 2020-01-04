@@ -114,6 +114,17 @@ const routes = [
       title: "知点云"
     }
   },
+  // -------------------- 作 业 ------------------------
+  // 作业列表
+  {
+    path: "/homeWorkList",
+    name: "homeWorkList",
+    component: () => import("@/views/home/homeWork/homeWorkList.vue"),
+    meta: {
+      title: "知点云"
+    }
+  },
+
 
   // -------------------- 消 息 ------------------------
   {

@@ -385,10 +385,15 @@ export default {
     },
     // 中间功能跳转
     unitLinkTo(item, i) {
-      if (i != 3) {
-        console.log(item.linkToUrl + this.urlParamStr)
+      if (i != 3 && i != 1) {
+        console.log(item.linkToUrl + this.urlParamStr);
         window.location.href = item.linkToUrl + this.urlParamStr;
-      } else {
+      } else if (i == 1) {
+        console.log(item.name);
+        this.$router.push({
+          path: "/homeWorkList"
+        });
+      } else if (i == 3) {
         console.log(item.name);
         this.$router.push({
           path: "/habitClockIn"
