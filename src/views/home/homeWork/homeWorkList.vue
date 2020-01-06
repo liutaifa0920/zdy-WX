@@ -27,8 +27,10 @@
         >{{item.date}}</div>
         <div class="listItem">
           <div class="listItemTop">
-            <p>{{item.title.length > 6 ? (item.title.substr(0,5)+'...') : item.title}}（{{weeksList[new Date(item.date).getDay()]}}）</p>
-            <p>{{"刚刚"}} {{item.send_name}}老师</p>
+            <p
+              @click="linkToListInfo(item.task_id)"
+            >{{item.title.length > 6 ? (item.title.substr(0,5)+'...') : item.title}}（{{weeksList[new Date(item.date).getDay()]}}）</p>
+            <p @click="linkToListInfo(item.task_id)">{{"刚刚"}} {{item.send_name}}老师</p>
             <p
               class="listItemTopRight"
               v-show="!item.taskType"
@@ -82,72 +84,6 @@
         </div>
       </van-cell>
     </van-list>
-
-    <!-- <div class="homeWorkListItem" v-for="(item, i) in infoList" :key="i">
-      <div
-        class="dateTip"
-        v-show="(new Date().getTime() - new Date(item.date).getTime() <= 86400000)"
-      >今天</div>
-      <div
-        class="dateTip"
-        v-show="(new Date().getTime() - new Date(item.date).getTime() > 86400000 && new Date().getTime() - new Date(item.date).getTime() <= 86400000*2)"
-      >昨天</div>
-      <div
-        class="dateTip"
-        v-show="(new Date().getTime() - new Date(item.date).getTime() > 86400000*2)"
-      >{{item.date}}</div>
-      <div class="listItem">
-        <div class="listItemTop">
-          <p>{{item.title.length > 6 ? (item.title.substr(0,5)+'...') : item.title}}（{{weeksList[new Date(item.date).getDay()]}}）</p>
-          <p>{{"刚刚"}} {{item.send_name}}老师</p>
-          <p
-            class="listItemTopRight"
-            v-show="!item.taskType"
-            @click="taskListItemAllClick(2, i)"
-          >作业待完成</p>
-          <p
-            class="listItemTopRight"
-            style="background-color: #EEEEEE;color: #999999;"
-            v-show="item.taskType"
-            @click="taskListItemAllClick(1, i)"
-          >作业已完成</p>
-        </div>
-        <div class="listItemBottom">
-          <div
-            class="taskList"
-            @click="taskListItemClick(i, index)"
-            v-for="(items, index) in item.task_list"
-            :key="index"
-          >
-            <p
-              class="taskListIcon"
-              :style="items.status == 2 ? 'background-color: #3295F9;border: 1px solid #3295F9;' : ''"
-            >
-              <img src="~@/assets/imgs/home/homeWork/对.png" alt="√" />
-            </p>
-            <p
-              class="taskListContent"
-              :style="items.status == 2 ? 'color: #3295F9;' : ''"
-            >{{items.task_detail}}</p>
-          </div>
-          <div class="listItemBottomImgList" v-show="item.img != ''">
-            <van-image
-              @click="listImgClick(item.img_arr, imgI)"
-              fit="cover"
-              width="5.5rem"
-              height="5.5rem"
-              v-for="(imgItem, imgI) in item.img_arr"
-              :key="imgI"
-              :src="imgItem"
-            />
-            <div class="listItemImgBlock" v-for="(imgBlock, imgBlockI) in 2" :key="imgBlockI+'img'"></div>
-          </div>
-          <div v-show="item.is_submit == 1" class="itemIsSubmit">
-            <p>作业提交</p>
-          </div>
-        </div>
-      </div>
-    </div>-->
     <!-- 日期选择弹出层 -->
     <van-popup v-model="datePopupShow" position="bottom" :style="{ height: '40%' }">
       <van-datetime-picker
@@ -320,6 +256,15 @@ export default {
     },
     onLoad() {
       this.queryInfoList();
+    },
+    // 跳转详情
+    linkToListInfo(id) {
+      this.$router.push({
+        path: "/homeWorkListInfo",
+        query: {
+          id
+        }
+      });
     },
     // 右上角日期
     onClickRight() {

@@ -169,6 +169,14 @@ export function homeWorkRemarkFinish(data) {
     data
   });
 }
+// 作业详情
+export function homeWorkReadTaskNew(data) {
+  return request({
+    url: "/parent/student/readTaskNew",
+    method: "post",
+    data
+  });
+}
 
 
 // ---------------------- User --------------------------- //

@@ -82,7 +82,7 @@
               <p
                 @click="clockItemClick(item)"
                 class="habitClockItemConCP1"
-              >已进行{{item.last_days}}天，以坚持打卡{{item.remain_days}}天</p>
+              >已进行{{item.last_days}}天，已坚持打卡{{item.remain_days}}天</p>
               <p @click="clockItemClick(item)" class="habitClockItemConCP2"></p>
               <div class="habitClockItemConB">
                 <p @click="linkToClockItem(1,item)">
