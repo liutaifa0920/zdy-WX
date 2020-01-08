@@ -1,10 +1,16 @@
 <template>
-  <div class="clockIn">
-    <van-nav-bar class="topNavBar" left-text="返回" title="打卡" left-arrow @click-left="onClickLeft" />
+  <div class="homeWorkIsSubmit">
+    <van-nav-bar
+      class="topNavBar"
+      left-text="返回"
+      title="提交作业"
+      left-arrow
+      @click-left="onClickLeft"
+    />
     <div class="topBlock"></div>
     <div class="clockInTop">
       <p>{{clockInInfo.title}}</p>
-      <p>剩余：{{clockInInfo.remain_days}}天 频次：{{clockInInfo.sign_frequency}}</p>
+      <p>{{clockInInfo.add_time.split(" ")[0]}}</p>
     </div>
     <div class="clockInTopCon" :style="contentIsOpen?'height: 8rem !important':''">
       <p>{{contentIsOpen ? clockInInfo.content : clockInInfo.content.substr(0,10)}}</p>
@@ -21,7 +27,7 @@
       <textarea
         class="clockInContentText"
         v-model="clockConText"
-        placeholder="输入你想说的话..."
+        placeholder="请填写完成情况"
         type="text"
       />
       <!-- 已完成的录音 -->
@@ -78,7 +84,7 @@
 
       <div class="imgVideoList">
         <div class="imgVideoListItem" v-for="(item, i) in imgList" :key="i+'img'">
-          <img :src="item.data" @click="imgLook(i)" />
+          <img ref="reviseImg" :src="item.data" @click="imgLook(i)" />
           <div class="imgVideoListItemDele">
             <img src="~@/assets/imgs/home/habitClock/item错误.png" @click="deleItemClick(2, i)" alt />
           </div>
@@ -90,11 +96,12 @@
                 alt
         />-->
         <div class="imgVideoListItem" v-for="(item, i) in videoList" :key="i+'video'">
-          <video :src="item.data" @click="videoLook(i)"></video>
+          <video ref="reviseVideo" :src="item.data" @click="videoLook(i)"></video>
           <div class="imgVideoListItemDele">
             <img src="~@/assets/imgs/home/habitClock/item错误.png" @click="deleItemClick(3, i)" alt />
           </div>
           <img
+            @click="videoLook(i)"
             class="imgVideoListItemPlay"
             style="position: absolute;top: 0;right: 0;left: 0;bottom: 0;margin: auto;width: 2rem;height:2rem;background-color: transparent;"
             src="~@/assets/imgs/home/habitClock/item播放.png"
@@ -165,13 +172,23 @@
         </div>
       </div>
     </van-overlay>
+    <van-overlay :show="reviseShow">
+      <div class="uploadWrapper">
+        <div>
+          <div style="margin-bottom: 1rem;display: flex;justify-content: center;">
+            <van-loading color="#38b48b" />
+          </div>
+          <div style="color: #38b48b;font-size: .9rem;">加载中</div>
+        </div>
+      </div>
+    </van-overlay>
   </div>
 </template>
 <script>
 import { ImagePreview } from "vant";
 import wx from "weixin-js-sdk";
 import axios from "axios";
-import { homeHabitClockDetail } from "@/api/api";
+import { homeWorkSubmitTaskInfo, homeWorkSaveTaskInfo } from "@/api/api";
 import { signFun } from "../../../utils/sign";
 import { Toast } from "vant";
 export default {
@@ -180,7 +197,8 @@ export default {
       hi: "",
       clockInInfo: {
         title: "",
-        content: ""
+        content: "",
+        add_time: ""
       },
       contentIsOpen: false,
       accessToken: "",
@@ -211,13 +229,14 @@ export default {
       adiouValue: "",
       videoShow: false,
       videoShowData: "",
-      uploadShow: false
+      uploadShow: false,
+      reviseShow: false
     };
   },
   created() {},
   mounted() {
+    this.reviseShow = true;
     this.queryHi();
-    this.queryInfo();
     this.queryAccessToken();
   },
   destroyed() {},
@@ -225,23 +244,118 @@ export default {
   methods: {
     // 获取习惯ID
     queryHi() {
-      console.log(this.$route.query.hi);
-      this.hi = this.$route.query.hi;
+      console.clear();
+      if (this.$route.query.id) {
+        console.log(this.$route.query.id);
+        this.ti = this.$route.query.id;
+        this.queryInfo();
+      } else if (this.$route.query.homeWorkID) {
+        console.log(this.$route.query.homeWorkID);
+        this.queryReviseInfo(this.$route.query.homeWorkID);
+      }
     },
     queryInfo() {
       let data = {
         ui: sessionStorage.getItem("ui"),
         si: sessionStorage.getItem("si"),
-        hi: this.hi,
+        ti: this.ti,
         v: sessionStorage.getItem("v")
       };
-      homeHabitClockDetail(data).then(res => {
-        console.log(res.data.statis);
+      homeWorkSubmitTaskInfo(data).then(res => {
+        console.log(res.data);
         if (res.code == 200) {
-          this.clockInInfo = res.data.statis.habit_info;
+          this.clockInInfo = res.data;
           console.log(this.clockInInfo);
         }
       });
+    },
+    queryReviseInfo(id) {
+      let data = {
+        ci: id,
+        v: sessionStorage.getItem("v")
+      };
+      homeWorkSaveTaskInfo(data).then(res => {
+        console.log(res.data);
+        if (res.code == 200) {
+          let data = res.data;
+          this.clockConText = res.data.content;
+          // ----------------------------------
+          // 音频回显
+          if (data.voice_url != "") {
+            data.voice_url.split(",").map(e => {
+              let tempObj = {
+                value: 0,
+                file: e,
+                duration: this.recordTime,
+                status: true,
+                currentTime: "00:00"
+              };
+              this.adiouList.push(tempObj);
+            });
+          }
+          // 图片回显
+          if (data.image_url != "") {
+            let imgList = data.image_url.split(",");
+            let that = this;
+            imgList.map((e, i) => {
+              this.convertImgToBase64(e, base64 => {
+                const reviseScale = 0.3; // 设置缩放比例 （0-1）
+                that.compressImg(base64, reviseScale, "file");
+              });
+            });
+            this.$forceUpdate();
+          }
+          // 视频回显
+          if (data.video_url != "") {
+            data.video_url.split(",").map((e, i) => {
+              let tempObj = {
+                data: e,
+                file: ""
+              };
+              this.videoList.push(tempObj);
+            });
+            this.$forceUpdate();
+            this.$nextTick(() => {
+              console.log(this.$refs.reviseVideo);
+            });
+          }
+          // ----------------------------------
+          this.ti = res.data.task_id;
+          this.queryInfo();
+        }
+      });
+    },
+    // imgUrl转二进制文件流
+    convertImgToBase64(url, callback, outputFormat) {
+      var canvas = document.createElement("CANVAS"),
+        ctx = canvas.getContext("2d"),
+        img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.onload = function() {
+        canvas.height = img.height;
+        canvas.width = img.width;
+        ctx.drawImage(img, 0, 0);
+        var dataURL = canvas.toDataURL(outputFormat || "image/png");
+        callback.call(this, dataURL);
+        canvas = null;
+      };
+      img.src = url;
+    },
+    // videoUrl转二进制文件流
+    convertVideoToBase64(url, callback, outputFormat) {
+      var canvas = document.createElement("CANVAS"),
+        ctx = canvas.getContext("2d"),
+        img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.onload = function() {
+        canvas.height = img.height;
+        canvas.width = img.width;
+        ctx.drawImage(img, 0, 0);
+        var dataURL = canvas.toDataURL(outputFormat || "image/png");
+        callback.call(this, dataURL);
+        canvas = null;
+      };
+      img.src = url;
     },
     // 请求wx accessToken
     queryAccessToken() {
@@ -485,7 +599,7 @@ export default {
       };
     },
     compressImg(base64, scale, name) {
-      console.log(`执行缩放程序，scale=${scale}`);
+      // console.log(`执行缩放程序，scale=${scale}`);
       let that = this;
       // 处理缩放，转换格式
       // 下面的注释就不写了，就是new 一个图片，用canvas来压缩
@@ -533,18 +647,19 @@ export default {
       while (n--) {
         u8arr[n] = bstr.charCodeAt(n);
       }
-      console.log(new File([u8arr], filename, { type: mime }));
+      // console.log(new File([u8arr], filename, { type: mime }));
       // return new File([u8arr], filename, { type: mime });
       let freader = new FileReader();
       freader.readAsDataURL(new File([u8arr], filename, { type: mime }));
       freader.onload = function(event) {
-        console.log(that.imgList.length + that.videoList.length);
+        // console.log(that.imgList.length + that.videoList.length);
         if (that.imgList.length + that.videoList.length <= 8) {
           let tempObj = {
             data: event.target.result,
             file: new File([u8arr], filename, { type: mime })
           };
           that.imgList.push(tempObj);
+          that.reviseShow = false;
         } else {
           Toast("最多可上传9个图片或视频文件");
         }
@@ -554,7 +669,7 @@ export default {
     changeVideo(e) {
       let that = this;
       let freader = new FileReader();
-      console.log(e.target.files[0]);
+      // console.log(e.target.files[0]);
       freader.readAsDataURL(e.target.files[0]);
       freader.onload = function(event) {
         if (that.imgList.length + that.videoList.length <= 8) {
@@ -572,7 +687,7 @@ export default {
     changeSetVideo(e) {
       let that = this;
       let freader = new FileReader();
-      console.log(e.target.files[0]);
+      // console.log(e.target.files[0]);
       freader.readAsDataURL(e.target.files[0]);
       freader.onload = function(event) {
         if (that.imgList.length + that.videoList.length <= 8) {
@@ -601,7 +716,10 @@ export default {
       this.videoShow = true;
       this.videoShowData = this.videoList[i].data;
       this.$refs.videoShow.currentTime = 0;
-      this.$refs.videoShow.play();
+
+      this.$nextTick(() => {
+        this.$refs.videoShow.play();
+      });
       // console.log(this.$refs.videoShow.currentTime);
     },
     // 删除列表文件
@@ -633,23 +751,16 @@ export default {
         .join(",");
       let tempData = {
         ui: sessionStorage.getItem("ui"),
+        ti: this.ti,
+        ci: sessionStorage.getItem("ci"),
         si: sessionStorage.getItem("si"),
-        hi: this.hi,
         ct: this.clockConText,
         vu,
         v: sessionStorage.getItem("v")
       };
-      // let tempData = {
-      //   ui: 30001089,
-      //   si: 21004058,
-      //   hi: this.hi,
-      //   ct: this.clockConText,
-      //   vu,
-      //   v: sessionStorage.getItem("v")
-      // };
       let sn = signFun(tempData, "9E1613256C1F4815219A633762B53704");
 
-      console.log(sn);
+      console.log(e);
       let fd = new FormData();
       this.imgList.map(e => {
         fd.append("img[]", e.file);
@@ -665,7 +776,7 @@ export default {
 
       axios
         .post(
-          "http://app.sdxxtop.com/parent/habit/wechatSubmitClock",
+          "http://app.sdxxtop.com/parent/student/wechatSubmitTask",
           fd,
           config
         )
@@ -704,7 +815,7 @@ p {
   width: 100vw;
   height: 100vh;
 }
-.clockIn {
+.homeWorkIsSubmit {
   background-color: white;
   position: relative;
 }

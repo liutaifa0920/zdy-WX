@@ -28,12 +28,8 @@
       </div>
     </div>
     <div class="garyBlock"></div>
-    <div
-      v-if="clockInInfo.clock_log_data.length != 0"
-      class="clockInStatisticsToclass"
-      @click="toClassClockInSta"
-    >
-      <p>已查看{{clockInInfo.clock_num}}人，未查看{{clockInInfo.no_clock_num}}人</p>
+    <div v-if="clockInInfo.length != 0" class="clockInStatisticsToclass" @click="toClassClockInSta">
+      <p>已查看{{clockInInfoTop.read_num}}人，未查看{{clockInInfoTop.no_read_num}}人</p>
       <p>></p>
     </div>
     <div class="clockInRecord">反馈情况</div>
@@ -41,182 +37,199 @@
       <van-tab :title="'已提交'+ clockInInfoTop.comment_list.one +'人'">
         <!-- 单条动态 -->
         <div
-          v-show="clockInInfo.clock_log_data.length != 0"
+          v-show="clockInInfo.length != 0"
           class="clockInfoList"
-          v-for="(item, i) in clockInInfo.clock_log_data"
+          v-for="(item, i) in clockInInfo"
           :key="i"
         >
-          <!-- <div class="clockInfoListItem">
-        <div @click="linkToHistory(item)" class="clockInfoListItemLeft">
-          <img v-if="item.img != ''" :src="item.img" alt />
-          <div
-            class="clockInfoListItemLeftIcon"
-            v-if="item.img == ''"
-          >{{item.name.substr(item.name.length - 2)}}</div>
-          <div class="clockInfoListItemTopRight">
-            <p>{{item.name + item.relation}}</p>
-            <p>{{item.clock_date}} 已坚持{{item.clock_num}}天</p>
-          </div>
-        </div>
-        <img
-          v-show="si == item.student_id"
-          class="deleClickImg"
-          @click="moreDeleClockInBox(i)"
-          src="~@/assets/imgs/home/habitClock/更多.png"
-          alt
-        />
-        <div v-show="item.deleBoxFlag" class="moreDeleClockInBtn">
-          <p class="deleClickName" @click="moreDeleClockInBtn(item)">删除</p>
-        </div>
-          </div>-->
-          <div class="clockInfoListItemCon">
-            <!-- 内容 -->
-            <!-- <p @click="linkToHistory(item)">{{item.content}}</p> -->
-            <!-- 录音 -->
-            <!-- <div v-for="(items, index) in item.voice_path" :key="index+'audio'" class="recordPlayList">
-          <audio ref="audioRoot" @timeupdate="audioTimeUpdate(i, index)" :src="items.file"></audio>
-          <img
-            v-if="items.status"
-            @click="recorderPlay(items, i, index)"
-            src="~@/assets/imgs/home/habitClock/playB.png"
-          />
-          <img
-            v-if="!items.status"
-            @click="recorderPause(items, i, index)"
-            src="~@/assets/imgs/home/habitClock/pauseB.png"
-          />
-          <van-slider
-            v-model="items.value"
-            :max="100"
-            :min="0"
-            bar-height="4px"
-            style="width:55%;"
-            active-color="#99CCFF"
-            inactive-color="#E5E5E5"
-            @change="audioSliderChange(items.value, i, index)"
-            @drag-start="audioDragS(i, index)"
-          >
-            <div slot="button" class="adiouButton" @click="audioSliderBtnClick(i, index)"></div>
-          </van-slider>
-
-          <p>{{ "0" + Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)/60)+ ":"+ (Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60) >= 10?Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60):("0"+Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60))) + "/" + items.duration}}</p>
-            </div>-->
-            <!-- 图片 / 视频 -->
-            <!-- <div class="IVList">
-          <div
-            v-show="itemIV != ''"
-            class="IVListItem"
-            v-for="(itemIV, index) in item.video_path.split(',')"
-            :key="index + 'video'"
-            @click="IVListVideoCLick(i, index)"
-          >
-            <video :src="itemIV"></video>
+          <div class="clockInfoListItem">
+            <div class="clockInfoListItemLeft">
+              <img
+                v-if="item.head_img[0] != '' && item.head_img[0] != '#'"
+                :src="item.head_img"
+                alt
+              />
+              <div
+                class="clockInfoListItemLeftIcon"
+                :style="'background-color: '+ item.head_img +';'"
+                v-if="item.head_img[0] == '#'"
+              >{{item.parent_name.substr(item.parent_name.length - 2)}}</div>
+              <div class="clockInfoListItemTopRight">
+                <p>{{item.parent_name}}</p>
+                <p>{{item.add_time}} 已坚持{{100}}天</p>
+              </div>
+            </div>
             <img
-              style="position: absolute;top: 0;right: 0;left: 0;bottom: 0;margin: auto;width: 2rem;height:2rem;background-color: transparent;"
-              src="~@/assets/imgs/home/habitClock/item播放.png"
+              v-show="si == item.student_id"
+              class="deleClickImg"
+              @click="moreDeleClockInBox(i)"
+              src="~@/assets/imgs/home/habitClock/更多.png"
               alt
             />
+            <div v-show="item.deleBoxFlag" class="moreDeleClockInBtn">
+              <p class="deleClickName" @click="moreDeleClockInBtn(item)">删除</p>
+              <p class="reviseClickName" @click="moreReviseClockInBtn(item)">修改</p>
+            </div>
           </div>
-          <div
-            v-show="itemIV != ''"
-            class="IVListItem"
-            v-for="(itemIV, index) in item.img_path.split(',')"
-            :key="index + 'img'"
-            @click="IVListImgCLick(i, index)"
-          >
-            <img :src="itemIV" alt />
-          </div>
-          <div
-            class="IVListItem"
-            style="margin-bottom: 0;height: 0px;"
-            v-for="(itemIV, index) in 3"
-            :key="index + 'block'"
-          ></div>
-            </div>-->
+          <div class="clockInfoListItemCon">
+            <!-- 内容 -->
+            <p>{{item.content}}</p>
+            <!-- 录音 -->
+            <div
+              v-show="item.voice_url.length > 0"
+              v-for="(items, index) in item.voice_url"
+              :key="index+'audio'"
+              class="recordPlayList"
+            >
+              <audio ref="audioRoot" @timeupdate="audioTimeUpdate(i, index)" :src="items.file"></audio>
+              <img
+                v-if="items.status"
+                @click="recorderPlay(items, i, index)"
+                src="~@/assets/imgs/home/habitClock/playB.png"
+              />
+              <img
+                v-if="!items.status"
+                @click="recorderPause(items, i, index)"
+                src="~@/assets/imgs/home/habitClock/pauseB.png"
+              />
+              <van-slider
+                v-model="items.value"
+                :max="100"
+                :min="0"
+                bar-height="4px"
+                style="width:55%;"
+                active-color="#99CCFF"
+                inactive-color="#E5E5E5"
+                @change="audioSliderChange(items.value, i, index)"
+                @drag-start="audioDragS(i, index)"
+              >
+                <div slot="button" class="adiouButton" @click="audioSliderBtnClick(i, index)"></div>
+              </van-slider>
+
+              <p>{{ "0" + Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)/60)+ ":"+ (Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60) >= 10?Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60):("0"+Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60))) + "/" + items.duration}}</p>
+            </div>
+            <!-- 图片 / 视频 -->
+            <div class="IVList" v-if="item.video_url">
+              <div
+                v-show="itemIV != ''"
+                class="IVListItem"
+                v-for="(itemIV, index) in strToArr(item.video_url)"
+                :key="index + 'video'"
+                @click="IVListVideoCLick(i, index)"
+              >
+                <video :src="itemIV"></video>
+                <img
+                  style="position: absolute;top: 0;right: 0;left: 0;bottom: 0;margin: auto;width: 2rem;height:2rem;background-color: transparent;"
+                  src="~@/assets/imgs/home/habitClock/item播放.png"
+                  alt
+                />
+              </div>
+              <div
+                v-show="itemIV != ''"
+                class="IVListItem"
+                v-for="(itemIV, index) in item.image_url.split(',')"
+                :key="index + 'img'"
+                @click="IVListImgCLick(i, index)"
+              >
+                <img :src="itemIV" alt />
+              </div>
+              <div
+                class="IVListItem"
+                style="margin-bottom: 0;height: 0px;"
+                v-for="(itemIV, index) in 3"
+                :key="index + 'block'"
+              ></div>
+            </div>
           </div>
           <!-- 按钮行 -->
-          <!-- <div class="clockInfoListItemBtn">
-        <div class="clockInfoListItemIsGood">
-          <img
-            v-if="item.like_data.is_like == 0"
-            @click="isLikeClick(1, item, i)"
-            src="~@/assets/imgs/home/habitClock/no_good.png"
-            alt="未点赞"
-          />
-          <img
-            v-if="item.like_data.is_like == 1"
-            @click="isLikeClick(0, item, i)"
-            src="~@/assets/imgs/home/habitClock/is_good.png"
-            alt="已点赞"
-          />
-          <p>{{item.like_data.like_num == 0 ? '':item.like_data.like_num}}</p>
-        </div>
-        <img
-          @click="itemReportClick(1, item)"
-          src="~@/assets/imgs/home/habitClock/is_report.png"
-          alt="评论"
-        />
-          </div>-->
+          <div class="clockInfoListItemBtn">
+            <div class="clockInfoListItemIsGood">
+              <img
+                v-if="!item.isLike"
+                @click="isLikeClick(1, item, i)"
+                src="~@/assets/imgs/home/habitClock/no_good.png"
+                alt="未点赞"
+              />
+              <img
+                v-if="item.isLike"
+                @click="isLikeClick(2, item, i)"
+                src="~@/assets/imgs/home/habitClock/is_good.png"
+                alt="已点赞"
+              />
+              <!-- <p>{{item.fabulousList.length == 0 ? '':item.fabulousList.length}}</p> -->
+            </div>
+            <img
+              @click="itemReportClick(1, item)"
+              src="~@/assets/imgs/home/habitClock/is_report.png"
+              alt="评论"
+            />
+          </div>
           <!-- 回复区 -->
           <div class="clockInfoListItemReport">
             <!-- 点赞区 -->
-            <!-- <div
-          v-show="item.like_data.like_user != ''"
-          class="clockInfoListItemReportTop"
-          :style="item.comment_data.length == 0 ? 'border: 0px !important;': ''"
-        >
-          <img src="~@/assets/imgs/home/habitClock/no_good.png" alt="点赞" />
-          <p>{{item.like_data.like_user}}</p>
-            </div>-->
-            <!-- 评论内容 -->
-            <!-- <div v-show="item.comment_data.length != 0" class="clockInfoListItemReportBot">
-          <div class="clockInfoListItemReportBotLeft">
-            <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
-          </div>
-          <div class="clockInfoListItemReportBotRig">
-            <p
-              v-for="(items ,index) in item.comment_data"
-              :key="index"
-              @click="itemReportClick(2, item, items.commnet_user, i, index)"
-              @touchstart="copyReplyStart"
-              @touchend="copyReplyEnd(i, index)"
+            <div
+              v-show="item.fabulousList.length != 0"
+              class="clockInfoListItemReportTop"
+              :style="item.fabulousList.length == 0 ? 'border: 0px !important;': ''"
             >
-              <span class="replyBlock"></span>
-              <span v-if="items.to_user.userid == 0" class="isName">{{items.commnet_user.name}}:</span>
-              <span v-if="items.to_user.userid == 0" class="isContent">{{items.content}}</span>
-              <span v-if="items.to_user.userid != 0" class="isName">{{items.commnet_user.name}}</span>
-              <span v-if="items.to_user.userid != 0" style="padding-right: .2rem;">回复</span>
-              <span v-if="items.to_user.userid != 0" class="isName">{{items.to_user.name}}:</span>
-              <span v-if="items.to_user.userid != 0" class="isContent">{{items.content}}</span>
-              <span
-                @click="setDeleReply(item, items)"
-                class="deleReply"
-                v-show="items.deleReplyBox"
-              >删除</span>
-              <span
-                @click="setCopyReply(index)"
-                :class="'CopyBtn'+ index + ' copybox'"
-                :data-clipboard-text="items.content"
-                v-show="items.copyReplyBox"
-              >复制</span>
-            </p>
-          </div>
-            </div>-->
+              <img src="~@/assets/imgs/home/habitClock/no_good.png" alt="点赞" />
+              <p>
+                <span
+                  v-for="(fabulousListItem, fabulousListItemI) in item.fabulousList"
+                  :key="fabulousListItemI"
+                >{{fabulousListItem.name}} {{(fabulousListItemI + 1) != item.fabulousList.length ? ',': ''}}</span>
+              </p>
+            </div>
+            <!-- 评论内容 -->
+            <div v-show="item.comment_list.length != 0" class="clockInfoListItemReportBot">
+              <div class="clockInfoListItemReportBotLeft">
+                <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
+              </div>
+              <div class="clockInfoListItemReportBotRig">
+                <p
+                  v-for="(items ,index) in item.comment_list"
+                  :key="index"
+                  @click="itemReportClick(2, item, items, i, index)"
+                  @touchstart="copyReplyStart"
+                  @touchend="copyReplyEnd(i, index)"
+                >
+                  <span class="replyBlock"></span>
+                  <span v-if="items.receiverId == 0" class="isName">{{items.commentator}}:</span>
+                  <span v-if="items.receiverId == 0" class="isContent">{{items.content}}</span>
+                  <span v-if="items.receiverId != 0" class="isName">{{items.commentator}}</span>
+                  <span v-if="items.receiverId != 0" style="padding-right: .2rem;">回复</span>
+                  <span v-if="items.receiverId != 0" class="isName">{{items.receiver}}:</span>
+                  <span v-if="items.receiverId != 0" class="isContent">{{items.content}}</span>
+                  <span
+                    @click="setDeleReply(item, items)"
+                    class="deleReply"
+                    v-show="items.deleReplyBox"
+                  >删除</span>
+                  <span
+                    @click="setCopyReply(index)"
+                    :class="'CopyBtn'+ index + ' copybox'"
+                    :data-clipboard-text="items.content"
+                    v-show="items.copyReplyBox"
+                  >复制</span>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </van-tab>
       <van-tab :title="'未提交'+ clockInInfoTop.comment_list.two +'人'">
         <div class="noSubmitList">
           <p
+            class="noSubmitListItem"
             v-for="(noSubmitItem, noSubmitItemI) in clockInInfoTop.comment_list.two_comment"
             :key="noSubmitItemI"
-          >{{noSubmitItemI + 1}}</p>
+          >{{noSubmitItemI + 1}}、 {{noSubmitItem.name}}</p>
         </div>
       </van-tab>
       <van-tab :title="'优秀作业'+ clockInInfoTop.comment_list.three +'人'">内容 3</van-tab>
     </van-tabs>
 
-    <!-- <div class="bottomBlock"></div>
+    <div class="bottomBlock"></div>
     <div v-if="isReporting" class="itemReportBottomBox">
       <input
         class="itemReportInput"
@@ -226,14 +239,14 @@
         v-model="itemReport"
       />
       <div class="itemReportOKBtn" @click="setReport">评论</div>
-    </div>-->
+    </div>
 
     <!-- 视频弹窗 -->
-    <!-- <van-overlay :show="videoShow" @click="videoShow = false">
+    <van-overlay :show="videoShow" @click="videoShow = false">
       <div class="wrapper">
         <video autoplay ref="videoShow" :src="videoShowData"></video>
       </div>
-    </van-overlay>-->
+    </van-overlay>
     <van-overlay :show="uploadShow">
       <div class="uploadWrapper">
         <div>
@@ -247,7 +260,13 @@
   </div>
 </template>
 <script>
-import { homeWorkReadTaskNew } from "@/api/api";
+import {
+  homeWorkReadTaskNew,
+  homeWorkComment,
+  homeWorkDelComment,
+  homeWorkFabulous,
+  homeWorkDelSubmit
+} from "@/api/api";
 import { Toast, ImagePreview } from "vant";
 import Clipboard from "clipboard";
 export default {
@@ -270,48 +289,36 @@ export default {
           three: ""
         }
       },
-      clockInInfo: {
-        title: "",
-        clock_log_data: [
-          {
-            img: "",
-            name: "",
-            relation: "",
-            clock_date: "",
-            clock_num: 3,
-            img_path: "",
-            video_path: "",
-            voice_path: "",
-            content: "",
-            like_data: {
-              is_like: 0,
-              like_num: 0,
-              like_user: ""
-            },
-            comment_data: [
-              {
-                comment_id: 1, //评论id
-                content: "", //评论内容
-                commnet_user: {
-                  //评论人Info
-                  userid: "",
-                  student_id: "",
-                  name: ""
-                },
-                to_user: {
-                  //被回复人
-                  userid: 0,
-                  receiver_student_id: 0,
-                  name: ""
-                }
-              }
-            ]
-          }
-        ],
-        clock_num: 2,
-        is_clock_today: 1,
-        no_clock_num: 1
-      },
+      clockInInfo: [
+        //已提交的用户集合
+        {
+          id: "",
+          userid: "",
+          head_img: "", //头像
+          parent_name: "", //名称
+          content: "", //提交内容
+          mp3: "", //音频
+          video: "", //视频
+          img: "", //图片
+          add_time: "",
+          fabulous_num: 0, //点赞数
+          fabulous_name: "", //点赞人名称（已逗号拼接）
+          fabulousList: [
+            {
+              id: "",
+              name: ""
+            }
+          ],
+          comment_list: [
+            //评论列表
+            {
+              comment_id: "",
+              comment_user_name: "",
+              comment_content: ""
+            }
+          ]
+        }
+      ],
       currentDeleClick: 0,
       itemReport: "",
       isReporting: false,
@@ -342,8 +349,17 @@ export default {
       uploadShow: false
     };
   },
+  computed: {
+    strToArr(v) {
+      return function(v) {
+        console.log(v);
+        return v.split();
+      };
+    }
+  },
   mounted() {
     this.si = sessionStorage.getItem("si");
+    this.ui = sessionStorage.getItem("ui");
     this.queryHi();
   },
   methods: {
@@ -351,15 +367,14 @@ export default {
     listenClick(e) {
       console.log(e.target.className);
       console.log(this.currentDeleClick);
-      if (this.clockInInfo.clock_log_data[this.currentDeleClick].deleBoxFlag) {
+      if (this.clockInInfo[this.currentDeleClick].deleBoxFlag) {
         if (
           e.target.className != "deleClickName" &&
           e.target.className != "deleClickImg"
         ) {
-          this.clockInInfo.clock_log_data[
-            this.currentDeleClick
-          ].deleBoxFlag = false;
+          this.clockInInfo[this.currentDeleClick].deleBoxFlag = false;
           window.removeEventListener("click", this.listenClick);
+          this.$forceUpdate();
           e.stopPropagation();
         }
       }
@@ -380,80 +395,96 @@ export default {
         v: sessionStorage.getItem("v")
       };
       homeWorkReadTaskNew(data).then(res => {
-        console.log(res.data);
         if (res.code == 200) {
+          console.log(res.data);
           this.clockInInfoTop = res.data;
-          //   res.data.statis.clock_log_data.map((e, i) => {
-          //     res.data.statis.clock_log_data[i].deleBoxFlag = false;
-          //   });
-          //   this.clockInInfo = res.data;
-          //   // ------------------------------------------------------------------
-          //   this.clockInInfo.clock_log_data.map(e => {
-          //     if (e.voice_path != "") {
-          //       e.voice_path = e.voice_path.split(",").map(item => {
-          //         let tempObj = {
-          //           value: 0,
-          //           file: item,
-          //           duration: "",
-          //           status: true
-          //         };
-          //         // console.log(tempObj);
-          //         return tempObj;
-          //       });
-          //     } else {
-          //       e.voice_path = [];
-          //     }
-          //   });
-          //   console.log(this.clockInInfo);
-          //   this.$nextTick(() => {
-          //     this.indexArr = [];
-          //     if (this.$refs.audioRoot) {
-          //       this.clockInInfo.clock_log_data.map((e, i) => {
-          //         e.voice_path.map((item, index) => {
-          //           let obj = {
-          //             B: i,
-          //             S: index
-          //           };
-          //           this.indexArr.push(obj);
-          //         });
-          //       });
-          //       // console.log(this.indexArr);
-          //       this.$refs.audioRoot.map((e, i) => {
-          //         this.$refs.audioRoot[i].oncanplay = () => {
-          //           let time = Math.floor(e.duration);
-          //           let m =
-          //             Math.floor(time / 60) >= 10
-          //               ? Math.floor(time / 60)
-          //               : "0" + Math.floor(time / 60);
-          //           let s =
-          //             Math.floor(time % 60) >= 10
-          //               ? Math.floor(time % 60)
-          //               : "0" + Math.floor(time % 60);
-          //           // console.log(m + ":" + s);
-          //           this.clockInInfo.clock_log_data[
-          //             this.indexArr[i].B
-          //           ].voice_path[this.indexArr[i].S].duration = m + ":" + s;
-          //         };
-          //       });
-          //       setTimeout(() => {
-          //         this.$refs.audioRoot.map((e, i) => {
-          //           this.$refs.audioRoot[i].currentTime = 0;
-          //         });
-          //       }, 60);
-          //     }
-          //   });
-          //   // console.log(this.clockInInfo);
-          //   // ----------------------------------------
-          //   this.clockInInfo.clock_log_data.map((e, i) => {
-          //     if (e.comment_data.length != 0) {
-          //       e.comment_data.map((item, index) => {
-          //         item.deleReplyBox = false;
-          //         item.copyReplyBox = false;
-          //       });
-          //     }
-          //   });
-          //   console.log(this.clockInInfo);
-          //   this.isGooding = true;
+          if (res.data.comment_list.one_comment.length != 0) {
+            res.data.comment_list.one_comment.map((e, i) => {
+              res.data.comment_list.one_comment[i].deleBoxFlag = false;
+            });
+            this.clockInInfo = res.data.comment_list.one_comment;
+            console.log(this.clockInInfo);
+            // ------------------------------------------------------------------
+            this.clockInInfo.map(e => {
+              if (e.voice_url != "") {
+                console.log(12345789);
+                e.voice_url = e.voice_url.split(",").map(item => {
+                  let tempObj = {
+                    value: 0,
+                    file: item,
+                    duration: "",
+                    status: true
+                  };
+                  // console.log(tempObj);
+                  return tempObj;
+                });
+              } else {
+                e.voice_url = [];
+              }
+            });
+            console.log(this.clockInInfo);
+            this.$nextTick(() => {
+              this.indexArr = [];
+              if (this.$refs.audioRoot) {
+                this.clockInInfo.map((e, i) => {
+                  e.voice_url.map((item, index) => {
+                    let obj = {
+                      B: i,
+                      S: index
+                    };
+                    this.indexArr.push(obj);
+                  });
+                });
+                // console.log(this.indexArr);
+                this.$refs.audioRoot.map((e, i) => {
+                  this.$refs.audioRoot[i].oncanplay = () => {
+                    let time = Math.floor(e.duration);
+                    let m =
+                      Math.floor(time / 60) >= 10
+                        ? Math.floor(time / 60)
+                        : "0" + Math.floor(time / 60);
+                    let s =
+                      Math.floor(time % 60) >= 10
+                        ? Math.floor(time % 60)
+                        : "0" + Math.floor(time % 60);
+                    // console.log(m + ":" + s);
+                    this.clockInInfo[this.indexArr[i].B].voice_url[
+                      this.indexArr[i].S
+                    ].duration = m + ":" + s;
+                  };
+                });
+                setTimeout(() => {
+                  this.$refs.audioRoot.map((e, i) => {
+                    this.$refs.audioRoot[i].currentTime = 0;
+                  });
+                }, 60);
+              }
+              this.$forceUpdate();
+            });
+            // console.log(this.clockInInfo);
+            // ----------------------------------------
+            this.clockInInfo.map((e, i) => {
+              e.fabulousList.map(likeItem => {
+                if (likeItem.id == this.ui) {
+                  e.isLike = true;
+                } else {
+                  e.isLike = false;
+                }
+              });
+              if (e.comment_list.length != 0) {
+                e.comment_list.map((item, index) => {
+                  item.deleReplyBox = false;
+                  item.copyReplyBox = false;
+                });
+              }
+            });
+            this.$forceUpdate();
+          } else {
+            this.clockInInfo = [];
+          }
+
+          console.log(this.clockInInfo);
+          this.isGooding = true;
           this.uploadShow = false;
         }
       });
@@ -461,7 +492,7 @@ export default {
     // 跳转历史打卡页面
     linkToHistory(item) {
       console.log(item);
-      if (!this.clockInInfo.clock_log_data[this.currentDeleClick].deleBoxFlag) {
+      if (!this.clockInInfo[this.currentDeleClick].deleBoxFlag) {
         this.$router.push({
           path: "/historyClockIn",
           query: {
@@ -472,35 +503,44 @@ export default {
           }
         });
       } else {
-        this.clockInInfo.clock_log_data[
-          this.currentDeleClick
-        ].deleBoxFlag = false;
+        this.clockInInfo[this.currentDeleClick].deleBoxFlag = false;
         window.removeEventListener("click", this.listenClick);
       }
     },
     // 删除打卡
     moreDeleClockInBox(i) {
       window.addEventListener("click", this.listenClick);
-      this.clockInInfo.clock_log_data.map((e, i) => {
-        this.clockInInfo.clock_log_data[i].deleBoxFlag = false;
+      this.clockInInfo.map((e, i) => {
+        this.clockInInfo[i].deleBoxFlag = false;
       });
-      this.clockInInfo.clock_log_data[i].deleBoxFlag = true;
+      this.clockInInfo[i].deleBoxFlag = true;
       this.currentDeleClick = i;
+      this.$forceUpdate();
     },
-    // 删除打卡
+    // 删除作业
     moreDeleClockInBtn(item) {
-      console.log(item.clock_id);
+      console.log(item.id);
       let data = {
-        coi: item.clock_id,
+        si: item.id,
         v: sessionStorage.getItem("v")
       };
-      homeHabitDelClock(data).then(res => {
+      homeWorkDelSubmit(data).then(res => {
         if (res.code == 200) {
           Toast("删除成功");
           window.removeEventListener("click", this.listenClick);
           this.queryInfo();
         } else {
           Toast(res.msg);
+        }
+      });
+    },
+    // 修改作业
+    moreReviseClockInBtn(item) {
+      console.log(item.id);
+      this.$router.push({
+        path: "/homeWorkIsSubmit",
+        query: {
+          homeWorkID: item.id
         }
       });
     },
@@ -523,21 +563,21 @@ export default {
     },
     // 播放
     recorderPlay(Sitem, B, S) {
-      this.clockInInfo.clock_log_data.map((e, B) => {
-        e.voice_path.map((item, S) => {
-          this.clockInInfo.clock_log_data[B].voice_path[S].status = true;
+      this.clockInInfo.map((e, B) => {
+        e.voice_url.map((item, S) => {
+          this.clockInInfo[B].voice_url[S].status = true;
         });
       });
       this.$refs.audioRoot.map((e, i) => {
         this.$refs.audioRoot[i].pause();
       });
-      this.clockInInfo.clock_log_data[B].voice_path[S].status = false;
+      this.clockInInfo[B].voice_url[S].status = false;
       this.findCurrentPlay(B, S);
       this.$refs.audioRoot[this.currentPlayIndex].play();
     },
     // 暂停
     recorderPause(Sitem, B, S) {
-      this.clockInInfo.clock_log_data[B].voice_path[S].status = true;
+      this.clockInInfo[B].voice_url[S].status = true;
       this.findCurrentPlay(B, S);
       this.$refs.audioRoot[this.currentPlayIndex].pause();
     },
@@ -557,35 +597,35 @@ export default {
         this.$refs.audioRoot[i].pause();
         // this.$refs.audioRoot[i].currentTime = 0;
       });
-      this.clockInInfo.clock_log_data.map((e, B) => {
-        e.voice_path.map((item, S) => {
-          this.clockInInfo.clock_log_data[B].voice_path[S].status = true;
+      this.clockInInfo.map((e, B) => {
+        e.voice_url.map((item, S) => {
+          this.clockInInfo[B].voice_url[S].status = true;
         });
       });
       let durationTime = this.$refs.audioRoot[this.currentPlayIndex].duration;
       this.$refs.audioRoot[this.currentPlayIndex].currentTime =
         (value / 100) * durationTime;
       this.$refs.audioRoot[this.currentPlayIndex].play();
-      this.clockInInfo.clock_log_data[
-        this.indexArr[this.currentPlayIndex].B
-      ].voice_path[this.indexArr[this.currentPlayIndex].S].status = false;
+      this.clockInInfo[this.indexArr[this.currentPlayIndex].B].voice_url[
+        this.indexArr[this.currentPlayIndex].S
+      ].status = false;
     },
     // 音频播放进度更新
     audioTimeUpdate(B, S) {
       this.findCurrentPlay(B, S);
       let currentTime = this.$refs.audioRoot[this.currentPlayIndex].currentTime;
       let durationTime = this.$refs.audioRoot[this.currentPlayIndex].duration;
-      this.clockInInfo.clock_log_data[B].voice_path[S].value =
+      this.clockInInfo[B].voice_url[S].value =
         (currentTime / durationTime) * 100;
       if (currentTime == durationTime) {
-        this.clockInInfo.clock_log_data[B].voice_path[S].status = true;
-        this.clockInInfo.clock_log_data[B].voice_path[S].value = 0;
+        this.clockInInfo[B].voice_url[S].status = true;
+        this.clockInInfo[B].voice_url[S].value = 0;
         this.$refs.audioRoot[this.currentPlayIndex].pause();
       }
     },
     // 图片预览
     IVListImgCLick(B, S) {
-      let arr = this.clockInInfo.clock_log_data[B].img_path.split(",");
+      let arr = this.clockInInfo[B].image_url.split(",");
       ImagePreview({
         images: arr,
         startPosition: S
@@ -594,9 +634,7 @@ export default {
     // 视频预览
     IVListVideoCLick(B, S) {
       this.videoShow = true;
-      this.videoShowData = this.clockInInfo.clock_log_data[B].video_path.split(
-        ","
-      )[S];
+      this.videoShowData = this.clockInInfo[B].video_url.split(",")[S];
       console.log(this.videoShowData);
       this.$refs.videoShow.currentTime = 0;
     },
@@ -607,18 +645,17 @@ export default {
       if (this.isGooding) {
         this.isGooding = false;
         let data = {
+          sd: item.id,
           ui: sessionStorage.getItem("ui"),
           si: sessionStorage.getItem("si"),
-          hi: this.hi,
-          coi: item.clock_id,
-          il: t,
+          ss: t,
           v: sessionStorage.getItem("v")
         };
-        homeHabitIsLike(data).then(res => {
+        homeWorkFabulous(data).then(res => {
           console.log(res);
           if (res.code == 200) {
-            this.clockInInfo.clock_log_data.map(e => {
-              e.voice_path = e.voice_path.map(() => {
+            this.clockInInfo.map(e => {
+              e.voice_url = e.voice_url.map(() => {
                 let tempObj = {
                   value: 0,
                   file: "",
@@ -645,12 +682,12 @@ export default {
     copyReplyEnd(B, S) {
       clearInterval(this.touchingTimer);
       if (this.touchingTime >= 1) {
-        this.clockInInfo.clock_log_data.map(e => {
-          e.comment_data.map(item => {
+        this.clockInInfo.map(e => {
+          e.comment_list.map(item => {
             item.copyReplyBox = false;
           });
         });
-        this.clockInInfo.clock_log_data[B].comment_data[S].copyReplyBox = true;
+        this.clockInInfo[B].comment_list[S].copyReplyBox = true;
         this.$forceUpdate();
         this.touchingTime = 0;
         window.addEventListener("click", this.copyReplyBoxListen);
@@ -658,18 +695,20 @@ export default {
     },
     // 评论click
     itemReportClick(t, Bitem, Sitem, B, S) {
+      console.log(Bitem);
+      console.log(Sitem);
       this.replyType = t;
       if (this.replyType == 1) {
-        this.replyClockID = Bitem.clock_id;
+        this.replyClockID = Bitem.id;
         this.replyRci = Bitem.userid;
         this.replyRsi = Bitem.student_id;
       } else {
-        this.replyClockID = Bitem.clock_id;
-        this.replyRci = Sitem.userid;
-        this.replyRsi = Sitem.student_id;
+        this.replyClockID = Bitem.id;
+        this.replyRci = Sitem.commentatorId;
+        this.replyRsi = Sitem.commentatorStudentId;
       }
       if (
-        this.replyRsi != sessionStorage.getItem("si") * 1 ||
+        this.replyRci != sessionStorage.getItem("ui") * 1 ||
         this.replyType == 1
       ) {
         this.isReporting = true;
@@ -677,12 +716,12 @@ export default {
           this.$refs.reportInput.focus();
         });
       } else {
-        this.clockInInfo.clock_log_data.map(e => {
-          e.comment_data.map(item => {
+        this.clockInInfo.map(e => {
+          e.comment_list.map(item => {
             item.deleReplyBox = false;
           });
         });
-        this.clockInInfo.clock_log_data[B].comment_data[S].deleReplyBox = true;
+        this.clockInInfo[B].comment_list[S].deleReplyBox = true;
         this.$forceUpdate();
         window.addEventListener("click", this.deleReplyBoxListen);
       }
@@ -694,8 +733,8 @@ export default {
         event.target.className != "replyBlock" &&
         event.target.className != "deleReply"
       ) {
-        this.clockInInfo.clock_log_data.map(e => {
-          e.comment_data.map(item => {
+        this.clockInInfo.map(e => {
+          e.comment_list.map(item => {
             item.deleReplyBox = false;
           });
         });
@@ -707,8 +746,8 @@ export default {
     copyReplyBoxListen(event) {
       console.log(event.target.className);
       if (event.target.className.indexOf("CopyBtn") == -1) {
-        this.clockInInfo.clock_log_data.map(e => {
-          e.comment_data.map(item => {
+        this.clockInInfo.map(e => {
+          e.comment_list.map(item => {
             item.copyReplyBox = false;
           });
         });
@@ -718,8 +757,8 @@ export default {
     },
     // 复制评论
     setCopyReply(S) {
-      this.clockInInfo.clock_log_data.map(e => {
-        e.comment_data.map(item => {
+      this.clockInInfo.map(e => {
+        e.comment_list.map(item => {
           item.deleReplyBox = false;
           item.copyReplyBox = false;
         });
@@ -741,18 +780,15 @@ export default {
       console.log(Bitem);
       console.log(Sitem);
       let data = {
-        ui: sessionStorage.getItem("ui"),
-        si: sessionStorage.getItem("si"),
-        cmi: Sitem.comment_id,
-        hi: this.hi,
-        coi: Bitem.clock_id,
+        // sid: this.replyClockID,
+        cti: Sitem.commentId,
         v: sessionStorage.getItem("v")
       };
-      homeHabitDelComment(data).then(res => {
+      homeWorkDelComment(data).then(res => {
         console.log(res);
         if (res.code == 200) {
-          this.clockInInfo.clock_log_data.map(e => {
-            e.voice_path = e.voice_path.map(() => {
+          this.clockInInfo.map(e => {
+            e.voice_url = e.voice_url.map(() => {
               let tempObj = {
                 value: 0,
                 file: "",
@@ -792,34 +828,36 @@ export default {
       }
       if (this.replyType == 1) {
         data = {
-          ui: sessionStorage.getItem("ui"),
-          si: sessionStorage.getItem("si"),
-          rci: 0,
-          rsi: 0,
-          hi: this.hi,
-          coi: this.replyClockID,
-          ct: this.itemReport,
+          ti: this.clockInInfoTop.task_id,
+          si: this.replyClockID,
+          ui: this.replyRci,
+          sti: this.replyRsi,
+          ci: sessionStorage.getItem("ci"),
+          cui: sessionStorage.getItem("ui"),
+          csi: sessionStorage.getItem("si"),
+          cct: this.itemReport,
           v: sessionStorage.getItem("v")
         };
       } else {
         data = {
-          ui: sessionStorage.getItem("ui"),
-          si: sessionStorage.getItem("si"),
-          rci: this.replyRci,
-          rsi: this.replyRsi,
-          hi: this.hi,
-          coi: this.replyClockID,
-          ct: this.itemReport,
+          ti: this.clockInInfoTop.task_id,
+          si: this.replyClockID,
+          ui: this.replyRci,
+          sti: this.replyRsi,
+          ci: sessionStorage.getItem("ci"),
+          cui: sessionStorage.getItem("ui"),
+          csi: sessionStorage.getItem("si"),
+          cct: this.itemReport,
           v: sessionStorage.getItem("v")
         };
       }
-      homeHabitAddComment(data).then(res => {
+      homeWorkComment(data).then(res => {
         console.log(res);
         if (res.code == 200) {
           this.itemReport = "";
           this.isReporting = false;
-          this.clockInInfo.clock_log_data.map(e => {
-            e.voice_path = e.voice_path.map(() => {
+          this.clockInInfo.map(e => {
+            e.voice_url = e.voice_url.map(() => {
               let tempObj = {
                 value: 0,
                 file: "",
@@ -1087,7 +1125,7 @@ p {
   color: white;
   font-size: 0.9rem;
   width: 4.5rem;
-  height: 2rem;
+  /* height: 2rem; */
   border-radius: 0.2rem;
 }
 .moreDeleClockInBtn > p {
@@ -1095,6 +1133,9 @@ p {
   height: 2rem;
   line-height: 2rem;
   text-align: center;
+}
+.reviseClickName {
+  border-top: 1px solid #666;
 }
 
 /* ------------------------------------------- audioList */
@@ -1280,6 +1321,19 @@ p {
   width: 100%;
   height: 100%;
 }
+.deleReply {
+  width: 3.8rem;
+  box-sizing: border-box;
+  background-color: #313131;
+  color: white;
+  padding: 0.6rem 1rem;
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  border-radius: 0.3rem;
+}
 .deleReply::after {
   content: "";
   display: block;
@@ -1428,8 +1482,22 @@ p {
   margin-left: 0.4rem;
 }
 .noSubmitList {
-  padding: 0.8rem 1rem;
+  padding: 0 1rem;
   box-sizing: border-box;
+  width: 100%;
+}
+.noSubmitListItem {
+  height: 3rem;
+  font-size: 1rem;
+  line-height: 3rem;
+  border-bottom: 1px solid #e0e0e0;
+  box-sizing: border-box;
+}
+.noSubmitListItem:last-child {
+  border: 0 !important;
+}
+.bottomBlock {
+  height: 1rem;
   width: 100%;
 }
 </style>

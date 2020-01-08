@@ -177,7 +177,63 @@ export function homeWorkReadTaskNew(data) {
     data
   });
 }
+// 评论
+export function homeWorkComment(data) {
+  return request({
+    url: "/parent/student/comment",
+    method: "post",
+    data
+  });
+}
+// 删除评论
+export function homeWorkDelComment(data) {
+  return request({
+    url: "/parent/student/delComment",
+    method: "post",
+    data
+  });
+}
+// 点赞
+export function homeWorkFabulous(data) {
+  return request({
+    url: "/parent/student/fabulous",
+    method: "post",
+    data
+  });
+}
+// 删除提交作业
+export function homeWorkDelSubmit(data) {
+  return request({
+    url: "/parent/student/delSubmit",
+    method: "post",
+    data
+  });
+}
 
+// 提交作业时作业详情
+export function homeWorkSubmitTaskInfo(data) {
+  return request({
+    url: "/parent/student/submitTaskInfo",
+    method: "post",
+    data
+  });
+}
+// 作业提交
+export function homeWorkSubmitTask(data) {
+  return request({
+    url: "/parent/student/submitTask",
+    method: "post",
+    data
+  });
+}
+// 作业修改
+export function homeWorkSaveTaskInfo(data) {
+  return request({
+    url: "/parent/student/saveTaskInfo",
+    method: "post",
+    data
+  });
+}
 
 // ---------------------- User --------------------------- //
 export function userIndex(data) {

@@ -1587,6 +1587,19 @@ p {
   width: 100%;
   height: 100%;
 }
+.deleReply {
+  width: 3.8rem;
+  box-sizing: border-box;
+  background-color: #313131;
+  color: white;
+  padding: 0.6rem 1rem;
+  position: absolute;
+  top: -2.5rem;
+  right: 0;
+  left: 0;
+  margin: auto;
+  border-radius: 0.3rem;
+}
 .deleReply::after {
   content: "";
   display: block;

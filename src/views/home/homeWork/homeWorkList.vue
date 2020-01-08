@@ -78,7 +78,10 @@
               ></div>
             </div>
             <div v-show="item.is_submit == 1" class="itemIsSubmit">
-              <p>作业提交</p>
+              <p
+                :style="(item.is_submit == 1 && item.is_submited == 1) ? 'background-color: #dddddd;': ''"
+                @click="linkToHomeWorkIsSubmit(item.task_id)"
+              >{{ item.is_submited == 0 ? "作业提交" : "已提交"}}</p>
             </div>
           </div>
         </div>
@@ -266,6 +269,16 @@ export default {
         }
       });
     },
+    // 提交作业
+    linkToHomeWorkIsSubmit(id) {
+      this.$router.push({
+        path: "/homeWorkIsSubmit",
+        query: {
+          id
+        }
+      });
+    },
+
     // 右上角日期
     onClickRight() {
       this.datePopupShow = true;

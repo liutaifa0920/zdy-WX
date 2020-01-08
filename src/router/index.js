@@ -133,6 +133,15 @@ const routes = [
       title: "知点云"
     }
   },
+  // 提交作业
+  {
+    path: "/homeWorkIsSubmit",
+    name: "homeWorkIsSubmit",
+    component: () => import("@/views/home/homeWork/homeWorkIsSubmit.vue"),
+    meta: {
+      title: "知点云"
+    }
+  },
 
 
   // -------------------- 消 息 ------------------------
