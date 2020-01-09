@@ -3,7 +3,7 @@
     <van-nav-bar
       class="topNavBar"
       left-text="返回"
-      title="提交作业"
+      :title="titleCon"
       left-arrow
       @click-left="onClickLeft"
     />
@@ -84,7 +84,7 @@
 
       <div class="imgVideoList">
         <div class="imgVideoListItem" v-for="(item, i) in imgList" :key="i+'img'">
-          <img ref="reviseImg" :src="item.data" @click="imgLook(i)" />
+          <img ref="reviseImg" :src="item" @click="imgLook(i)" />
           <div class="imgVideoListItemDele">
             <img src="~@/assets/imgs/home/habitClock/item错误.png" @click="deleItemClick(2, i)" alt />
           </div>
@@ -96,7 +96,7 @@
                 alt
         />-->
         <div class="imgVideoListItem" v-for="(item, i) in videoList" :key="i+'video'">
-          <video ref="reviseVideo" :src="item.data" @click="videoLook(i)"></video>
+          <video ref="reviseVideo" :src="item" @click="videoLook(i)"></video>
           <div class="imgVideoListItemDele">
             <img src="~@/assets/imgs/home/habitClock/item错误.png" @click="deleItemClick(3, i)" alt />
           </div>
@@ -172,28 +172,33 @@
         </div>
       </div>
     </van-overlay>
-    <van-overlay :show="reviseShow">
-      <div class="uploadWrapper">
-        <div>
-          <div style="margin-bottom: 1rem;display: flex;justify-content: center;">
-            <van-loading color="#38b48b" />
-          </div>
-          <div style="color: #38b48b;font-size: .9rem;">加载中</div>
-        </div>
-      </div>
-    </van-overlay>
   </div>
 </template>
+<script src="http://gosspublic.alicdn.com/aliyun-oss-sdk-x.x.x.min.js"></script>		
 <script>
+let OSS = require("ali-oss");
+let client = new OSS({
+  region: "oss-cn-hangzhou",
+  accessKeyId: "LTAIzlOqVRk7g2IB",
+  accessKeySecret: "FaQNdIaStZU1LzBN3IMsCiywODG6Mm",
+  bucket: "xuxingtest"
+});
 import { ImagePreview } from "vant";
 import wx from "weixin-js-sdk";
 import axios from "axios";
-import { homeWorkSubmitTaskInfo, homeWorkSaveTaskInfo } from "@/api/api";
+import {
+  homeWorkSubmitTaskInfo,
+  homeWorkSubmitTask,
+  homeWorkSaveTaskInfo,
+  homeWorkSaveTask
+} from "@/api/api";
 import { signFun } from "../../../utils/sign";
 import { Toast } from "vant";
 export default {
   data() {
     return {
+      titleCon: "提交作业",
+      reviseInfo: {},
       hi: "",
       clockInInfo: {
         title: "",
@@ -230,12 +235,11 @@ export default {
       videoShow: false,
       videoShowData: "",
       uploadShow: false,
-      reviseShow: false
+      submitType: 1
     };
   },
   created() {},
   mounted() {
-    this.reviseShow = true;
     this.queryHi();
     this.queryAccessToken();
   },
@@ -247,10 +251,14 @@ export default {
       console.clear();
       if (this.$route.query.id) {
         console.log(this.$route.query.id);
+        this.submitType = 1;
+        this.titleCon = "提交作业";
         this.ti = this.$route.query.id;
         this.queryInfo();
       } else if (this.$route.query.homeWorkID) {
         console.log(this.$route.query.homeWorkID);
+        this.submitType = 2;
+        this.titleCon = "修改作业";
         this.queryReviseInfo(this.$route.query.homeWorkID);
       }
     },
@@ -279,10 +287,11 @@ export default {
         if (res.code == 200) {
           let data = res.data;
           this.clockConText = res.data.content;
+          this.reviseInfo = data;
           // ----------------------------------
           // 音频回显
           if (data.voice_url != "") {
-            data.voice_url.split(",").map(e => {
+            data.voice_url.split(",").map((e, i) => {
               let tempObj = {
                 value: 0,
                 file: e,
@@ -292,32 +301,38 @@ export default {
               };
               this.adiouList.push(tempObj);
             });
-          }
-          // 图片回显
-          if (data.image_url != "") {
-            let imgList = data.image_url.split(",");
-            let that = this;
-            imgList.map((e, i) => {
-              this.convertImgToBase64(e, base64 => {
-                const reviseScale = 0.3; // 设置缩放比例 （0-1）
-                that.compressImg(base64, reviseScale, "file");
-              });
-            });
-            this.$forceUpdate();
-          }
-          // 视频回显
-          if (data.video_url != "") {
-            data.video_url.split(",").map((e, i) => {
-              let tempObj = {
-                data: e,
-                file: ""
-              };
-              this.videoList.push(tempObj);
-            });
-            this.$forceUpdate();
+
             this.$nextTick(() => {
-              console.log(this.$refs.reviseVideo);
+              if (this.$refs.audioRoot) {
+                this.$refs.audioRoot.map((e, i) => {
+                  this.$refs.audioRoot[i].oncanplay = () => {
+                    let time = Math.floor(e.duration);
+                    let m =
+                      Math.floor(time / 60) >= 10
+                        ? Math.floor(time / 60)
+                        : "0" + Math.floor(time / 60);
+                    let s =
+                      Math.floor(time % 60) >= 10
+                        ? Math.floor(time % 60)
+                        : "0" + Math.floor(time % 60);
+                    // console.log(m + ":" + s);
+                    this.adiouList[i].duration = m + ":" + s;
+                  };
+                });
+                setTimeout(() => {
+                  this.$refs.audioRoot.map((e, i) => {
+                    this.$refs.audioRoot[i].currentTime = 0;
+                  });
+                }, 60);
+              }
+              this.$forceUpdate();
             });
+          }
+          if (data.image_url != "") {
+            this.imgList = data.image_url.split(",");
+          }
+          if (data.video_url != "") {
+            this.videoList = data.video_url.split(",");
           }
           // ----------------------------------
           this.ti = res.data.task_id;
@@ -325,38 +340,22 @@ export default {
         }
       });
     },
-    // imgUrl转二进制文件流
-    convertImgToBase64(url, callback, outputFormat) {
-      var canvas = document.createElement("CANVAS"),
-        ctx = canvas.getContext("2d"),
-        img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.onload = function() {
-        canvas.height = img.height;
-        canvas.width = img.width;
-        ctx.drawImage(img, 0, 0);
-        var dataURL = canvas.toDataURL(outputFormat || "image/png");
-        callback.call(this, dataURL);
-        canvas = null;
-      };
-      img.src = url;
-    },
-    // videoUrl转二进制文件流
-    convertVideoToBase64(url, callback, outputFormat) {
-      var canvas = document.createElement("CANVAS"),
-        ctx = canvas.getContext("2d"),
-        img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.onload = function() {
-        canvas.height = img.height;
-        canvas.width = img.width;
-        ctx.drawImage(img, 0, 0);
-        var dataURL = canvas.toDataURL(outputFormat || "image/png");
-        callback.call(this, dataURL);
-        canvas = null;
-      };
-      img.src = url;
-    },
+    // // imgUrl转二进制文件流
+    // convertImgToBase64(url, callback, outputFormat) {
+    //   var canvas = document.createElement("CANVAS"),
+    //     ctx = canvas.getContext("2d"),
+    //     img = new Image();
+    //   img.crossOrigin = "Anonymous";
+    //   img.onload = function() {
+    //     canvas.height = img.height;
+    //     canvas.width = img.width;
+    //     ctx.drawImage(img, 0, 0);
+    //     var dataURL = canvas.toDataURL(outputFormat || "image/png");
+    //     callback.call(this, dataURL);
+    //     canvas = null;
+    //   };
+    //   img.src = url;
+    // },
     // 请求wx accessToken
     queryAccessToken() {
       let url = location.href.split("#")[0];
@@ -580,141 +579,197 @@ export default {
     },
     // 选择已有照片
     changeImg(e) {
-      console.log(e.target.files[0]);
-      this.blobToBase64(e.target.files[0], e.target.files[0].name);
+      let file = e.target.files[0];
+      let fileName = e.target.files[0].name;
+      client
+        .put(fileName, file)
+        .then(r1 => {
+          return client.get(fileName);
+        })
+        .then(r2 => {
+          if (this.imgList.length + this.videoList.length <= 8) {
+            console.log(r2.res.requestUrls[0]);
+            let url = r2.res.requestUrls[0];
+            this.imgList.push(url);
+          } else {
+            Toast("最多可上传9个图片或视频文件");
+          }
+        })
+        .catch(err => {
+          console.error("error: %j", err);
+        });
+      // this.blobToBase64(e.target.files[0], e.target.files[0].name);
     },
     // 选择拍摄照片
     changeSetImg(e) {
-      console.log(e.target.files[0]);
-      this.blobToBase64(e.target.files[0], e.target.files[0].name);
+      let file = e.target.files[0];
+      let fileName = e.target.files[0].name;
+      client
+        .put(fileName, file)
+        .then(r1 => {
+          return client.get(fileName);
+        })
+        .then(r2 => {
+          if (this.imgList.length + this.videoList.length <= 8) {
+            console.log(r2.res.requestUrls[0]);
+            let url = r2.res.requestUrls[0];
+            this.imgList.push(url);
+          } else {
+            Toast("最多可上传9个图片或视频文件");
+          }
+        })
+        .catch(err => {
+          console.error("error: %j", err);
+        });
+      // this.blobToBase64(e.target.files[0], e.target.files[0].name);
     },
-    blobToBase64(blob, name) {
-      const self = this; // 绑定this
-      const reader = new FileReader(); //实例化一个reader文件
-      reader.readAsDataURL(blob); // 添加二进制文件
-      reader.onload = function(event) {
-        const base64 = event.target.result; // 获取到它的base64文件
-        const scale = 0.3; // 设置缩放比例 （0-1）
-        return self.compressImg(base64, scale, name); // 调用压缩方法
-      };
-    },
-    compressImg(base64, scale, name) {
-      // console.log(`执行缩放程序，scale=${scale}`);
-      let that = this;
-      // 处理缩放，转换格式
-      // 下面的注释就不写了，就是new 一个图片，用canvas来压缩
-      const img = new Image();
-      img.src = base64;
-      img.onload = function() {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.setAttribute("width", this.width);
-        canvas.setAttribute("height", this.height);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        // 转成base64 文件
-        let base64 = canvas.toDataURL("image/jpeg");
-        // 根据自己需求填写大小
-        while (base64.length > 1024 * 1024 * 0.4) {
-          scale -= 0.01;
-          base64 = canvas.toDataURL("image/jpeg", scale);
-        }
-        // baser64 TO blob 这一块如果不懂可以自行百度，我就不加注释了
-        // const arr = base64.split(",");
-        // const mime = arr[0].match(/:(.*?);/)[1];
-        // const bytes = atob(arr[1]);
-        // const bytesLength = bytes.length;
-        // const u8arr = new Uint8Array(bytesLength);
-        // for (let i = 0; i < bytes.length; i++) {
-        //   u8arr[i] = bytes.charCodeAt(i);
-        // }
-        // const blob = new Blob([u8arr], { type: mime });
-        // 回调函数 根据需求返回二进制数据或者base64数据，我的项目都给返回了
-        // console.log(blob);
-        // console.log(base64);
-        that.dataURLtoFile(base64, name);
-        // return base64;
-      };
-    },
-    dataURLtoFile(dataurl, filename) {
-      let that = this;
-      //将base64转换为文件
-      var arr = dataurl.split(","),
-        mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[1]),
-        n = bstr.length,
-        u8arr = new Uint8Array(n);
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-      // console.log(new File([u8arr], filename, { type: mime }));
-      // return new File([u8arr], filename, { type: mime });
-      let freader = new FileReader();
-      freader.readAsDataURL(new File([u8arr], filename, { type: mime }));
-      freader.onload = function(event) {
-        // console.log(that.imgList.length + that.videoList.length);
-        if (that.imgList.length + that.videoList.length <= 8) {
-          let tempObj = {
-            data: event.target.result,
-            file: new File([u8arr], filename, { type: mime })
-          };
-          that.imgList.push(tempObj);
-          that.reviseShow = false;
-        } else {
-          Toast("最多可上传9个图片或视频文件");
-        }
-      };
-    },
-    // 选择拍摄视频
+    // blobToBase64(blob, name) {
+    //   const self = this; // 绑定this
+    //   const reader = new FileReader(); //实例化一个reader文件
+    //   reader.readAsDataURL(blob); // 添加二进制文件
+    //   reader.onload = function(event) {
+    //     const base64 = event.target.result; // 获取到它的base64文件
+    //     const scale = 0.3; // 设置缩放比例 （0-1）
+    //     return self.compressImg(base64, scale, name); // 调用压缩方法
+    //   };
+    // },
+    // compressImg(base64, scale, name) {
+    //   // console.log(`执行缩放程序，scale=${scale}`);
+    //   let that = this;
+    //   // 处理缩放，转换格式
+    //   // 下面的注释就不写了，就是new 一个图片，用canvas来压缩
+    //   const img = new Image();
+    //   img.src = base64;
+    //   img.onload = function() {
+    //     const canvas = document.createElement("canvas");
+    //     const ctx = canvas.getContext("2d");
+    //     canvas.setAttribute("width", this.width);
+    //     canvas.setAttribute("height", this.height);
+    //     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    //     // 转成base64 文件
+    //     let base64 = canvas.toDataURL("image/jpeg");
+    //     // 根据自己需求填写大小
+    //     while (base64.length > 1024 * 1024 * 0.4) {
+    //       scale -= 0.01;
+    //       base64 = canvas.toDataURL("image/jpeg", scale);
+    //     }
+    //     // baser64 TO blob 这一块如果不懂可以自行百度，我就不加注释了
+    //     // const arr = base64.split(",");
+    //     // const mime = arr[0].match(/:(.*?);/)[1];
+    //     // const bytes = atob(arr[1]);
+    //     // const bytesLength = bytes.length;
+    //     // const u8arr = new Uint8Array(bytesLength);
+    //     // for (let i = 0; i < bytes.length; i++) {
+    //     //   u8arr[i] = bytes.charCodeAt(i);
+    //     // }
+    //     // const blob = new Blob([u8arr], { type: mime });
+    //     // 回调函数 根据需求返回二进制数据或者base64数据，我的项目都给返回了
+    //     // console.log(blob);
+    //     // console.log(base64);
+    //     that.dataURLtoFile(base64, name);
+    //     // return base64;
+    //   };
+    // },
+    // dataURLtoFile(dataurl, filename) {
+    //   let that = this;
+    //   //将base64转换为文件
+    //   var arr = dataurl.split(","),
+    //     mime = arr[0].match(/:(.*?);/)[1],
+    //     bstr = atob(arr[1]),
+    //     n = bstr.length,
+    //     u8arr = new Uint8Array(n);
+    //   while (n--) {
+    //     u8arr[n] = bstr.charCodeAt(n);
+    //   }
+    //   // console.log(new File([u8arr], filename, { type: mime }));
+    //   // return new File([u8arr], filename, { type: mime });
+    //   let freader = new FileReader();
+    //   freader.readAsDataURL(new File([u8arr], filename, { type: mime }));
+    //   freader.onload = function(event) {
+    //     // console.log(that.imgList.length + that.videoList.length);
+    //     if (that.imgList.length + that.videoList.length <= 8) {
+    //       let tempObj = {
+    //         data: event.target.result,
+    //         file: new File([u8arr], filename, { type: mime })
+    //       };
+    //       that.imgList.push(tempObj);
+    //     } else {
+    //       Toast("最多可上传9个图片或视频文件");
+    //     }
+    //   };
+    // },
+    // 选择视频
     changeVideo(e) {
-      let that = this;
-      let freader = new FileReader();
-      // console.log(e.target.files[0]);
-      freader.readAsDataURL(e.target.files[0]);
-      freader.onload = function(event) {
-        if (that.imgList.length + that.videoList.length <= 8) {
-          let tempObj = {
-            data: event.target.result,
-            file: e.target.files[0]
-          };
-          that.videoList.push(tempObj);
-        } else {
-          Toast("最多可上传9个图片或视频文件");
-        }
-      };
+      let file = e.target.files[0];
+      let fileName = e.target.files[0].name;
+      client
+        .put(fileName, file)
+        .then(r1 => {
+          return client.get(fileName);
+        })
+        .then(r2 => {
+          if (this.imgList.length + this.videoList.length <= 8) {
+            console.log(r2.res.requestUrls[0]);
+            let url = r2.res.requestUrls[0];
+            this.videoList.push(url);
+          } else {
+            Toast("最多可上传9个图片或视频文件");
+          }
+        })
+        .catch(err => {
+          console.error("error: %j", err);
+        });
+
+      // let that = this;
+      // let freader = new FileReader();
+      // // console.log(e.target.files[0]);
+      // freader.readAsDataURL(e.target.files[0]);
+      // freader.onload = function(event) {
+      //   if (that.imgList.length + that.videoList.length <= 8) {
+      //     let tempObj = {
+      //       data: event.target.result,
+      //       file: e.target.files[0]
+      //     };
+      //     that.videoList.push(tempObj);
+      //   } else {
+      //     Toast("最多可上传9个图片或视频文件");
+      //   }
+      // };
     },
     // 选择拍摄视频
     changeSetVideo(e) {
-      let that = this;
-      let freader = new FileReader();
-      // console.log(e.target.files[0]);
-      freader.readAsDataURL(e.target.files[0]);
-      freader.onload = function(event) {
-        if (that.imgList.length + that.videoList.length <= 8) {
-          let tempObj = {
-            data: event.target.result,
-            file: e.target.files[0]
-          };
-          that.videoList.push(tempObj);
-        } else {
-          Toast("最多可上传9个图片或视频文件");
-        }
-      };
+      let file = e.target.files[0];
+      let fileName = e.target.files[0].name;
+      client
+        .put(fileName, file)
+        .then(r1 => {
+          return client.get(fileName);
+        })
+        .then(r2 => {
+          if (this.imgList.length + this.videoList.length <= 8) {
+            console.log(r2.res.requestUrls[0]);
+            let url = r2.res.requestUrls[0];
+            this.videoList.push(url);
+          } else {
+            Toast("最多可上传9个图片或视频文件");
+          }
+        })
+        .catch(err => {
+          console.error("error: %j", err);
+        });
     },
     // 图片预览
     imgLook(i) {
-      let arr = this.imgList.map(e => {
-        return e.data;
-      });
       ImagePreview({
-        images: arr,
+        images: this.imgList,
         startPosition: i
       });
     },
     // 视频预览
     videoLook(i) {
       this.videoShow = true;
-      this.videoShowData = this.videoList[i].data;
+      this.videoShowData = this.videoList[i];
       this.$refs.videoShow.currentTime = 0;
 
       this.$nextTick(() => {
@@ -728,61 +783,38 @@ export default {
         // 录音
       } else if (type == 2) {
         this.imgList.splice(i, 1);
-        // if (this.imgList.length == 0) {
-        console.log(this.$refs.imgListRoot);
-        // }
       } else if (type == 3) {
         this.videoList.splice(i, 1);
-        if (this.videoList.length == 0) {
-          console.log(this.$refs.videoListRoot);
-        }
       }
     },
     // 发布打卡
     clovkInUpload() {
       this.clockConText = this.clockConText.trim();
-      // if (this.clockConText != "") {
-      console.log("发布打卡");
-      this.uploadShow = true;
-      let vu = this.adiouList
+      let veu = this.adiouList
         .map(e => {
           return e.file;
         })
         .join(",");
-      let tempData = {
-        ui: sessionStorage.getItem("ui"),
-        ti: this.ti,
-        ci: sessionStorage.getItem("ci"),
-        si: sessionStorage.getItem("si"),
-        ct: this.clockConText,
-        vu,
-        v: sessionStorage.getItem("v")
-      };
-      let sn = signFun(tempData, "9E1613256C1F4815219A633762B53704");
-
-      console.log(e);
-      let fd = new FormData();
-      this.imgList.map(e => {
-        fd.append("img[]", e.file);
-      });
-      this.videoList.map(e => {
-        fd.append("video[]", e.file);
-      });
-      fd.append("data", sn);
-
-      let config = {
-        headers: { "Content-Type": "multipart/form-data" }
-      };
-
-      axios
-        .post(
-          "http://app.sdxxtop.com/parent/student/wechatSubmitTask",
-          fd,
-          config
-        )
-        .then(res => {
+      let ieu = this.imgList.join(",");
+      let vou = this.videoList.join(",");
+      let vol = this.videoList.join(",");
+      console.log("发布打卡");
+      this.uploadShow = true;
+      if (this.submitType == 1) {
+        let data = {
+          ui: sessionStorage.getItem("ui"),
+          ti: this.ti,
+          ci: sessionStorage.getItem("ci"),
+          si: sessionStorage.getItem("si"),
+          ct: this.clockConText,
+          veu,
+          ieu,
+          vol,
+          v: sessionStorage.getItem("v")
+        };
+        homeWorkSubmitTask(data).then(res => {
           console.log(res);
-          if (res.data.code == 200) {
+          if (res.code == 200) {
             this.uploadShow = false;
             this.$router.go(-1);
           } else {
@@ -790,9 +822,26 @@ export default {
             this.uploadShow = false;
           }
         });
-      // } else {
-      //   Toast("打卡内容不能为空")
-      // }
+      } else if (this.submitType == 2) {
+        let data = {
+          ci: this.reviseInfo.id,
+          ct: this.clockConText,
+          veu,
+          ieu,
+          vou,
+          v: sessionStorage.getItem("v")
+        };
+        homeWorkSaveTask(data).then(res => {
+          console.log(res);
+          if (res.code == 200) {
+            this.uploadShow = false;
+            this.$router.go(-1);
+          } else {
+            Toast(res.data.msg);
+            this.uploadShow = false;
+          }
+        });
+      }
     },
     // 返回上一级
     onClickLeft() {

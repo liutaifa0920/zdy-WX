@@ -28,16 +28,22 @@
       </div>
     </div>
     <div class="garyBlock"></div>
-    <div v-if="clockInInfo.length != 0" class="clockInStatisticsToclass" @click="toClassClockInSta">
+    <div class="clockInStatisticsToclass" @click="toClassClockInSta">
       <p>已查看{{clockInInfoTop.read_num}}人，未查看{{clockInInfoTop.no_read_num}}人</p>
       <p>></p>
     </div>
     <div class="clockInRecord">反馈情况</div>
-    <van-tabs v-model="tabActive" swipeable animated>
+    <div
+      class="CopyBtn"
+      :style="contentIsOpen ? 'top: 25.5rem !important' : ''"
+      @click="copyClick"
+      :data-clipboard-text="copyContent"
+    >复制名单</div>
+    <van-tabs @change="tabsChange" v-model="tabActive" swipeable animated>
       <van-tab :title="'已提交'+ clockInInfoTop.comment_list.one +'人'">
         <!-- 单条动态 -->
         <div
-          v-show="clockInInfo.length != 0"
+          v-if="clockInInfo.length != 0 && tabActive == 0"
           class="clockInfoList"
           v-for="(item, i) in clockInInfo"
           :key="i"
@@ -56,7 +62,10 @@
               >{{item.parent_name.substr(item.parent_name.length - 2)}}</div>
               <div class="clockInfoListItemTopRight">
                 <p>{{item.parent_name}}</p>
-                <p>{{item.add_time}} 已坚持{{100}}天</p>
+                <p>
+                  {{item.add_time.substr(0, 16)}}
+                  <!-- 已坚持{{100}}天 -->
+                </p>
               </div>
             </div>
             <img
@@ -109,11 +118,11 @@
               <p>{{ "0" + Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)/60)+ ":"+ (Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60) >= 10?Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60):("0"+Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60))) + "/" + items.duration}}</p>
             </div>
             <!-- 图片 / 视频 -->
-            <div class="IVList" v-if="item.video_url">
+            <div class="IVList" v-if="item.video_url || item.image_url">
               <div
                 v-show="itemIV != ''"
                 class="IVListItem"
-                v-for="(itemIV, index) in strToArr(item.video_url)"
+                v-for="(itemIV, index) in item.video_url.split(',')"
                 :key="index + 'video'"
                 @click="IVListVideoCLick(i, index)"
               >
@@ -226,7 +235,192 @@
           >{{noSubmitItemI + 1}}、 {{noSubmitItem.name}}</p>
         </div>
       </van-tab>
-      <van-tab :title="'优秀作业'+ clockInInfoTop.comment_list.three +'人'">内容 3</van-tab>
+      <van-tab :title="'优秀作业'+ clockInInfoTop.comment_list.three +'人'">
+        <!-- 单条动态 -->
+        <div
+          v-if="clockInInfo.length != 0 && tabActive == 2"
+          class="clockInfoList"
+          v-for="(item, i) in clockInInfo"
+          :key="i"
+        >
+          <div class="clockInfoListItem">
+            <div class="clockInfoListItemLeft">
+              <img
+                v-if="item.head_img[0] != '' && item.head_img[0] != '#'"
+                :src="item.head_img"
+                alt
+              />
+              <div
+                class="clockInfoListItemLeftIcon"
+                :style="'background-color: '+ item.head_img +';'"
+                v-if="item.head_img[0] == '#'"
+              >{{item.parent_name.substr(item.parent_name.length - 2)}}</div>
+              <div class="clockInfoListItemTopRight">
+                <p>{{item.parent_name}}</p>
+                <p>
+                  {{item.add_time.substr(0, 16)}}
+                  <!-- 已坚持{{100}}天 -->
+                </p>
+              </div>
+            </div>
+            <img
+              v-show="si == item.student_id"
+              class="deleClickImg"
+              @click="moreDeleClockInBox(i)"
+              src="~@/assets/imgs/home/habitClock/更多.png"
+              alt
+            />
+            <div v-show="item.deleBoxFlag" class="moreDeleClockInBtn">
+              <p class="deleClickName" @click="moreDeleClockInBtn(item)">删除</p>
+              <p class="reviseClickName" @click="moreReviseClockInBtn(item)">修改</p>
+            </div>
+          </div>
+          <div class="clockInfoListItemCon">
+            <!-- 内容 -->
+            <p>{{item.content}}</p>
+            <!-- 录音 -->
+            <div
+              v-show="item.voice_url.length > 0"
+              v-for="(items, index) in item.voice_url"
+              :key="index+'audio'"
+              class="recordPlayList"
+            >
+              <audio ref="audioRoot" @timeupdate="audioTimeUpdate(i, index)" :src="items.file"></audio>
+              <img
+                v-if="items.status"
+                @click="recorderPlay(items, i, index)"
+                src="~@/assets/imgs/home/habitClock/playB.png"
+              />
+              <img
+                v-if="!items.status"
+                @click="recorderPause(items, i, index)"
+                src="~@/assets/imgs/home/habitClock/pauseB.png"
+              />
+              <van-slider
+                v-model="items.value"
+                :max="100"
+                :min="0"
+                bar-height="4px"
+                style="width:55%;"
+                active-color="#99CCFF"
+                inactive-color="#E5E5E5"
+                @change="audioSliderChange(items.value, i, index)"
+                @drag-start="audioDragS(i, index)"
+              >
+                <div slot="button" class="adiouButton" @click="audioSliderBtnClick(i, index)"></div>
+              </van-slider>
+
+              <p>{{ "0" + Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)/60)+ ":"+ (Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60) >= 10?Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60):("0"+Math.floor(Math.floor((items.duration[1]*60 + items.duration.split(":")[1]*1) * items.value/100)%60))) + "/" + items.duration}}</p>
+            </div>
+            <!-- 图片 / 视频 -->
+            <div class="IVList" v-if="item.video_url">
+              <div
+                v-show="itemIV != ''"
+                class="IVListItem"
+                v-for="(itemIV, index) in item.video_url.split(',')"
+                :key="index + 'video'"
+                @click="IVListVideoCLick(i, index)"
+              >
+                <video :src="itemIV"></video>
+                <img
+                  style="position: absolute;top: 0;right: 0;left: 0;bottom: 0;margin: auto;width: 2rem;height:2rem;background-color: transparent;"
+                  src="~@/assets/imgs/home/habitClock/item播放.png"
+                  alt
+                />
+              </div>
+              <div
+                v-show="itemIV != ''"
+                class="IVListItem"
+                v-for="(itemIV, index) in item.image_url.split(',')"
+                :key="index + 'img'"
+                @click="IVListImgCLick(i, index)"
+              >
+                <img :src="itemIV" alt />
+              </div>
+              <div
+                class="IVListItem"
+                style="margin-bottom: 0;height: 0px;"
+                v-for="(itemIV, index) in 3"
+                :key="index + 'block'"
+              ></div>
+            </div>
+          </div>
+          <!-- 按钮行 -->
+          <div class="clockInfoListItemBtn">
+            <div class="clockInfoListItemIsGood">
+              <img
+                v-if="!item.isLike"
+                @click="isLikeClick(1, item, i)"
+                src="~@/assets/imgs/home/habitClock/no_good.png"
+                alt="未点赞"
+              />
+              <img
+                v-if="item.isLike"
+                @click="isLikeClick(2, item, i)"
+                src="~@/assets/imgs/home/habitClock/is_good.png"
+                alt="已点赞"
+              />
+              <!-- <p>{{item.fabulousList.length == 0 ? '':item.fabulousList.length}}</p> -->
+            </div>
+            <img
+              @click="itemReportClick(1, item)"
+              src="~@/assets/imgs/home/habitClock/is_report.png"
+              alt="评论"
+            />
+          </div>
+          <!-- 回复区 -->
+          <div class="clockInfoListItemReport">
+            <!-- 点赞区 -->
+            <div
+              v-show="item.fabulousList.length != 0"
+              class="clockInfoListItemReportTop"
+              :style="item.fabulousList.length == 0 ? 'border: 0px !important;': ''"
+            >
+              <img src="~@/assets/imgs/home/habitClock/no_good.png" alt="点赞" />
+              <p>
+                <span
+                  v-for="(fabulousListItem, fabulousListItemI) in item.fabulousList"
+                  :key="fabulousListItemI"
+                >{{fabulousListItem.name}} {{(fabulousListItemI + 1) != item.fabulousList.length ? ',': ''}}</span>
+              </p>
+            </div>
+            <!-- 评论内容 -->
+            <div v-show="item.comment_list.length != 0" class="clockInfoListItemReportBot">
+              <div class="clockInfoListItemReportBotLeft">
+                <img src="~@/assets/imgs/home/habitClock/is_report.png" alt="评论" />
+              </div>
+              <div class="clockInfoListItemReportBotRig">
+                <p
+                  v-for="(items ,index) in item.comment_list"
+                  :key="index"
+                  @click="itemReportClick(2, item, items, i, index)"
+                  @touchstart="copyReplyStart"
+                  @touchend="copyReplyEnd(i, index)"
+                >
+                  <span class="replyBlock"></span>
+                  <span v-if="items.receiverId == 0" class="isName">{{items.commentator}}:</span>
+                  <span v-if="items.receiverId == 0" class="isContent">{{items.content}}</span>
+                  <span v-if="items.receiverId != 0" class="isName">{{items.commentator}}</span>
+                  <span v-if="items.receiverId != 0" style="padding-right: .2rem;">回复</span>
+                  <span v-if="items.receiverId != 0" class="isName">{{items.receiver}}:</span>
+                  <span v-if="items.receiverId != 0" class="isContent">{{items.content}}</span>
+                  <span
+                    @click="setDeleReply(item, items)"
+                    class="deleReply"
+                    v-show="items.deleReplyBox"
+                  >删除</span>
+                  <span
+                    @click="setCopyReply(index)"
+                    :class="'CopyBtn'+ index + ' copybox'"
+                    :data-clipboard-text="items.content"
+                    v-show="items.copyReplyBox"
+                  >复制</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </van-tab>
     </van-tabs>
 
     <div class="bottomBlock"></div>
@@ -240,7 +434,33 @@
       />
       <div class="itemReportOKBtn" @click="setReport">评论</div>
     </div>
+    <div class="submitFixedBtn" v-show="clockInInfoTop.is_submit == 1">
+      <p
+        v-show="clockInInfoTop.is_submit == 1 && clockInInfoTop.is_submited == 0"
+        @click="linkToHomeWorkIsSubmit"
+        style="background-color:  #38b48b;"
+      >提交作业</p>
+      <p
+        v-show="clockInInfoTop.is_submit == 1 && clockInInfoTop.is_submited == 1"
+        style="background-color: #aaa"
+      >已提交</p>
+    </div>
 
+    <!-- 判断身份时候是否绑定弹窗 -->
+    <!-- <van-overlay
+      :show="loginBoxFlag && isShare"
+      style="background-color: rgba(0,0,0,.7) !important;"
+    >
+      <div class="joinClassDiaImg">
+        <div class="joinClassDiaTit">{{clockInInfoTop.send_name}}老师邀请你加入班级</div>
+        <div class="joinClassDiaText">为了方便我们班级的管理，让老师和家长能够简单、高效的沟通协作，特邀您加入我们的班级！</div>
+        <div class="joinClassDiaImgBox">
+          <p @click="checkStatus('par')" :style="clickPar">我是学生家长</p>
+          <p @click="checkStatus('tea')" :style="clickTea">我是任课老师</p>
+        </div>
+        <div @click="toJoinClassBtn" class="toJoinClassBtn">确定</div>
+      </div>
+    </van-overlay>-->
     <!-- 视频弹窗 -->
     <van-overlay :show="videoShow" @click="videoShow = false">
       <div class="wrapper">
@@ -257,6 +477,10 @@
         </div>
       </div>
     </van-overlay>
+    <div class="bottomBlock"></div>
+    <div class="bottomBlock"></div>
+    <div class="bottomBlock"></div>
+    <div class="bottomBlock"></div>
   </div>
 </template>
 <script>
@@ -272,6 +496,10 @@ import Clipboard from "clipboard";
 export default {
   data() {
     return {
+      // 判断是否登陆绑定关注公众号弹窗
+      isShare: true,
+      loginBoxFlag: true,
+      // tab
       contentIsOpen: false,
       weeksList: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"],
       tabActive: 0,
@@ -285,8 +513,11 @@ export default {
         add_time: "",
         comment_list: {
           one: "",
+          one_comment: [],
           two: "",
-          three: ""
+          two_comment: [],
+          three: "",
+          three_comment: []
         }
       },
       clockInInfo: [
@@ -355,6 +586,48 @@ export default {
         console.log(v);
         return v.split();
       };
+    },
+    copyContent() {
+      if (this.tabActive == 0) {
+        let tempStr = "";
+        this.clockInInfoTop.comment_list.one_comment.map((e, i) => {
+          tempStr += i + 1 + "." + e.student_name + "\n";
+        });
+        tempStr =
+          "以下学生已提交" +
+          this.clockInInfoTop.add_time.split(" ")[0] +
+          "“" +
+          this.clockInInfoTop.title +
+          "”打卡:\n" +
+          tempStr;
+        return tempStr;
+      } else if (this.tabActive == 1) {
+        let tempStr = "";
+        this.clockInInfoTop.comment_list.two_comment.map((e, i) => {
+          tempStr += i + 1 + "." + e.name + "\n";
+        });
+        tempStr =
+          "以下学生未提交" +
+          this.clockInInfoTop.add_time.split(" ")[0] +
+          "“" +
+          this.clockInInfoTop.title +
+          "”打卡:\n" +
+          tempStr;
+        return tempStr;
+      } else if (this.tabActive == 2) {
+        let tempStr = "";
+        this.clockInInfoTop.comment_list.three_comment.map((e, i) => {
+          tempStr += i + 1 + "." + e.student_name + "\n";
+        });
+        tempStr =
+          "以下学生为" +
+          this.clockInInfoTop.add_time.split(" ")[0] +
+          "“" +
+          this.clockInInfoTop.title +
+          "”优秀作业:\n" +
+          tempStr;
+        return tempStr;
+      }
     }
   },
   mounted() {
@@ -379,6 +652,23 @@ export default {
         }
       }
     },
+    // 列表切换
+    tabsChange(val) {
+      this.$refs.audioRoot = null;
+      this.queryInfo();
+    },
+    // 复制名单
+    copyClick() {
+      let clipboard = new Clipboard(".CopyBtn");
+      clipboard.on("success", e => {
+        Toast("复制成功");
+        clipboard.destroy();
+      });
+      clipboard.on("error", e => {
+        console.log("该浏览器不支持自动复制");
+        clipboard.destroy();
+      });
+    },
     // 获取习惯ID
     queryHi() {
       this.ti = this.$route.query.id;
@@ -398,92 +688,180 @@ export default {
         if (res.code == 200) {
           console.log(res.data);
           this.clockInInfoTop = res.data;
-          if (res.data.comment_list.one_comment.length != 0) {
-            res.data.comment_list.one_comment.map((e, i) => {
-              res.data.comment_list.one_comment[i].deleBoxFlag = false;
-            });
-            this.clockInInfo = res.data.comment_list.one_comment;
-            console.log(this.clockInInfo);
-            // ------------------------------------------------------------------
-            this.clockInInfo.map(e => {
-              if (e.voice_url != "") {
-                console.log(12345789);
-                e.voice_url = e.voice_url.split(",").map(item => {
-                  let tempObj = {
-                    value: 0,
-                    file: item,
-                    duration: "",
-                    status: true
-                  };
-                  // console.log(tempObj);
-                  return tempObj;
-                });
-              } else {
-                e.voice_url = [];
-              }
-            });
-            console.log(this.clockInInfo);
-            this.$nextTick(() => {
-              this.indexArr = [];
-              if (this.$refs.audioRoot) {
-                this.clockInInfo.map((e, i) => {
-                  e.voice_url.map((item, index) => {
-                    let obj = {
-                      B: i,
-                      S: index
+          if (this.tabActive == 0) {
+            if (res.data.comment_list.one_comment.length != 0) {
+              res.data.comment_list.one_comment.map((e, i) => {
+                res.data.comment_list.one_comment[i].deleBoxFlag = false;
+              });
+              this.clockInInfo = res.data.comment_list.one_comment;
+              console.log(this.clockInInfo);
+              // ------------------------------------------------------------------
+              this.clockInInfo.map(e => {
+                if (e.voice_url != "") {
+                  e.voice_url = e.voice_url.split(",").map(item => {
+                    let tempObj = {
+                      value: 0,
+                      file: item,
+                      duration: "",
+                      status: true
                     };
-                    this.indexArr.push(obj);
+                    // console.log(tempObj);
+                    return tempObj;
                   });
-                });
-                // console.log(this.indexArr);
-                this.$refs.audioRoot.map((e, i) => {
-                  this.$refs.audioRoot[i].oncanplay = () => {
-                    let time = Math.floor(e.duration);
-                    let m =
-                      Math.floor(time / 60) >= 10
-                        ? Math.floor(time / 60)
-                        : "0" + Math.floor(time / 60);
-                    let s =
-                      Math.floor(time % 60) >= 10
-                        ? Math.floor(time % 60)
-                        : "0" + Math.floor(time % 60);
-                    // console.log(m + ":" + s);
-                    this.clockInInfo[this.indexArr[i].B].voice_url[
-                      this.indexArr[i].S
-                    ].duration = m + ":" + s;
-                  };
-                });
-                setTimeout(() => {
-                  this.$refs.audioRoot.map((e, i) => {
-                    this.$refs.audioRoot[i].currentTime = 0;
-                  });
-                }, 60);
-              }
-              this.$forceUpdate();
-            });
-            // console.log(this.clockInInfo);
-            // ----------------------------------------
-            this.clockInInfo.map((e, i) => {
-              e.fabulousList.map(likeItem => {
-                if (likeItem.id == this.ui) {
-                  e.isLike = true;
                 } else {
-                  e.isLike = false;
+                  e.voice_url = [];
                 }
               });
-              if (e.comment_list.length != 0) {
-                e.comment_list.map((item, index) => {
-                  item.deleReplyBox = false;
-                  item.copyReplyBox = false;
+              this.$forceUpdate();
+              // console.log(this.clockInInfo);
+              console.log("-------------------------------------");
+              this.$nextTick(() => {
+                this.indexArr = [];
+                if (this.$refs.audioRoot) {
+                  this.clockInInfo.map((e, i) => {
+                    e.voice_url.map((item, index) => {
+                      let obj = {
+                        B: i,
+                        S: index
+                      };
+                      this.indexArr.push(obj);
+                    });
+                  });
+                  this.$refs.audioRoot.map((e, i) => {
+                    this.$refs.audioRoot[i].oncanplay = () => {
+                      let time = Math.floor(e.duration);
+                      let m =
+                        Math.floor(time / 60) >= 10
+                          ? Math.floor(time / 60)
+                          : "0" + Math.floor(time / 60);
+                      let s =
+                        Math.floor(time % 60) >= 10
+                          ? Math.floor(time % 60)
+                          : "0" + Math.floor(time % 60);
+                      // console.log(m + ":" + s);
+                      this.clockInInfo[this.indexArr[i].B].voice_url[
+                        this.indexArr[i].S
+                      ].duration = m + ":" + s;
+                    };
+                  });
+                  setTimeout(() => {
+                    this.$refs.audioRoot.map((e, i) => {
+                      this.$refs.audioRoot[i].currentTime = 0;
+                    });
+                  }, 60);
+                }
+                this.$forceUpdate();
+              });
+              // console.log(this.clockInInfo);
+              // ----------------------------------------
+              this.clockInInfo.map((e, i) => {
+                e.fabulousList.map(likeItem => {
+                  if (likeItem.id == this.ui) {
+                    e.isLike = true;
+                  } else {
+                    e.isLike = false;
+                  }
                 });
-              }
-            });
-            this.$forceUpdate();
-          } else {
-            this.clockInInfo = [];
+                if (e.comment_list.length != 0) {
+                  e.comment_list.map((item, index) => {
+                    item.deleReplyBox = false;
+                    item.copyReplyBox = false;
+                  });
+                }
+              });
+              this.$forceUpdate();
+            } else {
+              this.clockInInfo = [];
+            }
+          } else if (this.tabActive == 2) {
+            if (res.data.comment_list.three_comment.length != 0) {
+              res.data.comment_list.three_comment.map((e, i) => {
+                res.data.comment_list.three_comment[i].deleBoxFlag = false;
+              });
+              this.clockInInfo = res.data.comment_list.three_comment;
+              console.log(this.clockInInfo);
+              // ------------------------------------------------------------------
+              this.clockInInfo.map(e => {
+                if (e.voice_url != "") {
+                  e.voice_url = e.voice_url.split(",").map(item => {
+                    let tempObj = {
+                      value: 0,
+                      file: item,
+                      duration: "",
+                      status: true
+                    };
+                    // console.log(tempObj);
+                    return tempObj;
+                  });
+                } else {
+                  e.voice_url = [];
+                }
+              });
+              this.$forceUpdate();
+              console.log(this.clockInInfo);
+              this.$nextTick(() => {
+                this.indexArr = [];
+                if (this.$refs.audioRoot) {
+                  this.clockInInfo.map((e, i) => {
+                    e.voice_url.map((item, index) => {
+                      let obj = {
+                        B: i,
+                        S: index
+                      };
+                      this.indexArr.push(obj);
+                    });
+                  });
+                  // console.log(this.indexArr);
+                  this.$refs.audioRoot.map((e, i) => {
+                    this.$refs.audioRoot[i].oncanplay = () => {
+                      let time = Math.floor(e.duration);
+                      let m =
+                        Math.floor(time / 60) >= 10
+                          ? Math.floor(time / 60)
+                          : "0" + Math.floor(time / 60);
+                      let s =
+                        Math.floor(time % 60) >= 10
+                          ? Math.floor(time % 60)
+                          : "0" + Math.floor(time % 60);
+                      // console.log(m + ":" + s);
+                      console.log(this.indexArr);
+                      this.clockInInfo[this.indexArr[i].B].voice_url[
+                        this.indexArr[i].S
+                      ].duration = m + ":" + s;
+                    };
+                  });
+                  setTimeout(() => {
+                    this.$refs.audioRoot.map((e, i) => {
+                      this.$refs.audioRoot[i].currentTime = 0;
+                    });
+                  }, 60);
+                }
+                this.$forceUpdate();
+              });
+              // console.log(this.clockInInfo);
+              // ----------------------------------------
+              this.clockInInfo.map((e, i) => {
+                e.fabulousList.map(likeItem => {
+                  if (likeItem.id == this.ui) {
+                    e.isLike = true;
+                  } else {
+                    e.isLike = false;
+                  }
+                });
+                if (e.comment_list.length != 0) {
+                  e.comment_list.map((item, index) => {
+                    item.deleReplyBox = false;
+                    item.copyReplyBox = false;
+                  });
+                }
+              });
+              this.$forceUpdate();
+            } else {
+              this.clockInInfo = [];
+            }
           }
 
-          console.log(this.clockInInfo);
+          // console.log(this.clockInInfo);
           this.isGooding = true;
           this.uploadShow = false;
         }
@@ -877,22 +1255,22 @@ export default {
     calendarTouchMove(e) {
       // console.log(e);
     },
-    // 去打卡
-    toClockIn() {
+    // 提交作业
+    linkToHomeWorkIsSubmit(id) {
+      console.log(this.clockInInfoTop.task_id);
       this.$router.push({
-        path: "/clockIn",
+        path: "/homeWorkIsSubmit",
         query: {
-          hi: this.hi
+          id: this.clockInInfoTop.task_id
         }
       });
     },
     // linkTo 班级打卡统计
     toClassClockInSta() {
       this.$router.push({
-        path: "/classClockInStatistics",
+        path: "/homeWorkStatistics",
         query: {
-          hi: this.hi,
-          dt: this.dt
+          id: this.clockInInfoTop.task_id
         }
       });
     },
@@ -924,6 +1302,7 @@ export default {
 .homeWorklistInfo .van-tabs__line {
   width: 4.5rem !important;
   background-color: #38b48b;
+  z-index: 1;
 }
 .homeWorklistInfo .van-tab__pane {
   /* padding: 0.8rem 1rem; */
@@ -991,6 +1370,7 @@ p {
   left: 0;
   width: 100%;
   height: 2.8rem;
+  z-index: 500 !important;
 }
 .topBlock {
   width: 100%;
@@ -1500,4 +1880,116 @@ p {
   height: 1rem;
   width: 100%;
 }
+
+.submitFixedBtn {
+  position: fixed;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 53vw;
+  height: 2.5rem;
+  border-radius: 0.2rem;
+}
+.submitFixedBtn > p {
+  color: white;
+  width: 100%;
+  height: 2.5rem;
+  font-size: 0.9rem;
+  line-height: 2.5rem;
+  border-radius: 0.2rem;
+  text-align: center;
+}
+
+/* copy */
+
+.CopyBtn {
+  position: absolute;
+  right: 1rem;
+  top: 20.5rem;
+  padding: 0.5rem 0 0.5rem 1rem;
+  color: #38b48b;
+  font-size: 0.8rem;
+}
+
+/* isLoginOrBind */
+/* .joinClassDiaImg {
+  width: 100%;
+  height: 100vh;
+  background-color: #38b48b;
+}
+.joinClassDiaImgBox {
+  width: 100%;
+  height: 24rem;
+  background: url(~@/assets/imgs/home/homeWork/joinDialog.png);
+  background-size: 100% 100%;
+  position: relative;
+}
+.joinClassDia .el-dialog {
+  margin-top: 6vh !important;
+  border-radius: 0.4rem !important;
+}
+.joinClassDiaTit {
+  width: 100%;
+  color: #ffb769;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  position: absolute;
+  bottom: 16rem;
+  left: 0;
+  z-index: 500;
+}
+.joinClassDiaText {
+  z-index: 500;
+  width: 100%;
+  text-align: left;
+  padding: 0 2rem;
+  box-sizing: border-box;
+  position: absolute;
+  bottom: 11rem;
+  left: 0;
+}
+.joinClassDiaImg img {
+  width: 100%;
+  border-top-left-radius: 0.38rem;
+  border-top-right-radius: 0.38rem;
+}
+.joinClassDiaImg p {
+  width: 55%;
+  height: 2.5rem;
+  font-size: 1rem;
+  line-height: 2.5rem;
+  position: absolute;
+  bottom: 0rem;
+  left: 0;
+  right: 0;
+  margin: auto;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 0.2rem;
+  background-color: white;
+  color: #666666;
+  text-align: center;
+}
+.joinClassDiaImg p:nth-child(1) {
+  bottom: 4rem;
+}
+.joinClassDiaImg p:nth-child(2) {
+  bottom: 1rem;
+}
+.toJoinClassBtn {
+  position: relative;
+  top: 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  width: 60%;
+  height: 3rem;
+  margin: 0 auto;
+  background: linear-gradient(to bottom, #fd576f, #ff7a62);
+  text-align: center;
+  line-height: 3rem;
+  color: white;
+  border-radius: 1.5rem;
+} */
 </style>

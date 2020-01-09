@@ -226,10 +226,27 @@ export function homeWorkSubmitTask(data) {
     data
   });
 }
-// 作业修改
+// 作业修改信息
 export function homeWorkSaveTaskInfo(data) {
   return request({
     url: "/parent/student/saveTaskInfo",
+    method: "post",
+    data
+  });
+}
+// 作业修改提交
+export function homeWorkSaveTask(data) {
+  return request({
+    url: "/parent/student/saveTask",
+    method: "post",
+    data
+  });
+}
+
+// 作业查看统计
+export function homeWorkTaskSee(data) {
+  return request({
+    url: "/parent/student/taskSee",
     method: "post",
     data
   });

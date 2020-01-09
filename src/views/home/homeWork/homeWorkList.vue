@@ -27,9 +27,10 @@
         >{{item.date}}</div>
         <div class="listItem">
           <div class="listItemTop">
-            <p
-              @click="linkToListInfo(item.task_id)"
-            >{{item.title.length > 6 ? (item.title.substr(0,5)+'...') : item.title}}（{{weeksList[new Date(item.date).getDay()]}}）</p>
+            <p @click="linkToListInfo(item.task_id)">
+              <span v-show="item.is_excellent == 1" class="isNice">优</span>
+              {{item.title.length > 6 ? (item.title.substr(0,5)+'...') : item.title}}（{{weeksList[new Date(item.date).getDay()]}}）
+            </p>
             <p @click="linkToListInfo(item.task_id)">{{"刚刚"}} {{item.send_name}}老师</p>
             <p
               class="listItemTopRight"
@@ -79,9 +80,14 @@
             </div>
             <div v-show="item.is_submit == 1" class="itemIsSubmit">
               <p
-                :style="(item.is_submit == 1 && item.is_submited == 1) ? 'background-color: #dddddd;': ''"
+                v-show="(item.is_submit == 1 && item.is_submited == 0)"
+                style="background-color: #38b48b;"
                 @click="linkToHomeWorkIsSubmit(item.task_id)"
-              >{{ item.is_submited == 0 ? "作业提交" : "已提交"}}</p>
+              >作业提交</p>
+              <p
+                v-show="(item.is_submit == 1 && item.is_submited == 1)"
+                style="background-color: #dddddd;"
+              >已提交</p>
             </div>
           </div>
         </div>
@@ -315,6 +321,17 @@ p {
   width: 100%;
   height: 2.8rem;
 }
+.isNice {
+  background-color: #ff9c01;
+  color: white;
+  font-size: 0.9rem;
+  line-height: 1.3rem;
+  display: inline-block;
+  width: 1.3rem;
+  height: 1.3rem;
+  text-align: center;
+  border-radius: .2rem;
+}
 /* item */
 .homeWorkListItem {
   text-align: center !important;
@@ -350,6 +367,8 @@ p {
 }
 .listItemTop > p:nth-child(1) {
   display: inline-block;
+  height: 1.3rem;
+  line-height: 1.3rem;
   width: calc(100% - 6rem);
   font-size: 1rem;
   font-weight: 600;
