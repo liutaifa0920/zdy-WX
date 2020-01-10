@@ -34,6 +34,7 @@
     </div>
     <div class="clockInRecord">反馈情况</div>
     <div
+      v-show="!uploadShow"
       class="CopyBtn"
       :style="contentIsOpen ? 'top: 25.5rem !important' : ''"
       @click="copyClick"
@@ -165,7 +166,7 @@
                 src="~@/assets/imgs/home/habitClock/is_good.png"
                 alt="已点赞"
               />
-              <!-- <p>{{item.fabulousList.length == 0 ? '':item.fabulousList.length}}</p> -->
+              <p>{{item.fabulousList.length == 0 ? '':item.fabulousList.length}}</p>
             </div>
             <img
               @click="itemReportClick(1, item)"
@@ -1214,6 +1215,7 @@ export default {
           cui: sessionStorage.getItem("ui"),
           csi: sessionStorage.getItem("si"),
           cct: this.itemReport,
+          ty: 1,
           v: sessionStorage.getItem("v")
         };
       } else {
@@ -1226,6 +1228,7 @@ export default {
           cui: sessionStorage.getItem("ui"),
           csi: sessionStorage.getItem("si"),
           cct: this.itemReport,
+          ty: 2,
           v: sessionStorage.getItem("v")
         };
       }
@@ -1910,6 +1913,7 @@ p {
   padding: 0.5rem 0 0.5rem 1rem;
   color: #38b48b;
   font-size: 0.8rem;
+  z-index: 200;
 }
 
 /* isLoginOrBind */

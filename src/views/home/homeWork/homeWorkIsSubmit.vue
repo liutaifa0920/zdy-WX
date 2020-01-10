@@ -116,18 +116,22 @@
         ></div>
       </div>
       <div class="imgVideoRecordBtn">
-        <div class="imgVideoRecordItem" @click="imgVideoPopup">
-          <img src="~@/assets/imgs/home/habitClock/tupian.png" alt />
-          <div>添加图片/视频</div>
+        <div class="imgVideoRecordItem" @click="imgPopup">
+          <img src="~@/assets/imgs/home/homeWork/tupian.png" alt />
+          <div>添加图片</div>
+        </div>
+        <div class="imgVideoRecordItem" @click="videoPopup">
+          <img src="~@/assets/imgs/home/homeWork/shipin.png" alt />
+          <div>添加视频</div>
         </div>
         <div class="imgVideoRecordItem" @click="recorderStart">
-          <img src="~@/assets/imgs/home/habitClock/yinpin.png" alt />
+          <img src="~@/assets/imgs/home/homeWork/yinpin.png" alt />
           <div>添加音频</div>
         </div>
       </div>
     </div>
     <div class="upLoadBtn" @click="clovkInUpload">确定发布</div>
-    <van-popup v-model="imgVideoPopupFlag" position="bottom" :style="{ height: '12rem' }">
+    <van-popup v-model="imgPopupFlag" position="bottom" :style="{ height: '6rem' }">
       <div class="chooseImgOrAdiou" @click="chooseImgClick">
         添加照片
         <input @change="changeImg" ref="chooseImg" type="file" accept="image/*" />
@@ -142,6 +146,8 @@
           capture="camera"
         />
       </div>
+    </van-popup>
+    <van-popup v-model="videoPopupFlag" position="bottom" :style="{ height: '6rem' }">
       <div class="chooseImgOrAdiou" @click="chooseSetAdiouClick">
         添加视频
         <input @change="changeVideo" ref="chooseVideo" type="file" accept="video/*" />
@@ -212,7 +218,8 @@ export default {
       timestamp: "",
       recordID: "",
       serverId: "",
-      imgVideoPopupFlag: false,
+      imgPopupFlag: false,
+      videoPopupFlag: false,
       isRecord: false,
       isOverRecord: false,
       clockConText: "",
@@ -378,8 +385,11 @@ export default {
     initRecorder() {
       wx.config({
         debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
-        // 当前 正式AppID
-        appId: "wx8d459009d526912d", // 必填，企业号的唯一标识，此处填写企业号corpid
+        // 测试AppID
+        appId: "wx108e8df5b6b8ace0", // 必填，企业号的唯一标识，此处填写企业号corpid
+        // 正式AppID
+        // appId: "wx8d459009d526912d", // 必填，企业号的唯一标识，此处填写企业号corpid
+
         timestamp: this.timestamp, // 必填，生成签名的时间戳
         nonceStr: this.noncestr, // 必填，生成签名的随机串
         signature: this.signature, // 必填，签名，见附录1
@@ -558,24 +568,27 @@ export default {
       this.adiouList.splice(i, 1);
     },
     // 添加照片 拍照 录像弹窗---------------------------------
-    imgVideoPopup() {
-      this.imgVideoPopupFlag = true;
+    imgPopup() {
+      this.imgPopupFlag = true;
+    },
+    videoPopup() {
+      this.videoPopupFlag = true;
     },
     // 选择照片
     chooseImgClick() {
-      this.imgVideoPopupFlag = false;
+      this.imgPopupFlag = false;
     },
     // 拍摄照片
     chooseSetImgClick() {
-      this.imgVideoPopupFlag = false;
+      this.imgPopupFlag = false;
     },
     // 选择视频
     chooseSetAdiouClick() {
-      this.imgVideoPopupFlag = false;
+      this.videoPopupFlag = false;
     },
     // 拍摄视频
     chooseAdiouClick() {
-      this.imgVideoPopupFlag = false;
+      this.videoPopupFlag = false;
     },
     // 选择已有照片
     changeImg(e) {

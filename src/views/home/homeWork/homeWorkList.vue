@@ -29,9 +29,11 @@
           <div class="listItemTop">
             <p @click="linkToListInfo(item.task_id)">
               <span v-show="item.is_excellent == 1" class="isNice">优</span>
-              {{item.title.length > 6 ? (item.title.substr(0,5)+'...') : item.title}}（{{weeksList[new Date(item.date).getDay()]}}）
+              {{item.title.split("（")[0].length > 6 ? (item.title.split("（")[0].substr(0,5)+'...') : item.title.split("（")[0]}}（{{weeksList[new Date(item.date).getDay()]}}）
             </p>
-            <p @click="linkToListInfo(item.task_id)">{{"刚刚"}} {{item.send_name}}老师</p>
+            <p
+              @click="linkToListInfo(item.task_id)"
+            >{{noticeTimeFilter(item.add_time)}} {{item.send_name}}老师</p>
             <p
               class="listItemTopRight"
               v-show="!item.taskType"
@@ -122,6 +124,47 @@ export default {
       loadingMore: false,
       finished: false
     };
+  },
+  computed: {
+    // 通知时间描述
+    noticeTimeFilter(d) {
+      return function(d) {
+        let curTime = new Date();
+        let postTime = new Date(d);
+        let timeDiff = curTime.getTime() - postTime.getTime();
+
+        let min = 60 * 1000;
+        let hour = min * 60;
+        let day = hour * 24;
+        let week = day * 7;
+
+        let exceedWeek = Math.floor(timeDiff / week);
+        let exceedDay = Math.floor(timeDiff / day);
+        let exceedHour = Math.floor(timeDiff / hour);
+        let exceedMin = Math.floor(timeDiff / min);
+        if (exceedWeek > 0) {
+          return exceedWeek.toString() + "周前";
+        } else {
+          if (exceedDay < 7 && exceedDay > 0) {
+            return exceedDay.toString() + "天前";
+          } else {
+            if (exceedHour < 24 && exceedHour > 0) {
+              return exceedHour.toString() + "小时前";
+            } else {
+              if (exceedMin.toString() + "分钟前" == "NaN分钟前") {
+                d = d
+                  .split(" ")[0]
+                  .split("-")
+                  .splice(1)
+                  .join("/");
+                return d;
+              }
+              return exceedMin.toString() + "分钟前";
+            }
+          }
+        }
+      };
+    }
   },
   mounted() {
     // this.queryInfoList();
@@ -330,7 +373,7 @@ p {
   width: 1.3rem;
   height: 1.3rem;
   text-align: center;
-  border-radius: .2rem;
+  border-radius: 0.2rem;
 }
 /* item */
 .homeWorkListItem {

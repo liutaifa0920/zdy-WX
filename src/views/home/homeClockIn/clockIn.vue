@@ -265,8 +265,11 @@ export default {
     initRecorder() {
       wx.config({
         debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
-        // 当前 正式AppID
+        // 测试AppID
+        // appId: "wx108e8df5b6b8ace0", // 必填，企业号的唯一标识，此处填写企业号corpid
+        // 正式AppID
         appId: "wx8d459009d526912d", // 必填，企业号的唯一标识，此处填写企业号corpid
+        
         timestamp: this.timestamp, // 必填，生成签名的时间戳
         nonceStr: this.noncestr, // 必填，生成签名的随机串
         signature: this.signature, // 必填，签名，见附录1
